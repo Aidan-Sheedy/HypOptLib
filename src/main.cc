@@ -5,6 +5,9 @@
 #include "TopOpt.h"
 #include "mpi.h"
 #include <petsc.h>
+
+#include "Hyperoptimization.h"
+
 /*
 Authors: Niels Aage, Erik Andreassen, Boyan Lazarov, August 2013
 
@@ -39,9 +42,9 @@ int main(int argc, char* argv[]) {
     // STEP 4: VISUALIZATION USING VTK
     MPIIO* output = new MPIIO(opt->da_nodes, 3, "ux, uy, uz", 3, "x, xTilde, xPhys");
     // STEP 5: THE OPTIMIZER MMA
-    MMA*     mma;
+    // MMA*     mma;
     PetscInt itr = 0;
-    opt->AllocateMMAwithRestart(&itr, &mma); // allow for restart !
+    // opt->AllocateMMAwithRestart(&itr, &mma); // allow for restart !
     // mma->SetAsymptotes(0.2, 0.65, 1.05);
 
     // STEP 6: FILTER THE INITIAL DESIGN/RESTARTED DESIGN
@@ -49,87 +52,44 @@ int main(int argc, char* argv[]) {
     CHKERRQ(ierr);
 
     // STEP 7: OPTIMIZATION LOOP
-    PetscScalar ch = 1.0;
-    double      t1, t2;
-    while (itr < opt->maxItr && ch > 0.01) {
-        // Update iteration counter
-        itr++;
+    PetscPrintf(PETSC_COMM_WORLD, "\n\n######################## Hyperoptimization ########################\n");
+    LagrangianMultiplier lagmult(filter, opt);
 
-        // start timer
-        t1 = MPI_Wtime();
+    /** @todo Figure out how to pass stuff in from the wrapper! */
+    PetscScalar temperature = 10;
+    PetscScalar NHChainOrder = 10;
+    PetscFloat dt = 0.001;
 
-        // Compute (a) obj+const, (b) sens, (c) obj+const+sens
-        ierr = physics->ComputeObjectiveConstraintsSensitivities(&(opt->fx), &(opt->gx[0]), opt->dfdx, opt->dgdx[0],
-                                                                 opt->xPhys, opt->Emin, opt->Emax, opt->penal,
-                                                                 opt->volfrac);
-        CHKERRQ(ierr);
+    Hyperoptimization solver;
+    solver.init(physics,
+                opt,
+                filter,
+                // data,
+                lagmult,
+                temperature,
+                opt->xPhys, /** @todo initialize the positions properly */
+                NHChainOrder,
+                opt->maxItr,
+                dt);
 
-        // Compute objective scale
-        if (itr == 1) {
-            opt->fscale = 10.0 / opt->fx;
-        }
-        // Scale objectie and sens
-        opt->fx = opt->fx * opt->fscale;
-        VecScale(opt->dfdx, opt->fscale);
+    PetscPrintf(PETSC_COMM_WORLD, "Initialized, starting loop\n");
 
-        // Filter sensitivities (chainrule)
-        ierr = filter->Gradients(opt->x, opt->xTilde, opt->dfdx, opt->m, opt->dgdx, opt->projectionFilter, opt->beta,
-                                 opt->eta);
-        CHKERRQ(ierr);
+    solver.runDesignLoop();
 
-        // Sets outer movelimits on design variables
-        ierr = mma->SetOuterMovelimit(opt->Xmin, opt->Xmax, opt->movlim, opt->x, opt->xmin, opt->xmax);
-        CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD, "Done loop!\n");
 
-        // Update design by MMA
-        ierr = mma->Update(opt->x, opt->dfdx, opt->gx, opt->dgdx, opt->xmin, opt->xmax);
-        CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD, "\n\n###################################################################\n");
 
-        // Inf norm on the design change
-        ch = mma->DesignChange(opt->x, opt->xold);
 
-        // Increase beta if needed
-        PetscBool changeBeta = PETSC_FALSE;
-        if (opt->projectionFilter) {
-            changeBeta = filter->IncreaseBeta(&(opt->beta), opt->betaFinal, opt->gx[0], itr, ch);
-        }
-
-        // Filter design field
-        ierr = filter->FilterProject(opt->x, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
-        CHKERRQ(ierr);
-
-        // Discreteness measure
-        PetscScalar mnd = filter->GetMND(opt->xPhys);
-
-        // stop timer
-        t2 = MPI_Wtime();
-
-        // Print to screen
-        PetscPrintf(PETSC_COMM_WORLD,
-                    "It.: %i, True fx: %f, Scaled fx: %f, gx[0]: %f, ch.: %f, "
-                    "mnd.: %f, time: %f\n",
-                    itr, opt->fx / opt->fscale, opt->fx, opt->gx[0], ch, mnd, t2 - t1);
-
-        // Write field data: first 10 iterations and then every 20th
-        if (itr < 11 || itr % 20 == 0 || changeBeta) {
-            output->WriteVTK(physics->da_nodal, physics->GetStateField(), opt->x, opt->xTilde, opt->xPhys, itr);
-        }
-
-        // Dump data needed for restarting code at termination
-        if (itr % 10 == 0) {
-            opt->WriteRestartFiles(&itr, mma);
-            physics->WriteRestartFiles();
-        }
-    }
-    // Write restart WriteRestartFiles
-    opt->WriteRestartFiles(&itr, mma);
-    physics->WriteRestartFiles();
+    // // Write restart WriteRestartFiles
+    // opt->WriteRestartFiles(&itr, mma);
+    // physics->WriteRestartFiles();
 
     // Dump final design
-    output->WriteVTK(physics->da_nodal, physics->GetStateField(), opt->x, opt->xTilde, opt->xPhys, itr + 1);
+    // output->WriteVTK(physics->da_nodal, physics->GetStateField(), opt->x, opt->xTilde, opt->xPhys, itr + 1);
 
     // STEP 7: CLEAN UP AFTER YOURSELF
-    delete mma;
+    // delete mma;
     delete output;
     delete filter;
     delete opt;
