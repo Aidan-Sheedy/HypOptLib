@@ -59,7 +59,7 @@ class LagrangianMultiplier
             PetscScalar CSum;
             PetscCall(VecSum(CCopy, &CSum));
 
-            PetscPrintf(PETSC_COMM_WORLD, "\nN: %i, volfrac: %f, posSum: %f, cSum: %f\n", numParticles, opt->volfrac, positionSum, CSum);
+            // PetscPrintf(PETSC_COMM_WORLD, "\nN: %i, volfrac: %f, posSum: %f, cSum: %f\n", numParticles, opt->volfrac, positionSum, CSum);
 
             *returnValue = (numParticles * opt->volfrac - positionSum )/ CSum;
 
@@ -149,20 +149,11 @@ class Hyperoptimization
          *  T      = the temperature
          * 
          * @param noseHooverVelocities (Vec)
-         * v_s{i-1}, Vector of the Nose Hoover velocities with the indices corresponding to those paseed in 
-         * by 'velocityIndices'.
+         * v_s{i-1}, Vector of the Nose Hoover velocities. This is either the odd or even velocities
+         * depending on the flag evenOutput.
          * 
-         * @param velocityIndices (PetscInt*)
-         * {i-1}, Array of velocity indices corresponding to the noseHooverVelocities vector.
-         * 
-         * @param numIndices (PetscInt)
-         * Number of indices in the velocityIndices array.
-         * 
-         * @param resultIndices (PetscInt*)
-         * Array of indices corresponding to the values in the result vector to be populated.
-         * 
-         * @param numResultIndices (PetscInt)
-         * Number of indices in the resultIndices array.
+         * @param evenOutput (bool)
+         * Flag to indicate if even or odd acclerations are being calculated.
          * 
          * @param result (Vec*)
          * Array in which to add the return result.
@@ -171,14 +162,7 @@ class Hyperoptimization
          *          to 'result'.
          *
         **/
-        PetscErrorCode calculateRemainingNoseHooverAccelerations(   Vec noseHooverVelocities,
-                                                                    PetscInt massVecIndices[],
-                                                                    PetscInt numIndices,
-                                                                    Vec* result);
-
-        PetscErrorCode calculateOddNoseHooverAccelerations( Vec evenNoseHooverVelocities,
-                                                            PetscInt evenVelocityIndices[],
-                                                            Vec *evenAccelerations);
+        PetscErrorCode calculateRemainingNoseHooverAccelerations(Vec noseHooverVelocities, bool evenOutput, Vec *result);
 
         /**
          * Calculates particle positions for the provided timestep. Computes the equation:
@@ -285,6 +269,10 @@ class Hyperoptimization
          *          a better constructor should be made later.
         */
         Vec noseHooverMass;
+
+        Vec evenNoseHooverMass;
+
+        Vec oddNoseHooverMass;
 
         /** @todo confirm if this is needed*/
         // Vec passiveElements;

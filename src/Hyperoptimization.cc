@@ -71,9 +71,10 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
     this->halfTimestep      = timestep/2;
 
     /* Initialize vectors */
-    PetscCall(VecCreate(PETSC_COMM_WORLD, &(this->noseHooverMass)));
-    PetscCall(VecSetSizes(this->noseHooverMass, NHChainOrder, PETSC_DETERMINE));
-    PetscCall(VecSetFromOptions(this->noseHooverMass));
+    PetscCall(VecCreate(PETSC_COMM_WORLD, &(this->evenNoseHooverMass)));
+    PetscCall(VecSetSizes(this->evenNoseHooverMass, NHChainOrder/2, PETSC_DETERMINE));
+    PetscCall(VecSetFromOptions(this->evenNoseHooverMass));
+    PetscCall(VecDuplicate(this->evenNoseHooverMass, &(this->oddNoseHooverMass)));
 
     PetscCall(VecDuplicate(initialPositions, &(this->newPosition)));
     PetscCall(VecDuplicate(initialPositions, &(this->prevPosition)));
@@ -90,7 +91,8 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
     // }
 
     /* Set initial values */
-    PetscCall(VecSet(this->noseHooverMass,          1.0));
+    PetscCall(VecSet(this->oddNoseHooverMass,       1.0));
+    PetscCall(VecSet(this->evenNoseHooverMass,      1.0));
     PetscCall(VecSet(this->newPosition,             0.0));
     PetscCall(VecSet(this->sensitivities,           1.0)); /** @todo IMPLEMENT*/
     PetscCall(VecSet(this->constraintSensitivities, 1.0)); /** @todo IMPLEMENT*/
@@ -138,7 +140,11 @@ PetscErrorCode Hyperoptimization::calculateFirstNoseHooverAcceleration(Vec allVe
 
     /* Get mass */
     PetscInt index = 0;
-    PetscCall(VecGetValues(this->noseHooverMass, 1, &index, &firstNoseHooverMass));
+    const PetscScalar *noseHooverMassArray;
+
+    PetscCall(VecGetArrayRead(this->oddNoseHooverMass, &noseHooverMassArray));
+    firstNoseHooverMass = noseHooverMassArray[0];
+    PetscCall(VecRestoreArrayRead(this->oddNoseHooverMass, &noseHooverMassArray));
 
     /* Square the velocities */
     PetscCall(VecDuplicate(allVelocities, &(tempVelocities)));
@@ -171,104 +177,104 @@ PetscErrorCode Hyperoptimization::calculateFirstNoseHooverAcceleration(Vec allVe
 
 }
 
-
-PetscErrorCode Hyperoptimization::calculateRemainingNoseHooverAccelerations(Vec noseHooverVelocities, PetscInt massVecIndices[], PetscInt numIndices, Vec *result)
+PetscErrorCode Hyperoptimization::calculateRemainingNoseHooverAccelerations(Vec noseHooverVelocities, bool evenOutput, Vec *result)
 {
     PetscErrorCode errorStatus = 0;
 
+    Vec decrementedVelocities;
     Vec desiredMasses;
-    Vec offsetMasses;
+    Vec decrementedMasses;
     Vec tempResults;
-    Vec noseHooverVelocitiesCopy;
 
-    PetscScalar noseHooverMasses[numIndices];
-
-    PetscInt massIndices[numIndices];
-    PetscInt massIndicesIncremented[numIndices];
-
-    for (PetscInt i = 0; i < numIndices; i++)
+    if (evenOutput)
     {
-        massIndices[i] = i;
-        massIndicesIncremented[i] = massIndices[i] + 1;
+        /* In even case we can use all available Nose Hoover particles */
+        PetscCall(VecDuplicate(evenNoseHooverMass, &desiredMasses));
+        PetscCall(VecCopy(evenNoseHooverMass, desiredMasses));
+
+        PetscCall(VecDuplicate(oddNoseHooverMass, &decrementedMasses));
+        PetscCall(VecCopy(oddNoseHooverMass, decrementedMasses));
+
+        PetscCall(VecDuplicate(noseHooverVelocities, &decrementedVelocities));
+        PetscCall(VecCopy(noseHooverVelocities, decrementedVelocities));
+
+        PetscCall(VecDuplicate(desiredMasses, &tempResults));
+    }
+    else
+    {
+        PetscInt numReducedParticles = this->NHChainOrder/2 - 1;
+        /* In the odd case, we need to omit the first odd mass and last even mass */
+        PetscCall(VecCreate(PETSC_COMM_WORLD, &(desiredMasses)));
+        PetscCall(VecSetSizes(desiredMasses, numReducedParticles, PETSC_DETERMINE));
+        PetscCall(VecSetFromOptions(desiredMasses));
+
+        PetscCall(VecDuplicate(desiredMasses, &decrementedMasses));
+        PetscCall(VecDuplicate(desiredMasses, &decrementedVelocities));
+        PetscCall(VecDuplicate(desiredMasses, &tempResults));
+
+        /* Get the reduced values for each vector */
+        const PetscScalar *evenNoseHooverMassArray;
+        const PetscScalar *oddNoseHooverMassArray;
+        const PetscScalar *noseHooverVelocitiesArray;
+
+        PetscScalar *desiredMassesArray;
+        PetscScalar *decrementedMassesArray;
+        PetscScalar *decrementedVelocitiesArray;
+
+        PetscCall(VecGetArrayRead(this->oddNoseHooverMass,  &oddNoseHooverMassArray));
+        PetscCall(VecGetArrayRead(this->evenNoseHooverMass, &evenNoseHooverMassArray));
+        PetscCall(VecGetArrayRead(noseHooverVelocities,     &noseHooverVelocitiesArray));
+
+        PetscCall(VecGetArray(desiredMasses,            &desiredMassesArray));
+        PetscCall(VecGetArray(decrementedMasses,        &decrementedMassesArray));
+        PetscCall(VecGetArray(decrementedVelocities,    &decrementedVelocitiesArray));
+
+        for (PetscInt i = 0; i < numReducedParticles; i++)
+        {
+            desiredMassesArray[i]           = oddNoseHooverMassArray[i+1];
+            decrementedMassesArray[i]       = evenNoseHooverMassArray[i];
+            decrementedVelocitiesArray[i]   = noseHooverVelocitiesArray[i];
+        }
+
+        /* Restore all values */
+        PetscCall(VecRestoreArrayRead(this->oddNoseHooverMass,  &oddNoseHooverMassArray));
+        PetscCall(VecRestoreArrayRead(this->evenNoseHooverMass, &evenNoseHooverMassArray));
+        PetscCall(VecRestoreArrayRead(noseHooverVelocities,     &noseHooverVelocitiesArray));
+
+        PetscCall(VecRestoreArray(desiredMasses,            &desiredMassesArray));
+        PetscCall(VecRestoreArray(decrementedMasses,        &decrementedMassesArray));
+        PetscCall(VecRestoreArray(decrementedVelocities,    &decrementedVelocitiesArray));
     }
 
-    /* Setup temporary vectors */
-    PetscCall(VecDuplicate(noseHooverVelocities, &(desiredMasses)));
-    PetscCall(VecDuplicate(noseHooverVelocities, &(offsetMasses)));
-    PetscCall(VecDuplicate(noseHooverVelocities, &(tempResults)));
-    PetscCall(VecDuplicate(noseHooverVelocities, &(noseHooverVelocitiesCopy)));
-
-    PetscCall(VecCopy(noseHooverVelocities, noseHooverVelocitiesCopy));
-
-    /* Get the masses of the Nose Hoover particles one higher than those passed in */
-    PetscCall(VecGetValues(this->noseHooverMass, numIndices, massIndicesIncremented, noseHooverMasses));
-    PetscCall(VecSetValues(desiredMasses, numIndices, massIndices, noseHooverMasses, INSERT_VALUES));
-
-    /* Get the masses of the Nose Hoover particles passed in */
-    PetscCall(VecGetValues(this->noseHooverMass, numIndices, massIndices, noseHooverMasses));
-    PetscCall(VecSetValues(offsetMasses, numIndices, massIndices, noseHooverMasses, INSERT_VALUES));
-
-    PetscCall(VecAssemblyBegin(desiredMasses));
-    PetscCall(VecAssemblyBegin(offsetMasses));
-    PetscCall(VecAssemblyEnd(desiredMasses));
-    PetscCall(VecAssemblyEnd(offsetMasses));
-
     /* Calculate the accelerations */
-    PetscCall(VecPointwiseMult(noseHooverVelocitiesCopy, noseHooverVelocitiesCopy, noseHooverVelocitiesCopy));
-    PetscCall(VecPointwiseMult(tempResults, offsetMasses, noseHooverVelocitiesCopy));
+    PetscCall(VecPointwiseMult(decrementedVelocities, decrementedVelocities, decrementedVelocities));
+    PetscCall(VecPointwiseMult(tempResults, decrementedMasses, decrementedVelocities));
     PetscCall(VecShift(tempResults, -this->temperature));
     PetscCall(VecPointwiseDivide(tempResults, tempResults, desiredMasses));
 
-    /* Set the results */
-
-    PetscScalar *tempResultsArray;
-    PetscScalar *resultsArray;
-    PetscCall(VecGetArray(tempResults, &tempResultsArray));
-    PetscCall(VecGetArray(*result, &resultsArray));
-
-    for (PetscInt i = 0; i < numIndices; i++)
+    if (evenOutput)
     {
-        resultsArray[i+1] = tempResultsArray[i];
+        /* Even output can be directly coppied to the results */
+        PetscCall(VecCopy(tempResults, *result));
     }
+    else
+    {
+        /* Skip the first particle for odd results */
+        PetscScalar* resultsArray;
+        const PetscScalar* tempResultsArray;
+        PetscInt numReducedParticles = this->NHChainOrder/2 - 1;
 
-    PetscCall(VecRestoreArray(tempResults, &tempResultsArray));
-    PetscCall(VecRestoreArray(*result, &resultsArray));
+        PetscCall(VecGetArray(*result, &resultsArray));
+        PetscCall(VecGetArrayRead(tempResults, &tempResultsArray));
 
-    // PetscCall(VecCopy(tempResults, *result));
+        for (PetscInt i = 0; i < numReducedParticles; i++)
+        {
+            resultsArray[i+1] = tempResultsArray[i];
+        }
 
-    return errorStatus;
-}
-
-PetscErrorCode Hyperoptimization::calculateOddNoseHooverAccelerations(Vec evenNoseHooverVelocities, PetscInt evenVelocityIndices[], Vec *oddAccelerations)
-{
-    PetscErrorCode errorStatus = 0;
-
-    // Vec reducedEvenNHVelocities;
-    PetscInt numInputVelocities;
-
-    const PetscScalar *evenNoseHooverVelocityValues;
-
-    PetscCall(VecGetLocalSize(evenNoseHooverVelocities, &numInputVelocities));
-
-    PetscInt numIndicesToUse = numInputVelocities - 1;
-
-    // PetscCall(VecDuplicate(evenNoseHooverVelocities, &reducedEvenNHVelocities));
-    // PetscCall(VecSetSizes(reducedEvenNHVelocities, numIndicesToUse, PETSC_DETERMINE));
-
-    // PetscInt inputIndices[numIndicesToUse];
-    // PetscInt outputIndices[numIndicesToUse];
-
-    // for (PetscInt i = 0; i < numIndicesToUse; i++)
-    // {
-    //     inputIndices[i] = i;
-    // }
-
-    // PetscCall(VecGetArrayRead(evenNoseHooverVelocities, &evenNoseHooverVelocityValues));
-    // PetscCall(VecSetValues(reducedEvenNHVelocities, numIndicesToUse, inputIndices, evenNoseHooverVelocityValues, INSERT_VALUES));
-    // PetscCall(VecAssemblyBegin(reducedEvenNHVelocities));
-    // PetscCall(VecAssemblyEnd(reducedEvenNHVelocities));
-
-    calculateRemainingNoseHooverAccelerations(evenNoseHooverVelocities, evenVelocityIndices, numIndicesToUse, oddAccelerations);
+        PetscCall(VecRestoreArray(*result, &resultsArray));
+        PetscCall(VecRestoreArrayRead(tempResults, &tempResultsArray));
+    }
 
     return errorStatus;
 }
@@ -336,12 +342,12 @@ PetscErrorCode Hyperoptimization::calculateVelocityIncrement(Vec velocityOne, Ve
     PetscCall(VecScale(rightSide, timeStepIn));
 
 /*---------------------------------------------------------------------------------------------------------*/
-    PetscScalar firstLeft;
-    PetscScalar firstRight;
-    PetscScalar firstFinal;
-    PetscInt indexA = 0;
-    PetscCall(VecGetValues(leftSide, 1, &indexA, &firstLeft));
-    PetscCall(VecGetValues(rightSide, 1, &indexA, &firstRight));
+    // PetscScalar firstLeft;
+    // PetscScalar firstRight;
+    // PetscScalar firstFinal;
+    // PetscInt indexA = 0;
+    // PetscCall(VecGetValues(leftSide, 1, &indexA, &firstLeft));
+    // PetscCall(VecGetValues(rightSide, 1, &indexA, &firstRight));
 /*---------------------------------------------------------------------------------------------------------*/
 
 
@@ -350,7 +356,7 @@ PetscErrorCode Hyperoptimization::calculateVelocityIncrement(Vec velocityOne, Ve
     PetscCall(VecCopy(leftSide, *result));
 
 /*---------------------------------------------------------------------------------------------------------*/
-    PetscCall(VecGetValues(leftSide, 1, &indexA, &firstFinal));
+    // PetscCall(VecGetValues(leftSide, 1, &indexA, &firstFinal));
 
     // PetscPrintf(PETSC_COMM_WORLD, "\nLS1: %f, RS1: %f, Tot: %ftimestep: %f\n", firstLeft, firstRight, firstFinal, timeStepIn);
 /*---------------------------------------------------------------------------------------------------------*/
@@ -395,7 +401,7 @@ PetscErrorCode Hyperoptimization::assembleNewPositions(PetscScalar firstNoseHoov
     PetscCall(VecMin(newPosition, NULL, &minPos));
     PetscCall(VecMean(newPosition, &meanPos));
 
-    PetscPrintf(PETSC_COMM_WORLD, "\nmaxX: %f, minX: %f, meanX: %f", maxPos, minPos, meanPos);
+    // PetscPrintf(PETSC_COMM_WORLD, "\nmaxX: %f, minX: %f, meanX: %f", maxPos, minPos, meanPos);
 /*---------------------------------------------------------------------------------------------------------*/
 
     /* Setup */
@@ -507,7 +513,7 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
     PetscCall(VecMin(opt->xPhys, NULL, &maxF));
     PetscCall(VecMean(opt->xPhys, &meanF));
 
-    PetscPrintf(PETSC_COMM_WORLD, "\nmax Pos: %f, min Pos: %f, mean Pos: %f, max fPos: %f, min fPos: %f, mean fPos: %f", maxP, minP, meanP, minF, maxF, meanF);
+    // PetscPrintf(PETSC_COMM_WORLD, "\nmax Pos: %f, min Pos: %f, mean Pos: %f, max fPos: %f, min fPos: %f, mean fPos: %f", maxP, minP, meanP, minF, maxF, meanF);
 /*---------------------------------------------------------------------------------------------------------*/
     // Compute sensitivities
     errorStatus = physics->ComputeObjectiveConstraintsSensitivities(&(opt->fx), 
@@ -527,7 +533,7 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
     PetscCall(VecMax(opt->dfdx, NULL, &minF));
     PetscCall(VecMin(opt->dfdx, NULL, &maxF));
     PetscCall(VecMean(opt->dfdx, &meanF));
-    PetscPrintf(PETSC_COMM_WORLD, "\nmax dfdx: %f, min dfdx: %f, mean dfdx: %f", minF, maxF, meanF);
+    // PetscPrintf(PETSC_COMM_WORLD, "\nmax dfdx: %f, min dfdx: %f, mean dfdx: %f", minF, maxF, meanF);
 /*---------------------------------------------------------------------------------------------------------*/
 
     // Scale??
@@ -557,7 +563,7 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
     PetscCall(VecMax(opt->dfdx, NULL, &minF));
     PetscCall(VecMin(opt->dfdx, NULL, &maxF));
     PetscCall(VecMean(opt->dfdx, &meanF));
-    PetscPrintf(PETSC_COMM_WORLD, " max filt dfdx: %f, min filt dfdx: %f, mean filt dfdx: %f", minF, maxF, meanF);
+    // PetscPrintf(PETSC_COMM_WORLD, " max filt dfdx: %f, min filt dfdx: %f, mean filt dfdx: %f", minF, maxF, meanF);
 /*---------------------------------------------------------------------------------------------------------*/
 
     PetscCall(VecCopy(opt->dfdx, this->sensitivities));
@@ -589,20 +595,13 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
 
     PetscInt numOddNHIndices = this->NHChainOrder/2;
     PetscInt numEvenNHIndices = this->NHChainOrder/2;
-    PetscInt oddNHIndices[numOddNHIndices];
-    PetscInt evenNHIndices[numEvenNHIndices];
     PetscInt straightNHIndices[numOddNHIndices];
 
     /* NHChainOrder is assumed even, confirm with Hazhir if this is true */
     for (PetscInt i = 0; i < numEvenNHIndices; i++)
     {
-        oddNHIndices[i-1] = 2*i;
-        evenNHIndices[i-1] = 2*i + 1;
         straightNHIndices[i] = i;
     }
-
-    // We omit the first index, so need to manually set the last one
-    evenNHIndices[numEvenNHIndices-1] = this->NHChainOrder/2-1;
 
     Vec tempPosition;
     // Vec prevPosition;
@@ -660,29 +659,29 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
     {
         /* Calculate half-timestep positions */
 /*---------------------------------------------------------------------------------------------------------*/
-PetscPrintf(PETSC_COMM_WORLD, "\n------------------------------------------------------------------\n");
+// PetscPrintf(PETSC_COMM_WORLD, "\n------------------------------------------------------------------\n");
 /*---------------------------------------------------------------------------------------------------------*/
         calculatePositionIncrement(prevPosition, this->prevVelocity, this->halfTimestep, &tempPosition);
         calculatePositionIncrement(prevEvenNoseHooverPosition, prevEvenNoseHooverVelocity, this->halfTimestep, &tempEvenNoseHooverPosition);
 
         /* Calcualte previous Nose Hoover accelerations */
         calculateFirstNoseHooverAcceleration(this->prevVelocity, &tempOddNoseHooverAccelerations);
-        calculateOddNoseHooverAccelerations(prevEvenNoseHooverVelocity, evenNHIndices, &tempOddNoseHooverAccelerations);
+        calculateRemainingNoseHooverAccelerations(prevEvenNoseHooverVelocity, false, &tempOddNoseHooverAccelerations);
 
         /* Calculate half-timestep velocities */
 
 /*---------------------------------------------------------------------------------------------------------*/
-        PetscReal minPos;
-        PetscReal maxPos;
-        PetscScalar meanPos;
+        // PetscReal minPos;
+        // PetscReal maxPos;
+        // PetscScalar meanPos;
 
-        PetscScalar firstNoseHooverA;
-        PetscInt indexA = 0;
-        PetscCall(VecGetValues(tempOddNoseHooverAccelerations, 1, &indexA, &firstNoseHooverA));
+        // PetscScalar firstNoseHooverA;
+        // PetscInt indexA = 0;
+        // PetscCall(VecGetValues(tempOddNoseHooverAccelerations, 1, &indexA, &firstNoseHooverA));
 
-        PetscCall(VecMax(tempOddNoseHooverAccelerations, NULL, &maxPos));
-        PetscCall(VecMin(tempOddNoseHooverAccelerations, NULL, &minPos));
-        PetscCall(VecMean(tempOddNoseHooverAccelerations, &meanPos));
+        // PetscCall(VecMax(tempOddNoseHooverAccelerations, NULL, &maxPos));
+        // PetscCall(VecMin(tempOddNoseHooverAccelerations, NULL, &minPos));
+        // PetscCall(VecMean(tempOddNoseHooverAccelerations, &meanPos));
 
 
         // PetscPrintf(PETSC_COMM_WORLD, "\nMaxPoNHA: %f, MinPoNHA: %f, MeanPoNHA: %f, firstNHA: %f", maxPos, minPos, meanPos, firstNoseHooverA);
@@ -708,45 +707,58 @@ PetscPrintf(PETSC_COMM_WORLD, "\n-----------------------------------------------
 
         /* Get first nose hoover velocity */
         PetscScalar firstNoseHooverVelocity;
-        PetscInt index = 0;
-        PetscCall(VecGetValues(tempOddNoseHooverVelocity, 1, &index, &firstNoseHooverVelocity));
+        const PetscScalar *tempOddNoseHooverVelocityArray;
+
+        PetscCall(VecGetArrayRead(tempOddNoseHooverVelocity, &tempOddNoseHooverVelocityArray));
+        firstNoseHooverVelocity = tempOddNoseHooverVelocityArray[0];
+        PetscCall(VecRestoreArrayRead(tempOddNoseHooverVelocity, &tempOddNoseHooverVelocityArray));
 
         /* Calculate full increment values */
         calculateVelocityIncrement(this->prevVelocity, firstNoseHooverVelocity, this->sensitivities, this->timestep, &newVelocity);
 
 /*---------------------------------------------------------------------------------------------------------*/
-        PetscReal minTPos;
-        PetscReal maxTPos;
-        PetscScalar meanTPos;
+        // PetscReal minTPos;
+        // PetscReal maxTPos;
+        // PetscScalar meanTPos;
 
-        PetscCall(VecMax(sensitivities, NULL, &maxTPos));
-        PetscCall(VecMin(sensitivities, NULL, &minTPos));
-        PetscCall(VecMean(sensitivities, &meanTPos));
+        // PetscCall(VecMax(sensitivities, NULL, &maxTPos));
+        // PetscCall(VecMin(sensitivities, NULL, &minTPos));
+        // PetscCall(VecMean(sensitivities, &meanTPos));
 
-        PetscReal minNV;
-        PetscReal maxNV;
-        PetscScalar meanNV;
+        // PetscReal minNV;
+        // PetscReal maxNV;
+        // PetscScalar meanNV;
 
-        PetscPrintf(PETSC_COMM_WORLD, "\nmaxSEN: %f, minSEN: %f, meanSEN: %f, NV: %f", maxTPos, minTPos, meanTPos, firstNoseHooverVelocity);
+        // PetscPrintf(PETSC_COMM_WORLD, "\nmaxSEN: %f, minSEN: %f, meanSEN: %f, NV: %f", maxTPos, minTPos, meanTPos, firstNoseHooverVelocity);
 /*---------------------------------------------------------------------------------------------------------*/
 
         calculatePositionIncrement(prevOddNoseHooverPosition, tempOddNoseHooverVelocity, this->timestep, &newOddNoseHooverPosition);
 
         /* Nose Hoover acceleration at half-timestep */
-        calculateRemainingNoseHooverAccelerations(tempOddNoseHooverVelocity, oddNHIndices, numOddNHIndices, &tempEvenNoseHooverAccelerations);
+        calculateRemainingNoseHooverAccelerations(tempOddNoseHooverVelocity, true, &tempEvenNoseHooverAccelerations);
 
         /* Add 0 to the end of the odd nose hoover velocities */
         Vec extendedOddNoseHooverVelocity;
-        const PetscScalar *tempOddNoseHooverVelocityArray;
+        // const PetscScalar *tempOddNoseHooverVelocityArray;
+        PetscScalar *extendedOddNoseHooverVelocityArray;
 
         PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &extendedOddNoseHooverVelocity));
         PetscCall(VecGetArrayRead(tempOddNoseHooverVelocity, &tempOddNoseHooverVelocityArray));
-        PetscCall(VecSetValue(extendedOddNoseHooverVelocity, numOddNHIndices-1, 0, INSERT_VALUES));
-        PetscCall(VecSetValues(extendedOddNoseHooverVelocity, numOddNHIndices-1, straightNHIndices, &(tempOddNoseHooverVelocityArray[1]), INSERT_VALUES));
+        PetscCall(VecGetArray(extendedOddNoseHooverVelocity, &extendedOddNoseHooverVelocityArray));
 
+        for (PetscInt i = 0; i < numOddNHIndices-1; i++)
+        {
+            extendedOddNoseHooverVelocityArray[i] = tempOddNoseHooverVelocityArray[i+1];
+        }
+        extendedOddNoseHooverVelocityArray[numOddNHIndices-1] = 0;
 
-        PetscCall(VecAssemblyBegin(extendedOddNoseHooverVelocity));
-        PetscCall(VecAssemblyEnd(extendedOddNoseHooverVelocity));
+        // PetscCall(VecSetValue(extendedOddNoseHooverVelocity, numOddNHIndices-1, 0, INSERT_VALUES));
+        // PetscCall(VecSetValues(extendedOddNoseHooverVelocity, numOddNHIndices-1, straightNHIndices, &(tempOddNoseHooverVelocityArray[1]), INSERT_VALUES));
+
+        PetscCall(VecRestoreArrayRead(tempOddNoseHooverVelocity, &tempOddNoseHooverVelocityArray));
+        PetscCall(VecRestoreArray(extendedOddNoseHooverVelocity, &extendedOddNoseHooverVelocityArray));
+        // PetscCall(VecAssemblyBegin(extendedOddNoseHooverVelocity));
+        // PetscCall(VecAssemblyEnd(extendedOddNoseHooverVelocity));
 
         /* Continue calculating full-timestep values */
         calculateVelocityIncrement(prevEvenNoseHooverVelocity, extendedOddNoseHooverVelocity, tempEvenNoseHooverAccelerations, this->timestep, &(newEvenNoseHooverVelocity));
@@ -784,7 +796,7 @@ PetscPrintf(PETSC_COMM_WORLD, "\n-----------------------------------------------
 
         /* Calculate full-timestep Nose Hoover accelerations */
         calculateFirstNoseHooverAcceleration(newVelocity, &tempOddNoseHooverAccelerations);
-        calculateOddNoseHooverAccelerations(newEvenNoseHooverPosition, evenNHIndices, &tempOddNoseHooverAccelerations);
+        calculateRemainingNoseHooverAccelerations(newEvenNoseHooverPosition, false, &tempOddNoseHooverAccelerations);
 
         /* Calculate final odd Nose Hoover Velocity */
         calculateVelocityIncrement(tempOddNoseHooverVelocity, newEvenNoseHooverPosition, tempOddNoseHooverAccelerations, this->halfTimestep, &newOddNoseHooverVelocity);
