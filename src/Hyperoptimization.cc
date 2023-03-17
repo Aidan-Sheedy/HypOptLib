@@ -72,7 +72,7 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
 
     /* Initialize vectors */
     PetscCall(VecCreate(PETSC_COMM_WORLD, &(this->evenNoseHooverMass)));
-    PetscCall(VecSetSizes(this->evenNoseHooverMass, NHChainOrder/2, PETSC_DETERMINE));
+    PetscCall(VecSetSizes(this->evenNoseHooverMass, PETSC_DECIDE, NHChainOrder/2));
     PetscCall(VecSetFromOptions(this->evenNoseHooverMass));
     PetscCall(VecDuplicate(this->evenNoseHooverMass, &(this->oddNoseHooverMass)));
 
@@ -103,8 +103,10 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
     PetscCall(VecSet(this->prevVelocity, std::sqrt(temperature)));
 
     PetscInt numPositionParticles;
-    PetscCall(VecGetLocalSize(initialPositions, &numPositionParticles));
+    PetscCall(VecGetSize(initialPositions, &numPositionParticles));
     this->numParticles = numPositionParticles;
+
+    PetscPrintf(PETSC_COMM_WORLD, "Num Particles: %d\n", this->numParticles);
 
     return errorStatus;
 }
@@ -205,7 +207,7 @@ PetscErrorCode Hyperoptimization::calculateRemainingNoseHooverAccelerations(Vec 
         PetscInt numReducedParticles = this->NHChainOrder/2 - 1;
         /* In the odd case, we need to omit the first odd mass and last even mass */
         PetscCall(VecCreate(PETSC_COMM_WORLD, &(desiredMasses)));
-        PetscCall(VecSetSizes(desiredMasses, numReducedParticles, PETSC_DETERMINE));
+        PetscCall(VecSetSizes(desiredMasses, PETSC_DETERMINE, numReducedParticles));
         PetscCall(VecSetFromOptions(desiredMasses));
 
         PetscCall(VecDuplicate(desiredMasses, &decrementedMasses));
@@ -410,7 +412,7 @@ PetscErrorCode Hyperoptimization::assembleNewPositions(PetscScalar firstNoseHoov
     PetscCall(VecCopy(this->constraintSensitivities, rightSide));
 
     PetscInt numPositions;
-    PetscCall(VecGetLocalSize(this->newPosition, &numPositions));
+    PetscCall(VecGetSize(this->newPosition, &numPositions));
     PetscInt indices[numPositions];
     for (PetscInt i = 0; i <= numPositions; i++)
     {
@@ -492,29 +494,10 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
 {
     PetscErrorCode errorStatus = 0;
     // Positions used in constraint calculations
-    PetscCall(VecCopy(positions, opt->xPhys));
-    // errorStatus = this->filter->FilterProject(opt->x, opt->xTilde, opt->xPhysEro, opt->xPhys, opt->xPhysDil, opt->projectionFilter, opt->beta, opt->eta);
+    PetscCall(VecCopy(positions, opt->x));
+    errorStatus = this->filter->FilterProject(opt->x, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
     // CHKERRQ(errorStatus);
 
-/*---------------------------------------------------------------------------------------------------------*/
-    PetscReal minP;
-    PetscReal maxP;
-    PetscScalar meanP;
-
-    PetscCall(VecMax(positions, NULL, &maxP));
-    PetscCall(VecMin(positions, NULL, &minP));
-    PetscCall(VecMean(positions, &meanP));
-
-    PetscReal minF;
-    PetscReal maxF;
-    PetscScalar meanF;
-
-    PetscCall(VecMax(opt->xPhys, NULL, &minF));
-    PetscCall(VecMin(opt->xPhys, NULL, &maxF));
-    PetscCall(VecMean(opt->xPhys, &meanF));
-
-    // PetscPrintf(PETSC_COMM_WORLD, "\nmax Pos: %f, min Pos: %f, mean Pos: %f, max fPos: %f, min fPos: %f, mean fPos: %f", maxP, minP, meanP, minF, maxF, meanF);
-/*---------------------------------------------------------------------------------------------------------*/
     // Compute sensitivities
     errorStatus = physics->ComputeObjectiveConstraintsSensitivities(&(opt->fx), 
                                                                     &(opt->gx[0]),
@@ -528,13 +511,6 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
                                                                     opt->volfrac);//,
                                                                     // data);
     CHKERRQ(errorStatus);
-
-/*---------------------------------------------------------------------------------------------------------*/
-    PetscCall(VecMax(opt->dfdx, NULL, &minF));
-    PetscCall(VecMin(opt->dfdx, NULL, &maxF));
-    PetscCall(VecMean(opt->dfdx, &meanF));
-    // PetscPrintf(PETSC_COMM_WORLD, "\nmax dfdx: %f, min dfdx: %f, mean dfdx: %f", minF, maxF, meanF);
-/*---------------------------------------------------------------------------------------------------------*/
 
     // Scale??
 
@@ -558,13 +534,6 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
     errorStatus = filter->Gradients(opt->x, opt->xTilde, opt->dfdx, opt->m, opt->dgdx, opt->projectionFilter, opt->beta,
                             opt->eta);
     CHKERRQ(errorStatus);
-
-/*---------------------------------------------------------------------------------------------------------*/
-    PetscCall(VecMax(opt->dfdx, NULL, &minF));
-    PetscCall(VecMin(opt->dfdx, NULL, &maxF));
-    PetscCall(VecMean(opt->dfdx, &meanF));
-    // PetscPrintf(PETSC_COMM_WORLD, " max filt dfdx: %f, min filt dfdx: %f, mean filt dfdx: %f", minF, maxF, meanF);
-/*---------------------------------------------------------------------------------------------------------*/
 
     PetscCall(VecCopy(opt->dfdx, this->sensitivities));
     PetscCall(VecScale(this->sensitivities, -1));
@@ -624,7 +593,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
 
     /* Setup all vectors */
     PetscCall(VecCreate(PETSC_COMM_WORLD, &(tempOddNoseHooverVelocity)));
-    PetscCall(VecSetSizes(tempOddNoseHooverVelocity, numOddNHIndices, PETSC_DETERMINE));
+    PetscCall(VecSetSizes(tempOddNoseHooverVelocity, PETSC_DETERMINE, numOddNHIndices));
     PetscCall(VecSetFromOptions(tempOddNoseHooverVelocity));
 
     PetscCall(VecDuplicate(this->newPosition, &(tempPosition)));

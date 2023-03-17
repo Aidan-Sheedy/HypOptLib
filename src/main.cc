@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
                 // data,
                 lagmult,
                 temperature,
-                opt->xPhys, /** @todo initialize the positions properly */
+                opt->x, /** @todo initialize the positions properly */
                 NHChainOrder,
                 opt->maxItr,
                 dt);
