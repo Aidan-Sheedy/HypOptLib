@@ -8,8 +8,13 @@
 
 #include "Hyperoptimization.h"
 
-#include <cmath>
+#include <petscviewerhdf5.h>
 
+#include <cmath>
+#include <string>
+#include <filesystem>
+#include <ctime>
+#include <chrono>
 
 /**
  * @todo ALL CALLS TO VecSetValues MUST be followed up by "VecAssemblyBegin()" and "VecAssemblyEnd()"!!!!
@@ -18,18 +23,25 @@
  * @todo ALL CALLS TO VecGetArrayRead MUST be followed up by "VecRestoreArrayRead()"!!!!!!!!!
 */
 
-// Hyperoptimization::Hyperoptimization(   LinearElasticity* physics,
-//                                         TopOpt* opt,
-//                                         Filter* filter,
-//                                         DataObj data,
-//                                         LagrangianMultiplier lagMult,
-//                                         PetscScalar temperature,
-//                                         Vec initialPositions,
-//                                         Vec initialVelocities,
-//                                         PetscScalar NHChainOrder,
-//                                         PetscInt numIterations,
-//                                         PetscFloat timestep)
-// {}
+PetscErrorCode minMaxMean(Vec vector, const char * name)
+{
+//     return 0;
+// #if 0
+    PetscReal minPos;
+    PetscReal maxPos;
+    PetscScalar meanPos;
+
+    PetscCall(VecMax(vector, NULL, &maxPos));
+    PetscCall(VecMin(vector, NULL, &minPos));
+    PetscCall(VecMean(vector, &meanPos));
+
+    PetscPrintf(PETSC_COMM_WORLD, "\n-------------------------------------------\n%s", name);
+    // PetscPrintf(PETSC_COMM_WORLD, name);
+    PetscPrintf(PETSC_COMM_WORLD, "\nmax: %e, min: %e, mean: %e\n", maxPos, minPos, meanPos);
+
+    return 0;
+// #endif
+}
 
 PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
                                         TopOpt* opt,
@@ -40,7 +52,7 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
                                         Vec initialPositions,
                                         PetscScalar NHChainOrder,
                                         PetscInt numIterations,
-                                        PetscFloat timestep) /** @todo this might need to be a scalar? */
+                                        PetscScalar timestep) /** @todo this might need to be a scalar? */
 {
     PetscErrorCode errorStatus;
 
@@ -58,7 +70,6 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
     this->physics           = physics;
     this->opt               = opt;
     this->filter            = filter;
-    // this->data              = data;
     this->lagMult           = lagMult;
     this->temperature       = temperature;
     this->NHChainOrder      = NHChainOrder;
@@ -82,14 +93,6 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
     PetscCall(VecDuplicate(initialPositions, &(this->sensitivities))); /** @todo Make sure this is correct! */
     PetscCall(VecDuplicate(initialPositions, &(this->constraintSensitivities))); /** @todo Make sure this is correct! */
 
-    /** @todo Setup structure to save all iterations */
-    // this->positions.resize(numIterations + 1);
-
-    // for (Vec iteration : positions)
-    // {
-    //     PetscCall(VecDuplicate(initialPositions, &iteration));
-    // }
-
     /* Set initial values */
     PetscCall(VecSet(this->oddNoseHooverMass,       1.0));
     PetscCall(VecSet(this->evenNoseHooverMass,      1.0));
@@ -98,8 +101,6 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
     PetscCall(VecSet(this->constraintSensitivities, 1.0)); /** @todo IMPLEMENT*/
 
     PetscCall(VecCopy(initialPositions, this->prevPosition));
-
-    // Temperature = mean (velocities^2) -> initial velocities = sqrt(temperature)
     PetscCall(VecSet(this->prevVelocity, std::sqrt(temperature)));
 
     PetscInt numPositionParticles;
@@ -107,6 +108,16 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
     this->numParticles = numPositionParticles;
 
     PetscPrintf(PETSC_COMM_WORLD, "Num Particles: %d\n", this->numParticles);
+
+    if (saveData)
+    {
+        initializeHDF5();
+
+        lagrangianMultipliers.reserve(numIterations);
+        hamiltonians.reserve(numIterations);
+        genericData.reserve(numIterations);
+        temperatures.reserve(numIterations);
+    }
 
     return errorStatus;
 }
@@ -131,10 +142,167 @@ Hyperoptimization::~Hyperoptimization()
 
 }
 
+PetscErrorCode Hyperoptimization::initializeHDF5()
+{
+    PetscErrorCode errorStatus = 0;
+
+    std::string filename = "hypopt_output";
+    std::string fileExtension = ".h5";
+    std::string fullPath = "";
+
+    // Check PETSc input for a work directory
+    // char      filenameChar[PETSC_MAX_PATH_LEN];
+    // PetscBool flg = PETSC_FALSE;
+    // PetscOptionsGetString(NULL, NULL, "-workdir", filenameChar, sizeof(filenameChar), &flg);
+
+    // If input, change path of the file in filename
+    // if (flg) {
+    //     fullPath.append(filenameChar);
+    //     fullPath.append("/");
+    // }
+    // else
+    // {
+    //     fullPath.append("output/");
+    // }
+    fullPath.append(filename);
+
+    // std::filesystem::path filePath{fullPath + fileExtension};
+    // int i = 0;
+    std::string appendor = "";
+    // while (std::filesystem::exists(filePath))
+    // {
+    //     i++;
+    //     appendor = std::string(i);
+    //     filePath = std::filesystem::path(fullPath + appendor + fileExtension);
+    // }
+
+    fullPath.append(appendor + fileExtension);
+
+    this->saveFilePath = fullPath;
+
+    PetscPrintf(PETSC_COMM_WORLD, "Trying to save to file: %s\n", fullPath.c_str());
+
+    PetscViewer saveFileHDF5;
+
+    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, fullPath.c_str(), FILE_MODE_WRITE, &(saveFileHDF5)));
+
+    // std::time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    // std::string timeString = std::asctime(currentTime);
+    // PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/", "create_date", PETSC_STRING, &()));
+
+    PetscCall(PetscViewerHDF5WriteGroup(saveFileHDF5, "/Setting"));
+    PetscCall(PetscViewerHDF5WriteGroup(saveFileHDF5, this->stateGroup.c_str()));
+
+    /* Write all settings */
+
+    PetscInt nelx = opt->nxyz[0]-1;
+    PetscInt nely = opt->nxyz[1]-1;
+    PetscInt nelz = opt->nxyz[2]-1;
+
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "volfrac",    PETSC_SCALAR,   &(opt->volfrac)));
+    // PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "weights",    PETSC_SCALAR, &(opt->volfrac)));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "dt",         PETSC_SCALAR,   &(this->timestep)));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "T",          PETSC_SCALAR,   &(this->temperature)));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "nelx",       PETSC_INT,      &(nelx)));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "nely",       PETSC_INT,      &(nely)));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "nelz",       PETSC_INT,      &(nelz)));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "penal",      PETSC_SCALAR,   &(opt->penal)));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "rmin",       PETSC_SCALAR,   &(opt->rmin)));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "stepN",      PETSC_INT,      &(opt->maxItr)));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "sampleN",    PETSC_INT,      &(opt->maxItr))); /** @todo IMPLEMENT */
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "ch_Order",   PETSC_SCALAR,   &(this->NHChainOrder)));
+
+    PetscCall(PetscViewerDestroy(&(saveFileHDF5)));
+
+    return errorStatus;
+}
+
+PetscErrorCode Hyperoptimization::saveIteration(PetscInt iteration, Vec positions)
+{
+    PetscErrorCode errorStatus = 0;
+
+    PetscViewer saveFileHDF5;
+    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, this->saveFilePath.c_str(), FILE_MODE_APPEND, &(saveFileHDF5)));
+
+    // Set positions name
+    std::string stateName = "iteration";
+    stateName.append(std::to_string(iteration));
+
+    PetscCall(PetscObjectSetName((PetscObject)positions, stateName.c_str()));
+    PetscCall(PetscViewerHDF5PushGroup(saveFileHDF5, stateGroup.c_str()));
+    PetscCall(VecView(positions, saveFileHDF5));
+    PetscCall(PetscViewerHDF5PopGroup(saveFileHDF5));
+
+    PetscCall(PetscViewerDestroy(&saveFileHDF5));
+
+    return errorStatus;
+}
+
+PetscErrorCode Hyperoptimization::saveFinalValues()
+{
+    PetscErrorCode errorStatus = 0;
+
+    /* Create vectors */
+    Vec finalTemperatures;
+    Vec finalLagrangianMultipliers;
+    Vec finalHamiltonians;
+    Vec finalGenericData;
+
+    PetscCall(VecCreate(PETSC_COMM_WORLD, &finalTemperatures));
+    PetscCall(VecSetSizes(finalTemperatures, PETSC_DECIDE, this->numIterations));
+    PetscCall(VecSetFromOptions(finalTemperatures));
+
+    PetscCall(VecDuplicate(finalTemperatures, &finalLagrangianMultipliers));
+    PetscCall(VecDuplicate(finalTemperatures, &finalHamiltonians));
+    PetscCall(VecDuplicate(finalTemperatures, &finalGenericData));
+
+    PetscCall(PetscObjectSetName((PetscObject)finalTemperatures,            "Temperature"));
+    PetscCall(PetscObjectSetName((PetscObject)finalLagrangianMultipliers,   "Lambda"));
+    PetscCall(PetscObjectSetName((PetscObject)finalHamiltonians,            "should_be_vf"));
+    PetscCall(PetscObjectSetName((PetscObject)finalGenericData,             "should_be_vf post truncate"));
+
+    /* Allocate Vectors */
+    PetscScalar *finalTemperaturesArray;
+    PetscScalar *finalLagrangianMultipliersArray;
+    PetscScalar *finalHamiltoniansArray;
+    PetscScalar *finalGenericDataArray;
+
+    PetscCall(VecGetArray(finalTemperatures,            &finalTemperaturesArray));
+    PetscCall(VecGetArray(finalLagrangianMultipliers,   &finalLagrangianMultipliersArray));
+    PetscCall(VecGetArray(finalHamiltonians,            &finalHamiltoniansArray));
+    PetscCall(VecGetArray(finalGenericData,             &finalGenericDataArray));
+
+    for (PetscInt i = 0; i < numIterations; i++)
+    {
+        finalTemperaturesArray[i]           = this->temperatures[i];
+        finalLagrangianMultipliersArray[i]  = this->lagrangianMultipliers[i];
+        finalHamiltoniansArray[i]           = this->hamiltonians[i];
+        finalGenericDataArray[i]            = this->genericData[i];
+    }
+
+    PetscCall(VecRestoreArray(finalTemperatures,            &finalTemperaturesArray));
+    PetscCall(VecRestoreArray(finalLagrangianMultipliers,   &finalLagrangianMultipliersArray));
+    PetscCall(VecRestoreArray(finalHamiltonians,            &finalHamiltoniansArray));
+    PetscCall(VecRestoreArray(finalGenericData,             &finalGenericDataArray));
+
+    /* Save Vectors */
+    PetscViewer saveFileHDF5;
+    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, this->saveFilePath.c_str(), FILE_MODE_APPEND, &(saveFileHDF5)));
+    PetscCall(PetscViewerHDF5PushGroup(saveFileHDF5, dataGroup.c_str()));
+    PetscCall(VecView(finalTemperatures,            saveFileHDF5));
+    PetscCall(VecView(finalLagrangianMultipliers,   saveFileHDF5));
+    PetscCall(VecView(finalHamiltonians,            saveFileHDF5));
+    PetscCall(VecView(finalGenericData,             saveFileHDF5));
+    PetscCall(PetscViewerHDF5PopGroup(saveFileHDF5));
+
+    PetscCall(PetscViewerDestroy(&saveFileHDF5));
+
+    return errorStatus;
+}
 
 PetscErrorCode Hyperoptimization::calculateFirstNoseHooverAcceleration(Vec allVelocities, Vec *accelerations)
 {
-    PetscErrorCode errorStatus;
+    PetscErrorCode errorStatus = 0;
 
     Vec tempVelocities;
     PetscScalar result = 0;
@@ -159,13 +327,6 @@ PetscErrorCode Hyperoptimization::calculateFirstNoseHooverAcceleration(Vec allVe
     PetscScalar vsquared = result;
 
     result = (result - (this->numParticles - this->numConstraints) * this->temperature) / firstNoseHooverMass;
-/*---------------------------------------------------------------------------------------------------------*/
-
-
-
-
-    // PetscPrintf(PETSC_COMM_WORLD, "\nas1: %f, sum(V.^2): %f, N: %i, N_c: %i, T: %f, Q1: %f", result, vsquared, numParticles, numConstraints, temperature, firstNoseHooverMass);
-/*---------------------------------------------------------------------------------------------------------*/
 
     /**
      * @todo This should be a Vec Copy?
@@ -286,16 +447,6 @@ PetscErrorCode Hyperoptimization::calculatePositionIncrement(Vec previousPositio
 {
     PetscErrorCode errorStatus = 0;
 
-/*---------------------------------------------------------------------------------------------------------*/
-        // PetscScalar firstPosition;
-        // PetscScalar firstVelocity;
-        // PetscScalar firstRight;
-        // PetscScalar firstFinal;
-        // PetscInt indexA = 0;
-        // PetscCall(VecGetValues(previousPosition, 1, &indexA, &firstPosition));
-        // PetscCall(VecGetValues(previousVelocity, 1, &indexA, &firstVelocity));
-/*---------------------------------------------------------------------------------------------------------*/
-
     // Create a temporary vector for inner-results
     Vec tempVector;
     PetscCall(VecDuplicate(previousVelocity, &(tempVector)));
@@ -303,19 +454,13 @@ PetscErrorCode Hyperoptimization::calculatePositionIncrement(Vec previousPositio
 
     /* dt * v[t-1] */
     PetscCall(VecScale(tempVector, timeStepIn));
-/*---------------------------------------------------------------------------------------------------------*/
-        // PetscCall(VecGetValues(tempVector, 1, &indexA, &firstRight));
-/*---------------------------------------------------------------------------------------------------------*/
 
     /* x + (dt * v[t-1]) */
     PetscCall(VecAYPX(tempVector, 1, previousPosition));
 
     /* Copy return value */
     PetscCall(VecCopy(tempVector, *result));
-/*---------------------------------------------------------------------------------------------------------*/
-    // PetscCall(VecGetValues(tempVector, 1, &indexA, &firstFinal));
-    // PetscPrintf(PETSC_COMM_WORLD, "\nPos: %f, Vel: %f, Right: %f, Final: %f, timeStepIn: %f", firstPosition, firstVelocity, meanPos);
-/*---------------------------------------------------------------------------------------------------------*/
+
     return errorStatus;
 }
 
@@ -343,25 +488,9 @@ PetscErrorCode Hyperoptimization::calculateVelocityIncrement(Vec velocityOne, Ve
     PetscCall(VecPointwiseMult(rightSide, acceleration, rightSide));
     PetscCall(VecScale(rightSide, timeStepIn));
 
-/*---------------------------------------------------------------------------------------------------------*/
-    // PetscScalar firstLeft;
-    // PetscScalar firstRight;
-    // PetscScalar firstFinal;
-    // PetscInt indexA = 0;
-    // PetscCall(VecGetValues(leftSide, 1, &indexA, &firstLeft));
-    // PetscCall(VecGetValues(rightSide, 1, &indexA, &firstRight));
-/*---------------------------------------------------------------------------------------------------------*/
-
-
     /* Add left and right and copy to result */
     PetscCall(VecAYPX(leftSide, 1, rightSide));
     PetscCall(VecCopy(leftSide, *result));
-
-/*---------------------------------------------------------------------------------------------------------*/
-    // PetscCall(VecGetValues(leftSide, 1, &indexA, &firstFinal));
-
-    // PetscPrintf(PETSC_COMM_WORLD, "\nLS1: %f, RS1: %f, Tot: %ftimestep: %f\n", firstLeft, firstRight, firstFinal, timeStepIn);
-/*---------------------------------------------------------------------------------------------------------*/
 
     return errorStatus;
 }
@@ -390,99 +519,91 @@ PetscErrorCode Hyperoptimization::calculateVelocityIncrement(Vec velocityOne, Pe
     return errorStatus;
 }
 
-PetscErrorCode Hyperoptimization::assembleNewPositions(PetscScalar firstNoseHooverVelocity, PetscScalar *lagrangianMultiplier)
+PetscErrorCode Hyperoptimization::truncatePositions(Vec *positions)
 {
     PetscErrorCode errorStatus = 0;
 
-/*---------------------------------------------------------------------------------------------------------*/
-    PetscReal minPos;
-    PetscReal maxPos;
-    PetscScalar meanPos;
+    PetscInt numPositions;
+    PetscCall(VecGetSize(*positions, &numPositions));
 
-    PetscCall(VecMax(newPosition, NULL, &maxPos));
-    PetscCall(VecMin(newPosition, NULL, &minPos));
-    PetscCall(VecMean(newPosition, &meanPos));
+    PetscScalar *positionsArray;
+    PetscCall(VecGetArray(*positions, &positionsArray));
+    for (PetscInt i = 0; i <= numPositions; i++)
+    {
+        if (positionsArray[i] > 1)
+        {
+            positionsArray[i] = 1;
+        }
+        if (positionsArray[i] < 0)
+        {
+            positionsArray[i] = 0;
+        }
+    }
+    PetscCall(VecRestoreArray(*positions, &positionsArray));
 
-    // PetscPrintf(PETSC_COMM_WORLD, "\nmaxX: %f, minX: %f, meanX: %f", maxPos, minPos, meanPos);
-/*---------------------------------------------------------------------------------------------------------*/
+    return errorStatus;
+}
+
+PetscErrorCode Hyperoptimization::assembleNewPositions(PetscScalar firstNoseHooverVelocity, PetscScalar *lagrangianMultiplier)
+{
+    PetscErrorCode errorStatus = 0;
 
     /* Setup */
     Vec rightSide;
     PetscCall(VecDuplicate(this->newPosition, &(rightSide)));
     PetscCall(VecCopy(this->constraintSensitivities, rightSide));
 
-    PetscInt numPositions;
-    PetscCall(VecGetSize(this->newPosition, &numPositions));
-    PetscInt indices[numPositions];
-    for (PetscInt i = 0; i <= numPositions; i++)
-    {
-        indices[i] = i;
-    }
-
     /* Lagrangian Multipliers require properly constrained design variables */
-    PetscScalar *newPositionsArray;
-    PetscCall(VecGetArray(this->newPosition, &newPositionsArray));
-    for (PetscInt i = 0; i <= numPositions; i++)
-    {
-        if (newPositionsArray[i] > 1)
-        {
-            newPositionsArray[i] = 1;
-        }
-        if (newPositionsArray[i] < 0)
-        {
-            newPositionsArray[i] = 0;
-        }
-    }
-    PetscCall(VecRestoreArray(this->newPosition, &newPositionsArray));
+    truncatePositions(&(this->newPosition));
 
     // Fix all passive elements
     // opt->SetVariables(this->newPosition, opt->xPassive);
 
-
-    /** @todo implement lagrangian multiplier */
+    /* lagrangian multiplier */
     PetscScalar scaleFactor = - this->timestep * this->halfTimestep * std::exp(-this->halfTimestep * firstNoseHooverVelocity);
     PetscCall(VecScale(rightSide, scaleFactor));
 
-/*---------------------------------------------------------------------------------------------------------*/
-    // PetscReal minPos;
-    // PetscReal maxPos;
-    // PetscScalar meanPos;
-
-    // PetscCall(VecMax(constraintSensitivities, NULL, &maxPos));
-    // PetscCall(VecMin(constraintSensitivities, NULL, &minPos));
-    // PetscCall(VecMean(constraintSensitivities, &meanPos));
-
-
-    // PetscPrintf(PETSC_COMM_WORLD, "\ndt: %f, dgMax: %f, dgMin: %f, dgMean: %f, NHV1: %f\n", timestep, maxPos, minPos, meanPos, firstNoseHooverVelocity);
-
-    // PetscCall(VecMax(newPosition, NULL, &maxPos));
-    // PetscCall(VecMin(newPosition, NULL, &minPos));
-    // PetscCall(VecMean(newPosition, &meanPos));
-
-    // PetscPrintf(PETSC_COMM_WORLD, "\nmaxC: %f, minC: %f, meanC: %f", maxPos, minPos, meanPos);
-/*---------------------------------------------------------------------------------------------------------*/
-
     PetscScalar lagrangianMult;
     this->lagMult.computeLagrangianMultiplier(this->newPosition, rightSide, this->numParticles, &lagrangianMult);
-    PetscCall(VecAXPY(this->newPosition, lagrangianMult, rightSide));
+
+/*vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
+    errorStatus = this->filter->FilterProject(newPosition, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
+
+    PetscScalar xf_mean;
+    PetscScalar C_mean;
+
+    PetscCall(VecSum(opt->xTilde, &xf_mean));
+    PetscCall(VecSum(rightSide, &C_mean));
+
+    PetscScalar should_be_vf = (xf_mean + lagrangianMult * C_mean) / this->numParticles;
+
+    hamiltonians.push_back(should_be_vf);
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+
+    PetscCall(VecScale(rightSide, lagrangianMult));
+    PetscCall(VecAYPX(this->newPosition, 1, rightSide));
+
+/*vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
+    minMaxMean(newPosition, "After lag mult");
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
     *lagrangianMultiplier = lagrangianMult;
 
+/*vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
     // Ensure new positions are all physical (restrict between 0 and 1)
-    PetscCall(VecGetArray(this->newPosition, &newPositionsArray));
+    truncatePositions(&(this->newPosition));
 
-    for (PetscInt i = 0; i <= numPositions; i++)
-    {
-        if (newPositionsArray[i] > 1)
-        {
-            newPositionsArray[i] = 1;
-        }
-        if (newPositionsArray[i] < 0)
-        {
-            newPositionsArray[i] = 0;
-        }
-    }
-    PetscCall(VecRestoreArray(this->newPosition, &newPositionsArray));
+    minMaxMean(newPosition, "After truncate");
+
+    errorStatus = this->filter->FilterProject(newPosition, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
+
+    PetscCall(VecSum(opt->xTilde, &xf_mean));
+
+    should_be_vf = (xf_mean + lagrangianMult * C_mean) / this->numParticles;
+
+    this->genericData.push_back(should_be_vf);
+
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
     // Fix all passive elements
     // opt->SetVariables(this->newPosition, opt->xPassive);
@@ -503,7 +624,7 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
                                                                     &(opt->gx[0]),
                                                                     opt->dfdx,
                                                                     opt->dgdx[0],
-                                                                    opt->xPhys,
+                                                                    opt->xTilde,
                                                                     // opt->xPhys,
                                                                     opt->Emin,
                                                                     opt->Emax,
@@ -511,24 +632,6 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
                                                                     opt->volfrac);//,
                                                                     // data);
     CHKERRQ(errorStatus);
-
-    // Scale??
-
-    // // Compute objective scale
-    // if (firstIteration) {
-    //     opt->fscale = 10.0 / opt->fx;
-    //     firstIteration = false;
-    // }
-
-    // // Scale Sensitivities
-    // VecScale(opt->dfdx, opt->fscale);
-
-    // Calculate g and dgdx for the local volume constraint ??? 
-    /** @todo ASK HAZHIR!! */
-    // if (opt->localVolumeStatus) {
-    //     ierr = local->Constraint(opt->xPhys, &(opt->gx[1]), opt->dgdx[1]);
-    //     CHKERRQ(ierr);
-    // }
 
     // Filter sensitivities (chainrule)
     errorStatus = filter->Gradients(opt->x, opt->xTilde, opt->dfdx, opt->m, opt->dgdx, opt->projectionFilter, opt->beta,
@@ -552,6 +655,34 @@ PetscErrorCode Hyperoptimization::calculateTemperature(Vec velocities, PetscScal
 
     PetscCall(VecPointwiseMult(tempVector, tempVector, tempVector));
     PetscCall(VecMean(tempVector, temperature));
+
+    return errorStatus;
+}
+
+PetscErrorCode Hyperoptimization::calculateHamiltonian(Vec velocities, Vec positions, PetscScalar *hamiltonian)
+{
+    PetscErrorCode errorStatus = 0;
+
+    PetscScalar velocityDotProduct;
+
+    errorStatus = this->filter->FilterProject(positions, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
+
+    errorStatus = physics->ComputeObjectiveConstraintsSensitivities(&(opt->fx), 
+                                                                    &(opt->gx[0]),
+                                                                    opt->dfdx,
+                                                                    opt->dgdx[0],
+                                                                    opt->xTilde,
+                                                                    // opt->xPhys,
+                                                                    opt->Emin,
+                                                                    opt->Emax,
+                                                                    opt->penal,
+                                                                    opt->volfrac);//,
+
+    PetscScalar compliance = opt->fx;
+
+    PetscCall(VecDot(velocities, velocities, &velocityDotProduct));
+
+    *hamiltonian = compliance + velocityDotProduct / 2;
 
     return errorStatus;
 }
@@ -627,9 +758,6 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
     for (PetscInt iteration = 0; iteration < this->numIterations; iteration++)
     {
         /* Calculate half-timestep positions */
-/*---------------------------------------------------------------------------------------------------------*/
-// PetscPrintf(PETSC_COMM_WORLD, "\n------------------------------------------------------------------\n");
-/*---------------------------------------------------------------------------------------------------------*/
         calculatePositionIncrement(prevPosition, this->prevVelocity, this->halfTimestep, &tempPosition);
         calculatePositionIncrement(prevEvenNoseHooverPosition, prevEvenNoseHooverVelocity, this->halfTimestep, &tempEvenNoseHooverPosition);
 
@@ -638,38 +766,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
         calculateRemainingNoseHooverAccelerations(prevEvenNoseHooverVelocity, false, &tempOddNoseHooverAccelerations);
 
         /* Calculate half-timestep velocities */
-
-/*---------------------------------------------------------------------------------------------------------*/
-        // PetscReal minPos;
-        // PetscReal maxPos;
-        // PetscScalar meanPos;
-
-        // PetscScalar firstNoseHooverA;
-        // PetscInt indexA = 0;
-        // PetscCall(VecGetValues(tempOddNoseHooverAccelerations, 1, &indexA, &firstNoseHooverA));
-
-        // PetscCall(VecMax(tempOddNoseHooverAccelerations, NULL, &maxPos));
-        // PetscCall(VecMin(tempOddNoseHooverAccelerations, NULL, &minPos));
-        // PetscCall(VecMean(tempOddNoseHooverAccelerations, &meanPos));
-
-
-        // PetscPrintf(PETSC_COMM_WORLD, "\nMaxPoNHA: %f, MinPoNHA: %f, MeanPoNHA: %f, firstNHA: %f", maxPos, minPos, meanPos, firstNoseHooverA);
-/*---------------------------------------------------------------------------------------------------------*/
-
         calculateVelocityIncrement(prevOddNoseHooverVelocity, prevEvenNoseHooverVelocity, tempOddNoseHooverAccelerations, this->halfTimestep, &tempOddNoseHooverVelocity);
-
-
-/*---------------------------------------------------------------------------------------------------------*/
-        // PetscReal minTPos;
-        // PetscReal maxTPos;
-        // PetscScalar meanTPos;
-
-        // PetscCall(VecMax(tempPosition, NULL, &maxTPos));
-        // PetscCall(VecMin(tempPosition, NULL, &minTPos));
-        // PetscCall(VecMean(tempPosition, &meanTPos));
-
-        // PetscPrintf(PETSC_COMM_WORLD, "\nmaxTX: %f, minTX: %f, meanTX %f", maxTPos, minTPos, meanTPos);
-/*---------------------------------------------------------------------------------------------------------*/
 
         /* Get objective and constraint sensitivities */
         calculateSensitvities(tempPosition);
@@ -684,23 +781,6 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
 
         /* Calculate full increment values */
         calculateVelocityIncrement(this->prevVelocity, firstNoseHooverVelocity, this->sensitivities, this->timestep, &newVelocity);
-
-/*---------------------------------------------------------------------------------------------------------*/
-        // PetscReal minTPos;
-        // PetscReal maxTPos;
-        // PetscScalar meanTPos;
-
-        // PetscCall(VecMax(sensitivities, NULL, &maxTPos));
-        // PetscCall(VecMin(sensitivities, NULL, &minTPos));
-        // PetscCall(VecMean(sensitivities, &meanTPos));
-
-        // PetscReal minNV;
-        // PetscReal maxNV;
-        // PetscScalar meanNV;
-
-        // PetscPrintf(PETSC_COMM_WORLD, "\nmaxSEN: %f, minSEN: %f, meanSEN: %f, NV: %f", maxTPos, minTPos, meanTPos, firstNoseHooverVelocity);
-/*---------------------------------------------------------------------------------------------------------*/
-
         calculatePositionIncrement(prevOddNoseHooverPosition, tempOddNoseHooverVelocity, this->timestep, &newOddNoseHooverPosition);
 
         /* Nose Hoover acceleration at half-timestep */
@@ -708,7 +788,6 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
 
         /* Add 0 to the end of the odd nose hoover velocities */
         Vec extendedOddNoseHooverVelocity;
-        // const PetscScalar *tempOddNoseHooverVelocityArray;
         PetscScalar *extendedOddNoseHooverVelocityArray;
 
         PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &extendedOddNoseHooverVelocity));
@@ -721,38 +800,12 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
         }
         extendedOddNoseHooverVelocityArray[numOddNHIndices-1] = 0;
 
-        // PetscCall(VecSetValue(extendedOddNoseHooverVelocity, numOddNHIndices-1, 0, INSERT_VALUES));
-        // PetscCall(VecSetValues(extendedOddNoseHooverVelocity, numOddNHIndices-1, straightNHIndices, &(tempOddNoseHooverVelocityArray[1]), INSERT_VALUES));
-
         PetscCall(VecRestoreArrayRead(tempOddNoseHooverVelocity, &tempOddNoseHooverVelocityArray));
         PetscCall(VecRestoreArray(extendedOddNoseHooverVelocity, &extendedOddNoseHooverVelocityArray));
-        // PetscCall(VecAssemblyBegin(extendedOddNoseHooverVelocity));
-        // PetscCall(VecAssemblyEnd(extendedOddNoseHooverVelocity));
 
         /* Continue calculating full-timestep values */
         calculateVelocityIncrement(prevEvenNoseHooverVelocity, extendedOddNoseHooverVelocity, tempEvenNoseHooverAccelerations, this->timestep, &(newEvenNoseHooverVelocity));
-        calculatePositionIncrement(tempPosition, newVelocity, this->halfTimestep, &(this->newPosition));
-
-/*---------------------------------------------------------------------------------------------------------*/
-        // PetscReal minTPos;
-        // PetscReal maxTPos;
-        // PetscScalar meanTPos;
-
-        // PetscCall(VecMax(tempPosition, NULL, &maxTPos));
-        // PetscCall(VecMin(tempPosition, NULL, &minTPos));
-        // PetscCall(VecMean(tempPosition, &meanTPos));
-
-        // PetscReal minNV;
-        // PetscReal maxNV;
-        // PetscScalar meanNV;
-
-        // PetscCall(VecMax(newVelocity, NULL, &maxNV));
-        // PetscCall(VecMin(newVelocity, NULL, &minNV));
-        // PetscCall(VecMean(newVelocity, &meanNV));
-
-        // PetscPrintf(PETSC_COMM_WORLD, "\nmaxTX: %f, minTX: %f, meanTX: %f, maxNV: %f, minNV: %f, meanNV: %f", maxTPos, minTPos, meanTPos, maxNV, minNV, meanNV);
-/*---------------------------------------------------------------------------------------------------------*/
-
+        calculatePositionIncrement(tempPosition, newVelocity, this->halfTimestep, &(this->newPosition))
         calculatePositionIncrement(tempEvenNoseHooverPosition, newEvenNoseHooverPosition, this->halfTimestep, &(newEvenNoseHooverPosition));
 
         /* Calculate the new positions */
@@ -771,33 +824,53 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
         calculateVelocityIncrement(tempOddNoseHooverVelocity, newEvenNoseHooverPosition, tempOddNoseHooverAccelerations, this->halfTimestep, &newOddNoseHooverVelocity);
 
 
-        if (temperatureCheck)
+        if (saveData)
         {
-            PetscScalar temperature;
-            calculateTemperature(prevVelocity, &temperature);
+            saveIteration(iteration, this->newPosition);
+            // lagrangianMultipliers.push_back(lagMultiplier);
 
-            PetscReal minPos;
-            PetscReal maxPos;
-            PetscScalar meanPos;
+            if (temperatureCheck)
+            {
+                Vec filtered_pos;
 
-            PetscCall(VecMax(prevPosition, NULL, &maxPos));
-            PetscCall(VecMin(prevPosition, NULL, &minPos));
-            PetscCall(VecMean(prevPosition, &meanPos));
+                PetscCall(VecDuplicate(this->newPosition, &filtered_pos));
+                errorStatus = this->filter->FilterProject(newPosition, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
 
-            PetscReal minVel;
-            PetscReal maxVel;
-            PetscScalar meanVel;
+                PetscCall(VecCopy(newPosition, filtered_pos));
 
-            PetscCall(VecMax(prevVelocity, NULL, &maxVel));
-            PetscCall(VecMin(prevVelocity, NULL, &minVel));
-            PetscCall(VecMean(prevVelocity, &meanVel));
+                PetscScalar temperature;
+                calculateTemperature(newVelocity, &temperature);
 
-            PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Num Part: %i, Max Pos: %f, Min Pos: %f, Mean Pos: %f, Max Vel: %f, Min Vel: %f, Mean Vel: %f, Temperature: %f, LM: %f\n", iteration, numParticles, maxPos, minPos, meanPos, maxVel, minVel, meanVel, temperature, lagMultiplier);
+                PetscReal minPos;
+                PetscReal maxPos;
+                PetscScalar meanPos;
+
+                PetscCall(VecMax(filtered_pos, NULL, &maxPos));
+                PetscCall(VecMin(filtered_pos, NULL, &minPos));
+                PetscCall(VecMean(filtered_pos, &meanPos));
+
+                PetscReal minVel;
+                PetscReal maxVel;
+                PetscScalar meanVel;
+
+                PetscCall(VecMax(newVelocity, NULL, &maxVel));
+                PetscCall(VecMin(newVelocity, NULL, &minVel));
+                PetscCall(VecMean(newVelocity, &meanVel));
+
+                // PetscScalar hamiltonian;
+                // calculateHamiltonian(newVelocity, this->newPosition, &hamiltonian);
+
+                // PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Max Pos: %f, Min Pos: %f, Mean Pos: %f, Max Vel: %f, Min Vel: %f, Mean Vel: %f, Temperature: %f, LM: %f, HM: %f\n", iteration, maxPos, minPos, meanPos, maxVel, minVel, meanVel, temperature, lagMultiplier);//, hamiltonian);
+                PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Max Pos: %f, Min Pos: %f, Mean Pos: %f, Max Vel: %f, Min Vel: %f, Mean Vel: %f, Temperature: %f, LM: %f\n", iteration, maxPos, minPos, meanPos, maxVel, minVel, meanVel, temperature, lagMultiplier);//, hamiltonian);
+
+                // hamiltonians.push_back(hamiltonian);
+                temperatures.push_back(temperature);
+                lagrangianMultipliers.push_back(lagMultiplier);
+                // lagrangianMultipliers.push_back(opt->volfrac - meanPos);
+            }
         }
 
         /* SAVE VARIABLES! */
-        // PetscCall(VecCopy(prevPosition, this->positions.at(iteration + 1)));
-
         PetscCall(VecCopy(newPosition, prevPosition));
         PetscCall(VecCopy(newVelocity, prevVelocity));
 
@@ -805,6 +878,11 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
         PetscCall(VecCopy(newEvenNoseHooverVelocity,    prevEvenNoseHooverVelocity));
         PetscCall(VecCopy(newOddNoseHooverPosition,     prevOddNoseHooverPosition));
         PetscCall(VecCopy(newOddNoseHooverVelocity,     prevOddNoseHooverVelocity));
+    }
+
+    if (saveData)
+    {
+        saveFinalValues();
     }
 
     return errorStatus;

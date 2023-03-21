@@ -6,6 +6,8 @@
 #include "mpi.h"
 #include <petsc.h>
 
+#include <random>
+
 #include "Hyperoptimization.h"
 
 /*
@@ -43,22 +45,46 @@ int main(int argc, char* argv[]) {
     MPIIO* output = new MPIIO(opt->da_nodes, 3, "ux, uy, uz", 3, "x, xTilde, xPhys");
     // STEP 5: THE OPTIMIZER MMA
     // MMA*     mma;
-    PetscInt itr = 0;
+    // PetscInt itr = 0;
     // opt->AllocateMMAwithRestart(&itr, &mma); // allow for restart !
     // mma->SetAsymptotes(0.2, 0.65, 1.05);
 
     // STEP 6: FILTER THE INITIAL DESIGN/RESTARTED DESIGN
-    ierr = filter->FilterProject(opt->x, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
-    CHKERRQ(ierr);
+    // ierr = filter->FilterProject(opt->x, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
+    // CHKERRQ(ierr);
 
     // STEP 7: OPTIMIZATION LOOP
     PetscPrintf(PETSC_COMM_WORLD, "\n\n######################## Hyperoptimization ########################\n");
+
+    /* Setup random starting positions */
+    PetscScalar *initialValues;
+    PetscCall(VecGetArray(opt->x, &initialValues));
+
+    std::default_random_engine generator;
+    std::uniform_real_distribution<PetscScalar> distribution;
+
+    if (0.5 < opt->volfrac)
+    {
+        distribution = std::uniform_real_distribution<PetscScalar>(2 * opt->volfrac - 1, 1);
+    }
+    else
+    {
+        distribution = std::uniform_real_distribution<PetscScalar>(0, 2 * opt->volfrac);
+    }
+
+    for (PetscInt i = 0; i < opt->n; i++)
+    {
+        initialValues[i] = distribution(generator);
+    }
+
+    PetscCall(VecRestoreArray(opt->x, &initialValues));
+
     LagrangianMultiplier lagmult(filter, opt);
 
     /** @todo Figure out how to pass stuff in from the wrapper! */
     PetscScalar temperature = 10;
     PetscScalar NHChainOrder = 10;
-    PetscFloat dt = 0.001;
+    PetscScalar dt = 0.001;
 
     Hyperoptimization solver;
     solver.init(physics,
@@ -82,7 +108,7 @@ int main(int argc, char* argv[]) {
 
 
     // // Write restart WriteRestartFiles
-    // opt->WriteRestartFiles(&itr, mma);
+    // opt->WriteRestartFiles(&itr, mma);  
     // physics->WriteRestartFiles();
 
     // Dump final design

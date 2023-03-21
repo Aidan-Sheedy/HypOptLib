@@ -45,13 +45,13 @@ class LagrangianMultiplier
             PetscCall(VecCopy(positionCopy, opt->x));
             // PetscCall(this->filter->FilterProject(opt->x, opt->xTilde, opt->xPhysEro, opt->xPhys, opt->xPhysDil, opt->projectionFilter, opt->beta, opt->eta));
             PetscCall(this->filter->FilterProject(opt->x, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta));
-            PetscCall(VecCopy(opt->xPhys, positionCopy));
+            PetscCall(VecCopy(opt->xTilde, positionCopy));
 
             // Filter positions
             PetscCall(VecCopy(CCopy, opt->x));
             // PetscCall(this->filter->FilterProject(opt->x, opt->xTilde, opt->xPhysEro, opt->xPhys, opt->xPhysDil, opt->projectionFilter, opt->beta, opt->eta));
             PetscCall(this->filter->FilterProject(opt->x, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta));
-            PetscCall(VecCopy(opt->xPhys, CCopy));
+            PetscCall(VecCopy(opt->xTilde, CCopy));
 
             // Sum values
             PetscScalar positionSum;
@@ -59,9 +59,10 @@ class LagrangianMultiplier
             PetscScalar CSum;
             PetscCall(VecSum(CCopy, &CSum));
 
-            // PetscPrintf(PETSC_COMM_WORLD, "\nN: %i, volfrac: %f, posSum: %f, cSum: %f\n", numParticles, opt->volfrac, positionSum, CSum);
 
             *returnValue = (numParticles * opt->volfrac - positionSum )/ CSum;
+
+            // PetscPrintf(PETSC_COMM_WORLD, "\nNVf - (x+lC): %f\n", numParticles * opt->volfrac - (positionSum + *returnValue * CSum));
 
             return errorStatus;
         }
@@ -80,17 +81,6 @@ class LagrangianMultiplier
 class Hyperoptimization
 {
     public:
-        // Hyperoptimization(  LinearElasticity* physics,
-        //                     TopOpt* opt,
-        //                     Filter* filter,
-        //                     DataObj data,
-        //                     LagrangianMultiplier lagMult,
-        //                     PetscScalar temperature,
-        //                     Vec initialPositions,
-        //                     Vec initialVelocities,
-        //                     PetscScalar NHChainOrder,
-        //                     PetscInt numIterations,
-        //                     PetscFloat timestep);
         Hyperoptimization(){}
 
         PetscErrorCode init(LinearElasticity* physics,
@@ -102,7 +92,7 @@ class Hyperoptimization
                             Vec initialPositions,
                             PetscScalar NHChainOrder,
                             PetscInt numIterations,
-                            PetscFloat timestep);
+                            PetscScalar timestep);
 
 
         ~Hyperoptimization();
@@ -219,9 +209,17 @@ class Hyperoptimization
 
         PetscErrorCode calculateTemperature(Vec velocities, PetscScalar *temperature);
 
-        PetscErrorCode saveIteration(Vec positions, Vec velocities, Vec noseHooverPositions, Vec noseHooverVelocities, PetscScalar lagrangianMultiplier);
+        PetscErrorCode calculateHamiltonian(Vec velocities, Vec positions, PetscScalar *hamiltonian);
+
+        PetscErrorCode initializeHDF5();
+
+        PetscErrorCode saveIteration(PetscInt iteration, Vec positions);
+
+        PetscErrorCode saveFinalValues();
 
         PetscErrorCode calculateSensitvities(Vec positions);
+
+        PetscErrorCode truncatePositions(Vec *positions);
 
     private:
         LinearElasticity* physics;
@@ -230,9 +228,13 @@ class Hyperoptimization
 
         Filter* filter;
 
-        // DataObj data;
-
         LagrangianMultiplier lagMult;
+
+        std::string saveFilePath;
+
+        const std::string stateGroup = "/Dataset/State";
+
+        const std::string dataGroup = "/Dataset";
 
         PetscScalar temperature;
 
@@ -244,23 +246,9 @@ class Hyperoptimization
 
         PetscInt numConstraints;
 
-        /** @todo FIGURE OUT HOW TO DO THIS */
-        // std::vector<Vec> positions;
+        PetscScalar timestep;
 
-        /** @todo confirm if this is needed*/
-        // std::vector<Vec> velocities;
-
-        PetscFloat timestep;
-
-        PetscFloat halfTimestep;
-
-        /* Position of Nose Hoover particles */
-        /** @todo confirm if this is needed*/
-        // Vec evenNoseHooverPositions; 
-
-        /* Velocities of Nose Hoover particles */
-        /** @todo confirm if this is needed*/
-        // Vec evenNoseHooverVelocities;
+        PetscScalar halfTimestep;
 
         /**
          * Mass of Nose Hoover particles.
@@ -268,8 +256,6 @@ class Hyperoptimization
          * @note    This is initialized automatically to 1 for now, 
          *          a better constructor should be made later.
         */
-        Vec noseHooverMass;
-
         Vec evenNoseHooverMass;
 
         Vec oddNoseHooverMass;
@@ -283,31 +269,20 @@ class Hyperoptimization
 
         Vec newPosition;
 
-        // Vec newVelocity;
-
         Vec sensitivities;
 
         Vec constraintSensitivities;
 
+        std::vector<PetscScalar> lagrangianMultipliers;
+
+        std::vector<PetscScalar> hamiltonians;
+
+        std::vector<PetscScalar> genericData;
+
+        std::vector<PetscScalar> temperatures;
+
         /** @todo make this a pass-in variable/debugging parameter! */
         bool temperatureCheck = true;
 
-        bool firstIteration = true;
-
-        // Vec prevEvenNoseHooverPosition;
-
-        // Vec prevEvenNoseHooverVelocity;
-
-        // Vec newEvenNoseHooverPosition;
-
-        // Vec newEvenNoseHooverVelocity;
-
-        // Vec prevOddNoseHooverPosition;
-
-        // Vec prevOddNoseHooverVelocity;
-
-        // Vec newOddNoseHooverPosition;
-
-        // Vec newOddNoseHooverVelocity;
-
+        bool saveData = true;
 };
