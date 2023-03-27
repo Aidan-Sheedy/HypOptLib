@@ -172,7 +172,7 @@ PetscErrorCode PetscExtensions::VecLeftShift(Vec input, Vec *output)
     return errorStatus;
 }
 
-PetscErrorCode PetscExtensions::PrintVecMinMaxMean(Vec input, Vec *output)
+PetscErrorCode PetscExtensions::PrintVecMinMaxMean(Vec vector, const char * name)
 {
     PetscReal minPos;
     PetscReal maxPos;
@@ -188,7 +188,7 @@ PetscErrorCode PetscExtensions::PrintVecMinMaxMean(Vec input, Vec *output)
     return 0;
 }
 
-PetscErrorCode PetscExtensions::PrintVec(Vec input, Vec *output)
+PetscErrorCode PetscExtensions::PrintVec(Vec vector, const char * name)
 {
     PetscErrorCode errorStatus = 0;
     Vec temp;

@@ -35,7 +35,7 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
                                         PetscInt numIterations,
                                         PetscScalar timestep) /** @todo this might need to be a scalar? */
 {
-    PetscErrorCode errorStatus;
+    PetscErrorCode errorStatus = 0;
 
     if ( (NULL == physics) || (NULL == opt) || (NULL == filter))
     {
@@ -54,11 +54,9 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
         this->numIterations     = numIterations;
         this->timestep          = timestep;
 
-
         /* Locally set initial values */
         this->numConstraints    = 1; /** @todo This may need to be passed in */
         this->halfTimestep      = timestep/2;
-
 
         /* Initialize vectors */
         PetscCall(VecCreate(PETSC_COMM_WORLD, &(this->evenNoseHooverMass)));

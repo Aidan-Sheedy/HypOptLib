@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
     // ierr = physics->ComputeObjectiveConstraintsSensitivities(&(opt->fx), &(opt->gx[0]), opt->dfdx, opt->dgdx[0],
     //                                                         opt->xPhys, opt->Emin, opt->Emax, opt->penal,
     //                                                         opt->volfrac);
-    CHKERRQ(ierr);
+    // CHKERRQ(ierr);
 
     // STEP 7: OPTIMIZATION LOOP
     PetscPrintf(PETSC_COMM_WORLD, "\n\n######################## Hyperoptimization ########################\n");
@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
     PetscScalar dt = 0.001;
 
     Hyperoptimization solver;
-    solver.init(physics,
+    PetscCall(solver.init(physics,
                 opt,
                 filter,
                 // data,
@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
                 opt->x, /** @todo initialize the positions properly */
                 NHChainOrder,
                 opt->maxItr,
-                dt);
+                dt));
 
     PetscPrintf(PETSC_COMM_WORLD, "Initialized, starting design loop\n");
 
