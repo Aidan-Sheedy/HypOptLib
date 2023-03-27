@@ -11,68 +11,11 @@
 #include "LinearElasticity.h"
 #include "TopOpt.h"
 #include "Filter.h"
+#include "LagrangianMultiplier.h"
 // #include "topoptlib.h"
 
 #include <petsc.h>
 #include <vector>
-
-class LagrangianMultiplier
-{
-    public:
-        LagrangianMultiplier(){}
-
-        LagrangianMultiplier(Filter *filter, TopOpt *opt)
-        {
-            this->filter    = filter;
-            this->opt       = opt;
-        }
-
-        PetscScalar computeLagrangianMultiplier(Vec positions, Vec C, PetscInt numParticles, PetscScalar *returnValue)
-        {
-            PetscErrorCode errorStatus = 0;
-
-            // Copies of input parameters
-            Vec positionCopy;
-            Vec CCopy;
-
-            PetscCall(VecDuplicate(positions, &positionCopy));
-            PetscCall(VecDuplicate(C, &CCopy));
-
-            PetscCall(VecCopy(positions, positionCopy));
-            PetscCall(VecCopy(C, CCopy));
-
-            // Filter positions
-            PetscCall(VecCopy(positionCopy, opt->x));
-            // PetscCall(this->filter->FilterProject(opt->x, opt->xTilde, opt->xPhysEro, opt->xPhys, opt->xPhysDil, opt->projectionFilter, opt->beta, opt->eta));
-            PetscCall(this->filter->FilterProject(opt->x, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta));
-            PetscCall(VecCopy(opt->xTilde, positionCopy));
-
-            // Filter positions
-            PetscCall(VecCopy(CCopy, opt->x));
-            // PetscCall(this->filter->FilterProject(opt->x, opt->xTilde, opt->xPhysEro, opt->xPhys, opt->xPhysDil, opt->projectionFilter, opt->beta, opt->eta));
-            PetscCall(this->filter->FilterProject(opt->x, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta));
-            PetscCall(VecCopy(opt->xTilde, CCopy));
-
-            // Sum values
-            PetscScalar positionSum;
-            PetscCall(VecSum(positionCopy, &positionSum));
-            PetscScalar CSum;
-            PetscCall(VecSum(CCopy, &CSum));
-
-
-            *returnValue = (numParticles * opt->volfrac - positionSum )/ CSum;
-
-            // PetscPrintf(PETSC_COMM_WORLD, "\nNVf - (x+lC): %f\n", numParticles * opt->volfrac - (positionSum + *returnValue * CSum));
-
-            return errorStatus;
-        }
-
-    private:
-        Filter *filter;
-
-        TopOpt *opt;
-
-};
 
 /**
  * @class Hyperoptimization
@@ -276,6 +219,10 @@ class Hyperoptimization
         std::vector<PetscScalar> lagrangianMultipliers;
 
         std::vector<PetscScalar> hamiltonians;
+
+        std::vector<PetscScalar> compliance;
+
+        std::vector<PetscScalar> genericData2;
 
         std::vector<PetscScalar> genericData;
 

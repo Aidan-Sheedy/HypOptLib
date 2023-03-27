@@ -8,6 +8,8 @@
 
 #include "Hyperoptimization.h"
 
+#include "PetscExtensions.h"
+
 #include <petscviewerhdf5.h>
 
 #include <cmath>
@@ -22,27 +24,6 @@
  * 
  * @todo ALL CALLS TO VecGetArrayRead MUST be followed up by "VecRestoreArrayRead()"!!!!!!!!!
 */
-
-PetscErrorCode minMaxMean(Vec vector, const char * name)
-{
-//     return 0;
-// #if 0
-    PetscReal minPos;
-    PetscReal maxPos;
-    PetscScalar meanPos;
-
-    PetscCall(VecMax(vector, NULL, &maxPos));
-    PetscCall(VecMin(vector, NULL, &minPos));
-    PetscCall(VecMean(vector, &meanPos));
-
-    PetscPrintf(PETSC_COMM_WORLD, "\n-------------------------------------------\n%s", name);
-    // PetscPrintf(PETSC_COMM_WORLD, name);
-    PetscPrintf(PETSC_COMM_WORLD, "\nmax: %e, min: %e, mean: %e\n", maxPos, minPos, meanPos);
-
-    return 0;
-// #endif
-}
-
 PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
                                         TopOpt* opt,
                                         Filter* filter,
@@ -56,89 +37,76 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
 {
     PetscErrorCode errorStatus;
 
-    if (nullptr == physics)
+    if ( (NULL == physics) || (NULL == opt) || (NULL == filter))
     {
-        // Throw exception (or petsc equivalent??)
+        errorStatus = PETSC_ERR_ARG_CORRUPT;
     }
 
-    if (nullptr == opt)
+    if (0 == errorStatus)
     {
-        // Throw exception (or petsc equivalent??)
+        /** @todo Make sure all the Vecs are being properly instantiated, this is not correct! */
+        this->physics           = physics;
+        this->opt               = opt;
+        this->filter            = filter;
+        this->lagMult           = lagMult;
+        this->temperature       = temperature;
+        this->NHChainOrder      = NHChainOrder;
+        this->numIterations     = numIterations;
+        this->timestep          = timestep;
+
+
+        /* Locally set initial values */
+        this->numConstraints    = 1; /** @todo This may need to be passed in */
+        this->halfTimestep      = timestep/2;
+
+
+        /* Initialize vectors */
+        PetscCall(VecCreate(PETSC_COMM_WORLD, &(this->evenNoseHooverMass)));
+        PetscCall(VecSetSizes(this->evenNoseHooverMass, PETSC_DECIDE, NHChainOrder/2));
+        PetscCall(VecSetFromOptions(this->evenNoseHooverMass));
+        PetscCall(VecDuplicate(this->evenNoseHooverMass, &(this->oddNoseHooverMass)));
+
+        /* */
+        PetscCall(VecDuplicate(initialPositions, &(this->newPosition)));
+        PetscCall(VecDuplicate(initialPositions, &(this->prevPosition)));
+        PetscCall(VecDuplicate(initialPositions, &(this->prevVelocity)));
+        PetscCall(VecDuplicate(initialPositions, &(this->sensitivities))); /** @todo Make sure this is correct! */
+        PetscCall(VecDuplicate(initialPositions, &(this->constraintSensitivities))); /** @todo Make sure this is correct! */
+
+        /* Set initial values */
+        PetscCall(VecSet(this->oddNoseHooverMass,       1.0));
+        PetscCall(VecSet(this->evenNoseHooverMass,      1.0));
+        PetscCall(VecSet(this->newPosition,             0.0));
+        PetscCall(VecSet(this->sensitivities,           1.0)); /** @todo IMPLEMENT*/
+        PetscCall(VecSet(this->constraintSensitivities, 1.0)); /** @todo IMPLEMENT*/
+
+        PetscCall(VecCopy(initialPositions, this->prevPosition));
+        PetscCall(VecSet(this->prevVelocity, std::sqrt(temperature)));
+
+        PetscInt numPositionParticles;
+        PetscCall(VecGetSize(initialPositions, &numPositionParticles));
+        this->numParticles = numPositionParticles;
+
+        PetscPrintf(PETSC_COMM_WORLD, "Num Particles: %d\n", this->numParticles);
+
+        if (saveData)
+        {
+            initializeHDF5();
+
+            lagrangianMultipliers.reserve(numIterations);
+            hamiltonians.reserve(numIterations);
+            compliance.reserve(numIterations);
+            genericData.reserve(numIterations);
+            genericData2.reserve(numIterations);
+            temperatures.reserve(numIterations);
+        }
     }
-
-    /** @todo Make sure all the Vecs are being properly instantiated, this is not correct! */
-    this->physics           = physics;
-    this->opt               = opt;
-    this->filter            = filter;
-    this->lagMult           = lagMult;
-    this->temperature       = temperature;
-    this->NHChainOrder      = NHChainOrder;
-    this->numIterations     = numIterations;
-    this->timestep          = timestep;
-
-
-    /* Locally set initial values */
-    this->numConstraints    = 1; /** @todo This may need to be passed in */
-    this->halfTimestep      = timestep/2;
-
-    /* Initialize vectors */
-    PetscCall(VecCreate(PETSC_COMM_WORLD, &(this->evenNoseHooverMass)));
-    PetscCall(VecSetSizes(this->evenNoseHooverMass, PETSC_DECIDE, NHChainOrder/2));
-    PetscCall(VecSetFromOptions(this->evenNoseHooverMass));
-    PetscCall(VecDuplicate(this->evenNoseHooverMass, &(this->oddNoseHooverMass)));
-
-    PetscCall(VecDuplicate(initialPositions, &(this->newPosition)));
-    PetscCall(VecDuplicate(initialPositions, &(this->prevPosition)));
-    PetscCall(VecDuplicate(initialPositions, &(this->prevVelocity)));
-    PetscCall(VecDuplicate(initialPositions, &(this->sensitivities))); /** @todo Make sure this is correct! */
-    PetscCall(VecDuplicate(initialPositions, &(this->constraintSensitivities))); /** @todo Make sure this is correct! */
-
-    /* Set initial values */
-    PetscCall(VecSet(this->oddNoseHooverMass,       1.0));
-    PetscCall(VecSet(this->evenNoseHooverMass,      1.0));
-    PetscCall(VecSet(this->newPosition,             0.0));
-    PetscCall(VecSet(this->sensitivities,           1.0)); /** @todo IMPLEMENT*/
-    PetscCall(VecSet(this->constraintSensitivities, 1.0)); /** @todo IMPLEMENT*/
-
-    PetscCall(VecCopy(initialPositions, this->prevPosition));
-    PetscCall(VecSet(this->prevVelocity, std::sqrt(temperature)));
-
-    PetscInt numPositionParticles;
-    PetscCall(VecGetSize(initialPositions, &numPositionParticles));
-    this->numParticles = numPositionParticles;
-
-    PetscPrintf(PETSC_COMM_WORLD, "Num Particles: %d\n", this->numParticles);
-
-    if (saveData)
-    {
-        initializeHDF5();
-
-        lagrangianMultipliers.reserve(numIterations);
-        hamiltonians.reserve(numIterations);
-        genericData.reserve(numIterations);
-        temperatures.reserve(numIterations);
-    }
-
     return errorStatus;
 }
 
 /** @todo FIX THIS */
 Hyperoptimization::~Hyperoptimization()
 {
-    // if (NULL != initialPositions)
-    // {
-    //     VecDestroy(&initialPositions);
-    // }
-
-    // if (NULL != initialVelocities)
-    // {
-    //     VecDestroy(&initialVelocities);
-    // }
-
-    // if (NULL != passiveElements)
-    // {
-    //     VecDestroy(&passiveElements);
-    // }
 
 }
 
@@ -246,7 +214,9 @@ PetscErrorCode Hyperoptimization::saveFinalValues()
     Vec finalTemperatures;
     Vec finalLagrangianMultipliers;
     Vec finalHamiltonians;
+    Vec finalCompliances;
     Vec finalGenericData;
+    Vec finalGenericData2;
 
     PetscCall(VecCreate(PETSC_COMM_WORLD, &finalTemperatures));
     PetscCall(VecSetSizes(finalTemperatures, PETSC_DECIDE, this->numIterations));
@@ -254,36 +224,24 @@ PetscErrorCode Hyperoptimization::saveFinalValues()
 
     PetscCall(VecDuplicate(finalTemperatures, &finalLagrangianMultipliers));
     PetscCall(VecDuplicate(finalTemperatures, &finalHamiltonians));
+    PetscCall(VecDuplicate(finalTemperatures, &finalCompliances));
     PetscCall(VecDuplicate(finalTemperatures, &finalGenericData));
+    PetscCall(VecDuplicate(finalTemperatures, &finalGenericData2));
+
+    /* Get values from standard vectors */
+    PetscCall(PetscExtensions::VecParallelFromStdVector(finalTemperatures,             this->temperatures));
+    PetscCall(PetscExtensions::VecParallelFromStdVector(finalLagrangianMultipliers,    this->lagrangianMultipliers));
+    PetscCall(PetscExtensions::VecParallelFromStdVector(finalHamiltonians,             this->hamiltonians));
+    PetscCall(PetscExtensions::VecParallelFromStdVector(finalCompliances,              this->compliance));
+    PetscCall(PetscExtensions::VecParallelFromStdVector(finalGenericData,              this->genericData));
+    PetscCall(PetscExtensions::VecParallelFromStdVector(finalGenericData2,             this->genericData2));
 
     PetscCall(PetscObjectSetName((PetscObject)finalTemperatures,            "Temperature"));
     PetscCall(PetscObjectSetName((PetscObject)finalLagrangianMultipliers,   "Lambda"));
-    PetscCall(PetscObjectSetName((PetscObject)finalHamiltonians,            "should_be_vf"));
-    PetscCall(PetscObjectSetName((PetscObject)finalGenericData,             "should_be_vf post truncate"));
-
-    /* Allocate Vectors */
-    PetscScalar *finalTemperaturesArray;
-    PetscScalar *finalLagrangianMultipliersArray;
-    PetscScalar *finalHamiltoniansArray;
-    PetscScalar *finalGenericDataArray;
-
-    PetscCall(VecGetArray(finalTemperatures,            &finalTemperaturesArray));
-    PetscCall(VecGetArray(finalLagrangianMultipliers,   &finalLagrangianMultipliersArray));
-    PetscCall(VecGetArray(finalHamiltonians,            &finalHamiltoniansArray));
-    PetscCall(VecGetArray(finalGenericData,             &finalGenericDataArray));
-
-    for (PetscInt i = 0; i < numIterations; i++)
-    {
-        finalTemperaturesArray[i]           = this->temperatures[i];
-        finalLagrangianMultipliersArray[i]  = this->lagrangianMultipliers[i];
-        finalHamiltoniansArray[i]           = this->hamiltonians[i];
-        finalGenericDataArray[i]            = this->genericData[i];
-    }
-
-    PetscCall(VecRestoreArray(finalTemperatures,            &finalTemperaturesArray));
-    PetscCall(VecRestoreArray(finalLagrangianMultipliers,   &finalLagrangianMultipliersArray));
-    PetscCall(VecRestoreArray(finalHamiltonians,            &finalHamiltoniansArray));
-    PetscCall(VecRestoreArray(finalGenericData,             &finalGenericDataArray));
+    PetscCall(PetscObjectSetName((PetscObject)finalHamiltonians,            "Hamiltonian"));
+    PetscCall(PetscObjectSetName((PetscObject)finalCompliances,             "Compliance"));
+    PetscCall(PetscObjectSetName((PetscObject)finalGenericData,             "Volume Fraction"));
+    PetscCall(PetscObjectSetName((PetscObject)finalGenericData2,            "Max Position"));
 
     /* Save Vectors */
     PetscViewer saveFileHDF5;
@@ -292,10 +250,19 @@ PetscErrorCode Hyperoptimization::saveFinalValues()
     PetscCall(VecView(finalTemperatures,            saveFileHDF5));
     PetscCall(VecView(finalLagrangianMultipliers,   saveFileHDF5));
     PetscCall(VecView(finalHamiltonians,            saveFileHDF5));
+    PetscCall(VecView(finalCompliances,             saveFileHDF5));
     PetscCall(VecView(finalGenericData,             saveFileHDF5));
+    PetscCall(VecView(finalGenericData2,            saveFileHDF5));
     PetscCall(PetscViewerHDF5PopGroup(saveFileHDF5));
 
     PetscCall(PetscViewerDestroy(&saveFileHDF5));
+
+    PetscCall(VecDestroy(&finalTemperatures));
+    PetscCall(VecDestroy(&finalLagrangianMultipliers));
+    PetscCall(VecDestroy(&finalHamiltonians));
+    PetscCall(VecDestroy(&finalCompliances));
+    PetscCall(VecDestroy(&finalGenericData));
+    PetscCall(VecDestroy(&finalGenericData2));
 
     return errorStatus;
 }
@@ -309,12 +276,7 @@ PetscErrorCode Hyperoptimization::calculateFirstNoseHooverAcceleration(Vec allVe
     PetscScalar firstNoseHooverMass;
 
     /* Get mass */
-    PetscInt index = 0;
-    const PetscScalar *noseHooverMassArray;
-
-    PetscCall(VecGetArrayRead(this->oddNoseHooverMass, &noseHooverMassArray));
-    firstNoseHooverMass = noseHooverMassArray[0];
-    PetscCall(VecRestoreArrayRead(this->oddNoseHooverMass, &noseHooverMassArray));
+    PetscCall(PetscExtensions::VecGetOffProcessIndex(this->oddNoseHooverMass, 0, &firstNoseHooverMass));
 
     /* Square the velocities */
     PetscCall(VecDuplicate(allVelocities, &(tempVelocities)));
@@ -325,7 +287,6 @@ PetscErrorCode Hyperoptimization::calculateFirstNoseHooverAcceleration(Vec allVe
     PetscCall(VecSum(tempVelocities, &result));
 
     PetscScalar vsquared = result;
-
     result = (result - (this->numParticles - this->numConstraints) * this->temperature) / firstNoseHooverMass;
 
     /**
@@ -335,6 +296,8 @@ PetscErrorCode Hyperoptimization::calculateFirstNoseHooverAcceleration(Vec allVe
 
     PetscCall(VecAssemblyBegin(*accelerations));
     PetscCall(VecAssemblyEnd(*accelerations));
+
+    PetscCall(VecDestroy(&tempVelocities));
 
     return errorStatus;
 
@@ -363,6 +326,7 @@ PetscErrorCode Hyperoptimization::calculateRemainingNoseHooverAccelerations(Vec 
 
         PetscCall(VecDuplicate(desiredMasses, &tempResults));
     }
+
     else
     {
         PetscInt numReducedParticles = this->NHChainOrder/2 - 1;
@@ -375,6 +339,20 @@ PetscErrorCode Hyperoptimization::calculateRemainingNoseHooverAccelerations(Vec 
         PetscCall(VecDuplicate(desiredMasses, &decrementedVelocities));
         PetscCall(VecDuplicate(desiredMasses, &tempResults));
 
+        Vec sequentialOddNoseHooverMass;
+        Vec sequentialEvenNoseHooverMass;
+        Vec sequentialNoseHooverVelocities;
+        Vec sequentialDesiredMasses;
+        Vec sequentialDecrementedMasses;
+        Vec sequentialDecrementedVelocities;
+
+        PetscCall(PetscExtensions::VecSequentialFromParallel(this->oddNoseHooverMass,    &sequentialOddNoseHooverMass));
+        PetscCall(PetscExtensions::VecSequentialFromParallel(this->evenNoseHooverMass,   &sequentialEvenNoseHooverMass));
+        PetscCall(PetscExtensions::VecSequentialFromParallel(noseHooverVelocities,       &sequentialNoseHooverVelocities));
+        PetscCall(PetscExtensions::VecSequentialFromParallel(desiredMasses,              &sequentialDesiredMasses));
+        PetscCall(PetscExtensions::VecSequentialFromParallel(decrementedMasses,          &sequentialDecrementedMasses));
+        PetscCall(PetscExtensions::VecSequentialFromParallel(decrementedVelocities,      &sequentialDecrementedVelocities));
+
         /* Get the reduced values for each vector */
         const PetscScalar *evenNoseHooverMassArray;
         const PetscScalar *oddNoseHooverMassArray;
@@ -384,13 +362,13 @@ PetscErrorCode Hyperoptimization::calculateRemainingNoseHooverAccelerations(Vec 
         PetscScalar *decrementedMassesArray;
         PetscScalar *decrementedVelocitiesArray;
 
-        PetscCall(VecGetArrayRead(this->oddNoseHooverMass,  &oddNoseHooverMassArray));
-        PetscCall(VecGetArrayRead(this->evenNoseHooverMass, &evenNoseHooverMassArray));
-        PetscCall(VecGetArrayRead(noseHooverVelocities,     &noseHooverVelocitiesArray));
+        PetscCall(VecGetArrayRead(sequentialOddNoseHooverMass,  &oddNoseHooverMassArray));
+        PetscCall(VecGetArrayRead(sequentialEvenNoseHooverMass, &evenNoseHooverMassArray));
+        PetscCall(VecGetArrayRead(sequentialNoseHooverVelocities,     &noseHooverVelocitiesArray));
 
-        PetscCall(VecGetArray(desiredMasses,            &desiredMassesArray));
-        PetscCall(VecGetArray(decrementedMasses,        &decrementedMassesArray));
-        PetscCall(VecGetArray(decrementedVelocities,    &decrementedVelocitiesArray));
+        PetscCall(VecGetArray(sequentialDesiredMasses,          &desiredMassesArray));
+        PetscCall(VecGetArray(sequentialDecrementedMasses,      &decrementedMassesArray));
+        PetscCall(VecGetArray(sequentialDecrementedVelocities,  &decrementedVelocitiesArray));
 
         for (PetscInt i = 0; i < numReducedParticles; i++)
         {
@@ -400,13 +378,27 @@ PetscErrorCode Hyperoptimization::calculateRemainingNoseHooverAccelerations(Vec 
         }
 
         /* Restore all values */
-        PetscCall(VecRestoreArrayRead(this->oddNoseHooverMass,  &oddNoseHooverMassArray));
-        PetscCall(VecRestoreArrayRead(this->evenNoseHooverMass, &evenNoseHooverMassArray));
-        PetscCall(VecRestoreArrayRead(noseHooverVelocities,     &noseHooverVelocitiesArray));
+        PetscCall(VecRestoreArrayRead(sequentialOddNoseHooverMass,  &oddNoseHooverMassArray));
+        PetscCall(VecRestoreArrayRead(sequentialEvenNoseHooverMass, &evenNoseHooverMassArray));
+        PetscCall(VecRestoreArrayRead(sequentialNoseHooverVelocities,     &noseHooverVelocitiesArray));
 
-        PetscCall(VecRestoreArray(desiredMasses,            &desiredMassesArray));
-        PetscCall(VecRestoreArray(decrementedMasses,        &decrementedMassesArray));
-        PetscCall(VecRestoreArray(decrementedVelocities,    &decrementedVelocitiesArray));
+        PetscCall(VecRestoreArray(sequentialDesiredMasses,            &desiredMassesArray));
+        PetscCall(VecRestoreArray(sequentialDecrementedMasses,        &decrementedMassesArray));
+        PetscCall(VecRestoreArray(sequentialDecrementedVelocities,    &decrementedVelocitiesArray));
+
+        PetscCall(PetscExtensions::VecParallelFromSequential(sequentialOddNoseHooverMass,        &(this->oddNoseHooverMass)));
+        PetscCall(PetscExtensions::VecParallelFromSequential(sequentialEvenNoseHooverMass,       &(this->evenNoseHooverMass)));
+        PetscCall(PetscExtensions::VecParallelFromSequential(sequentialNoseHooverVelocities,     &noseHooverVelocities));
+        PetscCall(PetscExtensions::VecParallelFromSequential(sequentialDesiredMasses,            &desiredMasses));
+        PetscCall(PetscExtensions::VecParallelFromSequential(sequentialDecrementedMasses,        &decrementedMasses));
+        PetscCall(PetscExtensions::VecParallelFromSequential(sequentialDecrementedVelocities,    &decrementedVelocities));
+
+        PetscCall(VecDestroy(&sequentialOddNoseHooverMass));
+        PetscCall(VecDestroy(&sequentialEvenNoseHooverMass));
+        PetscCall(VecDestroy(&sequentialNoseHooverVelocities));
+        PetscCall(VecDestroy(&sequentialDesiredMasses));
+        PetscCall(VecDestroy(&sequentialDecrementedMasses));
+        PetscCall(VecDestroy(&sequentialDecrementedVelocities));
     }
 
     /* Calculate the accelerations */
@@ -420,24 +412,45 @@ PetscErrorCode Hyperoptimization::calculateRemainingNoseHooverAccelerations(Vec 
         /* Even output can be directly coppied to the results */
         PetscCall(VecCopy(tempResults, *result));
     }
+
     else
     {
+        Vec resultsSequential;
+        Vec tempResultsSequential;
+
+        PetscCall(PetscExtensions::VecSequentialFromParallel(*result, &resultsSequential));
+        PetscCall(PetscExtensions::VecSequentialFromParallel(tempResults, &tempResultsSequential));
+
         /* Skip the first particle for odd results */
         PetscScalar* resultsArray;
         const PetscScalar* tempResultsArray;
         PetscInt numReducedParticles = this->NHChainOrder/2 - 1;
 
-        PetscCall(VecGetArray(*result, &resultsArray));
-        PetscCall(VecGetArrayRead(tempResults, &tempResultsArray));
+        PetscCall(VecGetArray(resultsSequential, &resultsArray));
+        PetscCall(VecGetArrayRead(tempResultsSequential, &tempResultsArray));
 
         for (PetscInt i = 0; i < numReducedParticles; i++)
         {
             resultsArray[i+1] = tempResultsArray[i];
         }
 
-        PetscCall(VecRestoreArray(*result, &resultsArray));
-        PetscCall(VecRestoreArrayRead(tempResults, &tempResultsArray));
+        PetscCall(VecRestoreArray(resultsSequential, &resultsArray));
+        PetscCall(VecRestoreArrayRead(tempResultsSequential, &tempResultsArray));
+
+        PetscCall(PetscExtensions::VecParallelFromSequential(resultsSequential, result));
+        PetscCall(PetscExtensions::VecParallelFromSequential(tempResultsSequential, &tempResults));
+
+        PetscCall(VecCopy(*result, *result));
+
+        PetscCall(VecDestroy(&resultsSequential));
+        PetscCall(VecDestroy(&tempResultsSequential));
+
     }
+
+    PetscCall(VecDestroy(&decrementedVelocities));
+    PetscCall(VecDestroy(&desiredMasses));
+    PetscCall(VecDestroy(&decrementedMasses));
+    PetscCall(VecDestroy(&tempResults));
 
     return errorStatus;
 }
@@ -460,6 +473,8 @@ PetscErrorCode Hyperoptimization::calculatePositionIncrement(Vec previousPositio
 
     /* Copy return value */
     PetscCall(VecCopy(tempVector, *result));
+
+    PetscCall(VecDestroy(&tempVector));
 
     return errorStatus;
 }
@@ -492,6 +507,9 @@ PetscErrorCode Hyperoptimization::calculateVelocityIncrement(Vec velocityOne, Ve
     PetscCall(VecAYPX(leftSide, 1, rightSide));
     PetscCall(VecCopy(leftSide, *result));
 
+    PetscCall(VecDestroy(&leftSide));
+    PetscCall(VecDestroy(&rightSide));
+
     return errorStatus;
 }
 
@@ -516,6 +534,9 @@ PetscErrorCode Hyperoptimization::calculateVelocityIncrement(Vec velocityOne, Pe
     PetscCall(VecAYPX(leftSide, 1, rightSide));
     PetscCall(VecCopy(leftSide, *result));
 
+    PetscCall(VecDestroy(&leftSide));
+    PetscCall(VecDestroy(&rightSide));
+
     return errorStatus;
 }
 
@@ -528,7 +549,11 @@ PetscErrorCode Hyperoptimization::truncatePositions(Vec *positions)
 
     PetscScalar *positionsArray;
     PetscCall(VecGetArray(*positions, &positionsArray));
-    for (PetscInt i = 0; i <= numPositions; i++)
+
+    PetscInt localSize;
+    PetscCall(VecGetLocalSize(*positions, &localSize));
+
+    for (PetscInt i = 0; i < localSize; i++)
     {
         if (positionsArray[i] > 1)
         {
@@ -566,47 +591,15 @@ PetscErrorCode Hyperoptimization::assembleNewPositions(PetscScalar firstNoseHoov
     PetscScalar lagrangianMult;
     this->lagMult.computeLagrangianMultiplier(this->newPosition, rightSide, this->numParticles, &lagrangianMult);
 
-/*vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
-    errorStatus = this->filter->FilterProject(newPosition, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
-
-    PetscScalar xf_mean;
-    PetscScalar C_mean;
-
-    PetscCall(VecSum(opt->xTilde, &xf_mean));
-    PetscCall(VecSum(rightSide, &C_mean));
-
-    PetscScalar should_be_vf = (xf_mean + lagrangianMult * C_mean) / this->numParticles;
-
-    hamiltonians.push_back(should_be_vf);
-/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
-
     PetscCall(VecScale(rightSide, lagrangianMult));
     PetscCall(VecAYPX(this->newPosition, 1, rightSide));
 
-/*vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
-    minMaxMean(newPosition, "After lag mult");
-/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
-
     *lagrangianMultiplier = lagrangianMult;
-
-/*vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
-    // Ensure new positions are all physical (restrict between 0 and 1)
-    truncatePositions(&(this->newPosition));
-
-    minMaxMean(newPosition, "After truncate");
-
-    errorStatus = this->filter->FilterProject(newPosition, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
-
-    PetscCall(VecSum(opt->xTilde, &xf_mean));
-
-    should_be_vf = (xf_mean + lagrangianMult * C_mean) / this->numParticles;
-
-    this->genericData.push_back(should_be_vf);
-
-/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
     // Fix all passive elements
     // opt->SetVariables(this->newPosition, opt->xPassive);
+
+    PetscCall(VecDestroy(&rightSide));
 
     return errorStatus;
 }
@@ -615,9 +608,8 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
 {
     PetscErrorCode errorStatus = 0;
     // Positions used in constraint calculations
-    PetscCall(VecCopy(positions, opt->x));
-    errorStatus = this->filter->FilterProject(opt->x, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
-    // CHKERRQ(errorStatus);
+    errorStatus = this->filter->FilterProject(positions, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
+    CHKERRQ(errorStatus);
 
     // Compute sensitivities
     errorStatus = physics->ComputeObjectiveConstraintsSensitivities(&(opt->fx), 
@@ -656,6 +648,8 @@ PetscErrorCode Hyperoptimization::calculateTemperature(Vec velocities, PetscScal
     PetscCall(VecPointwiseMult(tempVector, tempVector, tempVector));
     PetscCall(VecMean(tempVector, temperature));
 
+    PetscCall(VecDestroy(&tempVector));
+
     return errorStatus;
 }
 
@@ -664,6 +658,8 @@ PetscErrorCode Hyperoptimization::calculateHamiltonian(Vec velocities, Vec posit
     PetscErrorCode errorStatus = 0;
 
     PetscScalar velocityDotProduct;
+
+    truncatePositions(&positions);
 
     errorStatus = this->filter->FilterProject(positions, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
 
@@ -678,11 +674,13 @@ PetscErrorCode Hyperoptimization::calculateHamiltonian(Vec velocities, Vec posit
                                                                     opt->penal,
                                                                     opt->volfrac);//,
 
-    PetscScalar compliance = opt->fx;
+    PetscScalar currentCompliance = opt->fx;
 
     PetscCall(VecDot(velocities, velocities, &velocityDotProduct));
 
-    *hamiltonian = compliance + velocityDotProduct / 2;
+    *hamiltonian = currentCompliance + velocityDotProduct / 2;
+
+    this->compliance.push_back(currentCompliance);
 
     return errorStatus;
 }
@@ -721,6 +719,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
     Vec newEvenNoseHooverPosition;
     Vec newEvenNoseHooverVelocity;
     Vec newOddNoseHooverVelocity;
+    // Vec extendedOddNoseHooverVelocity;
 
     /* Setup all vectors */
     PetscCall(VecCreate(PETSC_COMM_WORLD, &(tempOddNoseHooverVelocity)));
@@ -728,7 +727,6 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
     PetscCall(VecSetFromOptions(tempOddNoseHooverVelocity));
 
     PetscCall(VecDuplicate(this->newPosition, &(tempPosition)));
-    // PetscCall(VecDuplicate(this->newPosition, &(prevPosition)));
     PetscCall(VecDuplicate(this->newPosition, &(newVelocity)));
 
     PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &(tempOddNoseHooverVelocity)));
@@ -745,9 +743,9 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
     PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &(newEvenNoseHooverPosition)));
     PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &(newEvenNoseHooverVelocity)));
     PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &(newOddNoseHooverVelocity)));
+    // PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &extendedOddNoseHooverVelocity));
 
     /* Initial Values */
-    // PetscCall(VecCopy(this->positions.at(0), prevPosition));
     PetscCall(VecSet(prevEvenNoseHooverPosition,    0));
     PetscCall(VecSet(prevEvenNoseHooverVelocity,    0));
     PetscCall(VecSet(prevOddNoseHooverPosition,     0));
@@ -775,9 +773,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
         PetscScalar firstNoseHooverVelocity;
         const PetscScalar *tempOddNoseHooverVelocityArray;
 
-        PetscCall(VecGetArrayRead(tempOddNoseHooverVelocity, &tempOddNoseHooverVelocityArray));
-        firstNoseHooverVelocity = tempOddNoseHooverVelocityArray[0];
-        PetscCall(VecRestoreArrayRead(tempOddNoseHooverVelocity, &tempOddNoseHooverVelocityArray));
+        PetscCall(PetscExtensions::VecGetOffProcessIndex(tempOddNoseHooverVelocity, 0, &firstNoseHooverVelocity));
 
         /* Calculate full increment values */
         calculateVelocityIncrement(this->prevVelocity, firstNoseHooverVelocity, this->sensitivities, this->timestep, &newVelocity);
@@ -788,25 +784,12 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
 
         /* Add 0 to the end of the odd nose hoover velocities */
         Vec extendedOddNoseHooverVelocity;
-        PetscScalar *extendedOddNoseHooverVelocityArray;
-
-        PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &extendedOddNoseHooverVelocity));
-        PetscCall(VecGetArrayRead(tempOddNoseHooverVelocity, &tempOddNoseHooverVelocityArray));
-        PetscCall(VecGetArray(extendedOddNoseHooverVelocity, &extendedOddNoseHooverVelocityArray));
-
-        for (PetscInt i = 0; i < numOddNHIndices-1; i++)
-        {
-            extendedOddNoseHooverVelocityArray[i] = tempOddNoseHooverVelocityArray[i+1];
-        }
-        extendedOddNoseHooverVelocityArray[numOddNHIndices-1] = 0;
-
-        PetscCall(VecRestoreArrayRead(tempOddNoseHooverVelocity, &tempOddNoseHooverVelocityArray));
-        PetscCall(VecRestoreArray(extendedOddNoseHooverVelocity, &extendedOddNoseHooverVelocityArray));
+        PetscExtensions::VecLeftShift(tempOddNoseHooverVelocity, &extendedOddNoseHooverVelocity);
 
         /* Continue calculating full-timestep values */
         calculateVelocityIncrement(prevEvenNoseHooverVelocity, extendedOddNoseHooverVelocity, tempEvenNoseHooverAccelerations, this->timestep, &(newEvenNoseHooverVelocity));
-        calculatePositionIncrement(tempPosition, newVelocity, this->halfTimestep, &(this->newPosition))
-        calculatePositionIncrement(tempEvenNoseHooverPosition, newEvenNoseHooverPosition, this->halfTimestep, &(newEvenNoseHooverPosition));
+        calculatePositionIncrement(tempPosition, newVelocity, this->halfTimestep, &(this->newPosition));
+        calculatePositionIncrement(tempEvenNoseHooverPosition, newEvenNoseHooverVelocity, this->halfTimestep, &(newEvenNoseHooverPosition));
 
         /* Calculate the new positions */
         PetscScalar lagMultiplier;
@@ -818,11 +801,10 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
 
         /* Calculate full-timestep Nose Hoover accelerations */
         calculateFirstNoseHooverAcceleration(newVelocity, &tempOddNoseHooverAccelerations);
-        calculateRemainingNoseHooverAccelerations(newEvenNoseHooverPosition, false, &tempOddNoseHooverAccelerations);
+        calculateRemainingNoseHooverAccelerations(newEvenNoseHooverVelocity, false, &tempOddNoseHooverAccelerations);
 
         /* Calculate final odd Nose Hoover Velocity */
-        calculateVelocityIncrement(tempOddNoseHooverVelocity, newEvenNoseHooverPosition, tempOddNoseHooverAccelerations, this->halfTimestep, &newOddNoseHooverVelocity);
-
+        calculateVelocityIncrement(tempOddNoseHooverVelocity, newEvenNoseHooverVelocity, tempOddNoseHooverAccelerations, this->halfTimestep, &newOddNoseHooverVelocity);
 
         if (saveData)
         {
@@ -836,7 +818,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                 PetscCall(VecDuplicate(this->newPosition, &filtered_pos));
                 errorStatus = this->filter->FilterProject(newPosition, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
 
-                PetscCall(VecCopy(newPosition, filtered_pos));
+                PetscCall(VecCopy(opt->xTilde, filtered_pos));
 
                 PetscScalar temperature;
                 calculateTemperature(newVelocity, &temperature);
@@ -857,16 +839,19 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                 PetscCall(VecMin(newVelocity, NULL, &minVel));
                 PetscCall(VecMean(newVelocity, &meanVel));
 
-                // PetscScalar hamiltonian;
-                // calculateHamiltonian(newVelocity, this->newPosition, &hamiltonian);
+                PetscScalar hamiltonian;
+                calculateHamiltonian(newVelocity, this->newPosition, &hamiltonian);
 
                 // PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Max Pos: %f, Min Pos: %f, Mean Pos: %f, Max Vel: %f, Min Vel: %f, Mean Vel: %f, Temperature: %f, LM: %f, HM: %f\n", iteration, maxPos, minPos, meanPos, maxVel, minVel, meanVel, temperature, lagMultiplier);//, hamiltonian);
                 PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Max Pos: %f, Min Pos: %f, Mean Pos: %f, Max Vel: %f, Min Vel: %f, Mean Vel: %f, Temperature: %f, LM: %f\n", iteration, maxPos, minPos, meanPos, maxVel, minVel, meanVel, temperature, lagMultiplier);//, hamiltonian);
 
-                // hamiltonians.push_back(hamiltonian);
+                hamiltonians.push_back(hamiltonian);
                 temperatures.push_back(temperature);
                 lagrangianMultipliers.push_back(lagMultiplier);
-                // lagrangianMultipliers.push_back(opt->volfrac - meanPos);
+                genericData.push_back(meanPos);
+                genericData2.push_back(maxPos);
+
+                PetscCall(VecDestroy(&filtered_pos));
             }
         }
 
@@ -884,6 +869,23 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
     {
         saveFinalValues();
     }
+
+    /* Cleanup! */
+    PetscCall(VecDestroy(&tempPosition));
+    PetscCall(VecDestroy(&newVelocity));
+    PetscCall(VecDestroy(&tempOddNoseHooverVelocity));
+    PetscCall(VecDestroy(&tempEvenNoseHooverPosition));
+    PetscCall(VecDestroy(&tempOddNoseHooverAccelerations));
+    PetscCall(VecDestroy(&tempEvenNoseHooverAccelerations));
+    PetscCall(VecDestroy(&prevEvenNoseHooverPosition));
+    PetscCall(VecDestroy(&prevEvenNoseHooverVelocity));
+    PetscCall(VecDestroy(&prevOddNoseHooverPosition));
+    PetscCall(VecDestroy(&prevOddNoseHooverVelocity));
+    PetscCall(VecDestroy(&newOddNoseHooverPosition));
+    PetscCall(VecDestroy(&newEvenNoseHooverPosition));
+    PetscCall(VecDestroy(&newEvenNoseHooverVelocity));
+    PetscCall(VecDestroy(&newOddNoseHooverVelocity));
+    // PetscCall(VecDestroy(&extendedOddNoseHooverVelocity));
 
     return errorStatus;
 }

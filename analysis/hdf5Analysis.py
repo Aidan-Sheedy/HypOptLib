@@ -1,48 +1,60 @@
-
-
 import h5py
 import numpy as np
 import plotting
 import matplotlib.pyplot as plt
 
-# filePath = '../outputs/hypopt_output_first_run_broke.h5'
-filePath = '../bin/hypopt_output.h5'
-dataGroup = "/Dataset"
-stateGroup = dataGroup + "/State"
-settingsGroup = "/Setting"
 
-outputFile = h5py.File(filePath)
+def hdf5Analysis(filePaths, attributeKey, attributeName, distinguishingFeature="Temperature", title="", single=False, saveFig=False):
 
-settings = outputFile[settingsGroup]
-# data = outputFile[dataGroup]
-timestep = settings.attrs["dt"]
-desiredTemperature = settings.attrs["T"]
+    dataGroup = "/Dataset"
+    stateGroup = dataGroup + "/State"
+    settingsGroup = "/Setting"
 
-temperature     = outputFile[dataGroup + "/Temperature"]
-lagrangians     = outputFile[dataGroup + "/Lambda"]
-should_be_vf    = outputFile[dataGroup + "/should_be_vf"]
-should_be_vf_pt = outputFile[dataGroup + "/should_be_vf post truncate"]
+    outputFiles         = []
+    settings            = []
+    distinguishers      = []
+    desiredAttributes   = []
 
-plotting.plotAttribute(timestep, np.asarray(temperature), desiredTemperature, "temperature", ylimUpper=20)
-plotting.plotAttribute(timestep, np.asarray(lagrangians), desiredTemperature, "Lagrangian Multipliers", ylimUpper=0.1e8, ylimLower=-1e5)
-plotting.plotAttribute(timestep, np.asarray(should_be_vf), desiredTemperature, "should_be_vf", ylimUpper=0.120005, ylimLower=0.1199999)
-plotting.plotAttribute(timestep, np.asarray(should_be_vf_pt), desiredTemperature, "should_be_vf post truncate", ylimUpper=0.120001, ylimLower=0.11995)
+    for i in range(0, len(filePaths)):
+        outputFiles.append(h5py.File(filePaths[i]))
+        settings.append(outputFiles[i][settingsGroup])
 
-plt.show()
+        if (distinguishingFeature == "Temperature"):
+            distinguishers.append(settings[i].attrs["T"])
+        elif(distinguishingFeature == "Particles"):
+            volume = settings[i].attrs["nelx"] * settings[i].attrs["nely"] * settings[i].attrs["nelz"]
+            distinguishers.append(volume)
+        else:
+            raise Exception("Invalid Distinguishing Feature: " + distinguishingFeature + 
+                            "\nValid features are: `Temperature` `Particles`")
 
-def findMaxMin(iteration, stateGroup):
-    iterationName = stateGroup + "/iteration" + str(iteration)
-    state = outputFile[iterationName]
+        desiredAttributes.append(np.asarray(outputFiles[i][dataGroup + "/" + attributeKey]))
 
-    state = np.asarray(state)
+    print("Plotting", title)
 
-    maxState = state.max()
-    minState = state.min()
-
-    print("Iteration ", iteration, " max: ", maxState, ", min: ", minState)
+    if (single):
+        plotting.plotAttribute(1, desiredAttributes[0], distinguishers[0], attributeKey)
+    else:
+        plotting.plotAttributeSideBySide(desiredAttributes, distinguishers, distinguishingFeature, attributeName, title, savePlots=saveFig)
 
     return
 
-# findMaxMin(800, stateGroup)
-# for i in range(0, 3):
-#     findMaxMin(i, stateGroup)
+
+# filePath2 = '../outputs/hypopt_output_first_run_broke.h5'
+# filePath1 = '../outputs/hypopt_output_smallscale_system.h5'
+
+# filePaths = [filePath1, filePath2]
+
+# hdf5Analysis(filePaths, "Temperature", "Temperature", "Particles", "System Temperature at 0 Degrees", saveFig=True)
+
+filePath = ['../bin/hypopt_output.h5']#, '../bin/hypopt_output_NO_LAGRANGIAN_FILTERING.h5']
+# filePath = ['../bin/hypopt_output_NO_LAGRANGIAN_FILTERING.h5']
+
+hdf5Analysis(filePath, "Temperature",       "Temperature"           , single=True)
+hdf5Analysis(filePath, "Lambda",            "Lagrangian Multiplier" , single=True)
+hdf5Analysis(filePath, "Hamiltonian",       "Hamiltonian"           , single=True)
+hdf5Analysis(filePath, "Compliance",        "Compliance"            , single=True)
+hdf5Analysis(filePath, "Volume Fraction",   "Volume Fraction"       , single=True)
+hdf5Analysis(filePath, "Max Position",      "Max Position"          , single=True)
+
+plt.show()

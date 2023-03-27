@@ -53,12 +53,28 @@ int main(int argc, char* argv[]) {
     // ierr = filter->FilterProject(opt->x, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
     // CHKERRQ(ierr);
 
+    // ierr = physics->ComputeObjectiveConstraintsSensitivities(&(opt->fx), &(opt->gx[0]), opt->dfdx, opt->dgdx[0],
+    //                                                         opt->xPhys, opt->Emin, opt->Emax, opt->penal,
+    //                                                         opt->volfrac);
+    CHKERRQ(ierr);
+
     // STEP 7: OPTIMIZATION LOOP
     PetscPrintf(PETSC_COMM_WORLD, "\n\n######################## Hyperoptimization ########################\n");
 
     /* Setup random starting positions */
+
+    // Vec initialPositions;
+
+    // PetscCall(VecCreateSeq(PETSC_COMM_WORLD, opt->n, &initialPositions));
+    // // PetscCall(VecSetSizes(this->evenNoseHooverMass, PETSC_DECIDE, NHChainOrder/2));
+    // PetscCall(VecSetFromOptions(this->evenNoseHooverMass));
+    // PetscCall(VecDuplicate(this->evenNoseHooverMass, &(this->oddNoseHooverMass)));
+// #if 0
     PetscScalar *initialValues;
     PetscCall(VecGetArray(opt->x, &initialValues));
+
+    PetscInt localSize;
+    PetscCall(VecGetLocalSize(opt->x, &localSize));
 
     std::default_random_engine generator;
     std::uniform_real_distribution<PetscScalar> distribution;
@@ -72,17 +88,17 @@ int main(int argc, char* argv[]) {
         distribution = std::uniform_real_distribution<PetscScalar>(0, 2 * opt->volfrac);
     }
 
-    for (PetscInt i = 0; i < opt->n; i++)
+    for (PetscInt i = 0; i < localSize; i++)
     {
-        initialValues[i] = distribution(generator);
+        initialValues[i] = distribution(generator); //opt->volfrac;
     }
 
     PetscCall(VecRestoreArray(opt->x, &initialValues));
-
+// #endif
     LagrangianMultiplier lagmult(filter, opt);
 
     /** @todo Figure out how to pass stuff in from the wrapper! */
-    PetscScalar temperature = 10;
+    PetscScalar temperature = 0.1;
     PetscScalar NHChainOrder = 10;
     PetscScalar dt = 0.001;
 
@@ -98,11 +114,14 @@ int main(int argc, char* argv[]) {
                 opt->maxItr,
                 dt);
 
-    PetscPrintf(PETSC_COMM_WORLD, "Initialized, starting loop\n");
+    PetscPrintf(PETSC_COMM_WORLD, "Initialized, starting design loop\n");
 
+    double t1 = MPI_Wtime();
     solver.runDesignLoop();
+    double t2 = MPI_Wtime();
 
-    PetscPrintf(PETSC_COMM_WORLD, "Done loop!\n");
+    PetscPrintf(PETSC_COMM_WORLD, "Done loop!\nTotal Runtime: %f\nAverage Iteration Time: %f\n***Note these timings include file saving***", t2 - t1, (t2-t1)/opt->maxItr);
+    // PetscPrintf(PETSC_COMM_WORLD, "Done loop!\nT2 - T1: %f\nTime 1: %f\nTime 2: %f\n***Note these timings include file saving***", t2-t1, t1, t2);
 
     PetscPrintf(PETSC_COMM_WORLD, "\n\n###################################################################\n");
 
@@ -116,7 +135,7 @@ int main(int argc, char* argv[]) {
 
     // STEP 7: CLEAN UP AFTER YOURSELF
     // delete mma;
-    delete output;
+    // delete output;
     delete filter;
     delete opt;
     delete physics;
