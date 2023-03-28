@@ -98,9 +98,9 @@ int main(int argc, char* argv[]) {
     LagrangianMultiplier lagmult(filter, opt);
 
     /** @todo Figure out how to pass stuff in from the wrapper! */
-    PetscScalar temperature = 0.1;
+    PetscScalar temperature = 0.1;//0;//5;
     PetscScalar NHChainOrder = 10;
-    PetscScalar dt = 0.001;
+    PetscScalar dt = 0.002;//0.01;//0.001;//0.0002;
 
     Hyperoptimization solver;
     PetscCall(solver.init(physics,
@@ -112,7 +112,9 @@ int main(int argc, char* argv[]) {
                 opt->x, /** @todo initialize the positions properly */
                 NHChainOrder,
                 opt->maxItr,
-                dt));
+                dt,
+                2000,
+                false));
 
     PetscPrintf(PETSC_COMM_WORLD, "Initialized, starting design loop\n");
 

@@ -103,9 +103,9 @@ PetscErrorCode TopOpt::SetUp() {
     PetscErrorCode ierr;
 
     // SET DEFAULTS for FE mesh and levels for MG solver
-    nxyz[0] = 33; //65; // 129;
-    nxyz[1] = 17; //33; // 65;
-    nxyz[2] = 17; //33; // 65;
+    nxyz[0] = 129;//33; //65; // 129;
+    nxyz[1] = 65;// 17; //33; // 65;
+    nxyz[2] = 65;// 17; //33; // 65;
     xc[0]   = 0.0;  
     xc[1]   = 2.0;
     xc[2]   = 0.0;

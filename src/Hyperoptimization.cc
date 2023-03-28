@@ -9,7 +9,7 @@
 #include "Hyperoptimization.h"
 
 #include "PetscExtensions.h"
-
+#include "FileManager.h"
 #include <petscviewerhdf5.h>
 
 #include <cmath>
@@ -27,13 +27,37 @@
 PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
                                         TopOpt* opt,
                                         Filter* filter,
-                                        // DataObj data,
                                         LagrangianMultiplier lagMult,
                                         PetscScalar temperature,
                                         Vec initialPositions,
                                         PetscScalar NHChainOrder,
                                         PetscInt numIterations,
-                                        PetscScalar timestep) /** @todo this might need to be a scalar? */
+                                        PetscScalar timestep)
+{
+    return this->init(  physics,
+                        opt,
+                        filter,
+                        lagMult,
+                        temperature,
+                        initialPositions,
+                        NHChainOrder,
+                        numIterations,
+                        timestep,
+                        2000,
+                        true); /* Save 2000 iterations by defaultDefault */
+}
+
+PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
+                                        TopOpt* opt,
+                                        Filter* filter,
+                                        LagrangianMultiplier lagMult,
+                                        PetscScalar temperature,
+                                        Vec initialPositions,
+                                        PetscScalar NHChainOrder,
+                                        PetscInt numIterations,
+                                        PetscScalar timestep,
+                                        PetscInt numIterationsToSave,
+                                        bool saveHamiltonian) /** @todo this might need to be a scalar? */
 {
     PetscErrorCode errorStatus = 0;
 
@@ -45,14 +69,16 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
     if (0 == errorStatus)
     {
         /** @todo Make sure all the Vecs are being properly instantiated, this is not correct! */
-        this->physics           = physics;
-        this->opt               = opt;
-        this->filter            = filter;
-        this->lagMult           = lagMult;
-        this->temperature       = temperature;
-        this->NHChainOrder      = NHChainOrder;
-        this->numIterations     = numIterations;
-        this->timestep          = timestep;
+        this->physics               = physics;
+        this->opt                   = opt;
+        this->filter                = filter;
+        this->lagMult               = lagMult;
+        this->temperature           = temperature;
+        this->NHChainOrder          = NHChainOrder;
+        this->numIterations         = numIterations;
+        this->timestep              = timestep;
+        this->numIterationsToSave   = numIterationsToSave;
+        this->saveHamiltonian       = saveHamiltonian;
 
         /* Locally set initial values */
         this->numConstraints    = 1; /** @todo This may need to be passed in */
@@ -208,59 +234,23 @@ PetscErrorCode Hyperoptimization::saveFinalValues()
 {
     PetscErrorCode errorStatus = 0;
 
-    /* Create vectors */
-    Vec finalTemperatures;
-    Vec finalLagrangianMultipliers;
-    Vec finalHamiltonians;
-    Vec finalCompliances;
-    Vec finalGenericData;
-    Vec finalGenericData2;
-
-    PetscCall(VecCreate(PETSC_COMM_WORLD, &finalTemperatures));
-    PetscCall(VecSetSizes(finalTemperatures, PETSC_DECIDE, this->numIterations));
-    PetscCall(VecSetFromOptions(finalTemperatures));
-
-    PetscCall(VecDuplicate(finalTemperatures, &finalLagrangianMultipliers));
-    PetscCall(VecDuplicate(finalTemperatures, &finalHamiltonians));
-    PetscCall(VecDuplicate(finalTemperatures, &finalCompliances));
-    PetscCall(VecDuplicate(finalTemperatures, &finalGenericData));
-    PetscCall(VecDuplicate(finalTemperatures, &finalGenericData2));
-
-    /* Get values from standard vectors */
-    PetscCall(PetscExtensions::VecParallelFromStdVector(finalTemperatures,             this->temperatures));
-    PetscCall(PetscExtensions::VecParallelFromStdVector(finalLagrangianMultipliers,    this->lagrangianMultipliers));
-    PetscCall(PetscExtensions::VecParallelFromStdVector(finalHamiltonians,             this->hamiltonians));
-    PetscCall(PetscExtensions::VecParallelFromStdVector(finalCompliances,              this->compliance));
-    PetscCall(PetscExtensions::VecParallelFromStdVector(finalGenericData,              this->genericData));
-    PetscCall(PetscExtensions::VecParallelFromStdVector(finalGenericData2,             this->genericData2));
-
-    PetscCall(PetscObjectSetName((PetscObject)finalTemperatures,            "Temperature"));
-    PetscCall(PetscObjectSetName((PetscObject)finalLagrangianMultipliers,   "Lambda"));
-    PetscCall(PetscObjectSetName((PetscObject)finalHamiltonians,            "Hamiltonian"));
-    PetscCall(PetscObjectSetName((PetscObject)finalCompliances,             "Compliance"));
-    PetscCall(PetscObjectSetName((PetscObject)finalGenericData,             "Volume Fraction"));
-    PetscCall(PetscObjectSetName((PetscObject)finalGenericData2,            "Max Position"));
-
     /* Save Vectors */
     PetscViewer saveFileHDF5;
     PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, this->saveFilePath.c_str(), FILE_MODE_APPEND, &(saveFileHDF5)));
     PetscCall(PetscViewerHDF5PushGroup(saveFileHDF5, dataGroup.c_str()));
-    PetscCall(VecView(finalTemperatures,            saveFileHDF5));
-    PetscCall(VecView(finalLagrangianMultipliers,   saveFileHDF5));
-    PetscCall(VecView(finalHamiltonians,            saveFileHDF5));
-    PetscCall(VecView(finalCompliances,             saveFileHDF5));
-    PetscCall(VecView(finalGenericData,             saveFileHDF5));
-    PetscCall(VecView(finalGenericData2,            saveFileHDF5));
+    if (saveHamiltonian)
+    {
+        FileManager::HDF5SaveStdVector(saveFileHDF5, this->hamiltonians, "Hamiltonian");
+    }
+    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->temperatures,            "Temperature"));
+    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->lagrangianMultipliers,   "Lambda"));
+    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->compliance,              "Compliance"));
+    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->genericData,             "Volume Fraction"));
+    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->genericData2,            "Max Position"));
+
     PetscCall(PetscViewerHDF5PopGroup(saveFileHDF5));
 
     PetscCall(PetscViewerDestroy(&saveFileHDF5));
-
-    PetscCall(VecDestroy(&finalTemperatures));
-    PetscCall(VecDestroy(&finalLagrangianMultipliers));
-    PetscCall(VecDestroy(&finalHamiltonians));
-    PetscCall(VecDestroy(&finalCompliances));
-    PetscCall(VecDestroy(&finalGenericData));
-    PetscCall(VecDestroy(&finalGenericData2));
 
     return errorStatus;
 }
@@ -635,7 +625,7 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
     return errorStatus;
 }
 
-PetscErrorCode Hyperoptimization::calculateTemperature(Vec velocities, PetscScalar *temperature)
+PetscErrorCode Hyperoptimization::calculateTemperature(Vec velocities, PetscScalar *systemTemperature)
 {
     PetscErrorCode errorStatus = 0;
 
@@ -644,7 +634,7 @@ PetscErrorCode Hyperoptimization::calculateTemperature(Vec velocities, PetscScal
     PetscCall(VecCopy(velocities, tempVector));
 
     PetscCall(VecPointwiseMult(tempVector, tempVector, tempVector));
-    PetscCall(VecMean(tempVector, temperature));
+    PetscCall(VecMean(tempVector, systemTemperature));
 
     PetscCall(VecDestroy(&tempVector));
 
@@ -753,6 +743,8 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
 
     for (PetscInt iteration = 0; iteration < this->numIterations; iteration++)
     {
+        double t1 = MPI_Wtime();
+
         /* Calculate half-timestep positions */
         calculatePositionIncrement(prevPosition, this->prevVelocity, this->halfTimestep, &tempPosition);
         calculatePositionIncrement(prevEvenNoseHooverPosition, prevEvenNoseHooverVelocity, this->halfTimestep, &tempEvenNoseHooverPosition);
@@ -804,10 +796,14 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
         /* Calculate final odd Nose Hoover Velocity */
         calculateVelocityIncrement(tempOddNoseHooverVelocity, newEvenNoseHooverVelocity, tempOddNoseHooverAccelerations, this->halfTimestep, &newOddNoseHooverVelocity);
 
+        double t2 = MPI_Wtime();
+
         if (saveData)
         {
-            saveIteration(iteration, this->newPosition);
-            // lagrangianMultipliers.push_back(lagMultiplier);
+            if ( (this->numIterations - iteration) <= numIterationsToSave)
+            {
+                saveIteration(iteration, this->newPosition);
+            }
 
             if (temperatureCheck)
             {
@@ -837,17 +833,20 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                 PetscCall(VecMin(newVelocity, NULL, &minVel));
                 PetscCall(VecMean(newVelocity, &meanVel));
 
-                PetscScalar hamiltonian;
-                calculateHamiltonian(newVelocity, this->newPosition, &hamiltonian);
+                if (saveHamiltonian)
+                {
+                    PetscScalar hamiltonian;
+                    calculateHamiltonian(newVelocity, this->newPosition, &hamiltonian);
+                    hamiltonians.push_back(hamiltonian);
+                }
 
-                // PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Max Pos: %f, Min Pos: %f, Mean Pos: %f, Max Vel: %f, Min Vel: %f, Mean Vel: %f, Temperature: %f, LM: %f, HM: %f\n", iteration, maxPos, minPos, meanPos, maxVel, minVel, meanVel, temperature, lagMultiplier);//, hamiltonian);
-                PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Max Pos: %f, Min Pos: %f, Mean Pos: %f, Max Vel: %f, Min Vel: %f, Mean Vel: %f, Temperature: %f, LM: %f\n", iteration, maxPos, minPos, meanPos, maxVel, minVel, meanVel, temperature, lagMultiplier);//, hamiltonian);
-
-                hamiltonians.push_back(hamiltonian);
                 temperatures.push_back(temperature);
                 lagrangianMultipliers.push_back(lagMultiplier);
                 genericData.push_back(meanPos);
                 genericData2.push_back(maxPos);
+
+                // PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Max Pos: %f, Min Pos: %f, Mean Pos: %f, Max Vel: %f, Min Vel: %f, Mean Vel: %f, Temperature: %f, LM: %f, HM: %f\n", iteration, maxPos, minPos, meanPos, maxVel, minVel, meanVel, temperature, lagMultiplier);//, hamiltonian);
+                PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Max Pos: %f, Min Pos: %f, Mean Pos: %f, Max Vel: %f, Min Vel: %f, Mean Vel: %f, Temp: %f, LM: %f,\ttime: %f\n", iteration, maxPos, minPos, meanPos, maxVel, minVel, meanVel, temperature, lagMultiplier, t2 - t1);//, hamiltonian);
 
                 PetscCall(VecDestroy(&filtered_pos));
             }

@@ -37,6 +37,19 @@ class Hyperoptimization
                             PetscInt numIterations,
                             PetscScalar timestep);
 
+        PetscErrorCode init(LinearElasticity* physics,
+                            TopOpt* opt,
+                            Filter* filter,
+                            // DataObj data,
+                            LagrangianMultiplier lagMult,
+                            PetscScalar temperature,
+                            Vec initialPositions,
+                            PetscScalar NHChainOrder,
+                            PetscInt numIterations,
+                            PetscScalar timestep,
+                            PetscInt numIterationsToSave,
+                            bool saveHamiltonian);
+
 
         ~Hyperoptimization();
 
@@ -228,8 +241,12 @@ class Hyperoptimization
 
         std::vector<PetscScalar> temperatures;
 
+        PetscInt numIterationsToSave;
+
         /** @todo make this a pass-in variable/debugging parameter! */
         bool temperatureCheck = true;
 
         bool saveData = true;
+
+        bool saveHamiltonian;
 };

@@ -217,7 +217,7 @@ PetscErrorCode LinearElasticity::SolveState(Vec xPhys, PetscScalar Emin, PetscSc
     rnorm = rnorm / RHSnorm;
 
     t2 = MPI_Wtime();
-    PetscPrintf(PETSC_COMM_WORLD, "State solver:  iter: %i, rerr.: %e, time: %f\n", niter, rnorm, t2 - t1);
+    // PetscPrintf(PETSC_COMM_WORLD, "State solver:  iter: %i, rerr.: %e, time: %f\n", niter, rnorm, t2 - t1);
 
     return ierr;
 }
