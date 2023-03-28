@@ -584,6 +584,8 @@ PetscErrorCode Hyperoptimization::assembleNewPositions(PetscScalar firstNoseHoov
 
     *lagrangianMultiplier = lagrangianMult;
 
+    truncatePositions(&(this->newPosition));
+
     // Fix all passive elements
     // opt->SetVariables(this->newPosition, opt->xPassive);
 
