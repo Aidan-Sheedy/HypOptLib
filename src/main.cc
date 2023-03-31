@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
                 NHChainOrder,
                 opt->maxItr,
                 dt,
-                60000,
+                1000,
                 true));
 
     PetscPrintf(PETSC_COMM_WORLD, "Initialized, starting design loop\n");

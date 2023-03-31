@@ -123,6 +123,7 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
             genericData.reserve(numIterations);
             genericData2.reserve(numIterations);
             temperatures.reserve(numIterations);
+            iterationTimes.reserve(numIterations);
         }
     }
     return errorStatus;
@@ -247,6 +248,7 @@ PetscErrorCode Hyperoptimization::saveFinalValues()
     PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->compliance,              "Compliance"));
     PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->genericData,             "Volume Fraction"));
     PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->genericData2,            "Max Position"));
+    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->iterationTimes,           "Iteration Compute Time"));
 
     PetscCall(PetscViewerHDF5PopGroup(saveFileHDF5));
 
@@ -840,12 +842,14 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                     PetscScalar hamiltonian;
                     calculateHamiltonian(newVelocity, this->newPosition, &hamiltonian);
                     hamiltonians.push_back(hamiltonian);
+                    t2 = MPI_Wtime();
                 }
 
                 temperatures.push_back(temperature);
                 lagrangianMultipliers.push_back(lagMultiplier);
                 genericData.push_back(meanPos);
                 genericData2.push_back(maxPos);
+                iterationTimes.push_back(t2 - t1);
 
                 // PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Max Pos: %f, Min Pos: %f, Mean Pos: %f, Max Vel: %f, Min Vel: %f, Mean Vel: %f, Temperature: %f, LM: %f, HM: %f\n", iteration, maxPos, minPos, meanPos, maxVel, minVel, meanVel, temperature, lagMultiplier);//, hamiltonian);
                 PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Max Pos: %f, Min Pos: %f, Mean Pos: %f, Max Vel: %f, Min Vel: %f, Mean Vel: %f, Temp: %f, LM: %f,\ttime: %f\n", iteration, maxPos, minPos, meanPos, maxVel, minVel, meanVel, temperature, lagMultiplier, t2 - t1);//, hamiltonian);

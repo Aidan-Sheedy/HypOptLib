@@ -241,6 +241,8 @@ class Hyperoptimization
 
         std::vector<PetscScalar> temperatures;
 
+        std::vector<PetscScalar> iterationTimes;
+
         PetscInt numIterationsToSave;
 
         /** @todo make this a pass-in variable/debugging parameter! */
