@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
     Filter* filter = new Filter(opt->da_nodes, opt->xPhys, opt->filter, opt->rmin);
 
     // STEP 4: VISUALIZATION USING VTK
-    MPIIO* output = new MPIIO(opt->da_nodes, 3, "ux, uy, uz", 3, "x, xTilde, xPhys");
+    // MPIIO* output = new MPIIO(opt->da_nodes, 3, "ux, uy, uz", 3, "x, xTilde, xPhys");
     // STEP 5: THE OPTIMIZER MMA
     // MMA*     mma;
     // PetscInt itr = 0;
@@ -98,9 +98,9 @@ int main(int argc, char* argv[]) {
     LagrangianMultiplier lagmult(filter, opt);
 
     /** @todo Figure out how to pass stuff in from the wrapper! */
-    PetscScalar temperature = 0.1;//0;//5;
+    PetscScalar temperature = 0;//5;
     PetscScalar NHChainOrder = 10;
-    PetscScalar dt = 0.002;//0.01;//0.001;//0.0002;
+    PetscScalar dt = 0.01;//0.001;//0.0002;
 
     Hyperoptimization solver;
     PetscCall(solver.init(physics,
@@ -113,8 +113,8 @@ int main(int argc, char* argv[]) {
                 NHChainOrder,
                 opt->maxItr,
                 dt,
-                2000,
-                false));
+                60000,
+                true));
 
     PetscPrintf(PETSC_COMM_WORLD, "Initialized, starting design loop\n");
 
