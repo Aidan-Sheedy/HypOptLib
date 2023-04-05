@@ -71,13 +71,23 @@ int main(int argc, char* argv[]) {
     // PetscCall(VecDuplicate(this->evenNoseHooverMass, &(this->oddNoseHooverMass)));
 // #if 0
 
+    LagrangeMultiplier lagmult(filter, opt);
+
+    /** @todo Figure out how to pass stuff in from the wrapper! */
+    PetscScalar temperature = 0;//5;
+    PetscScalar NHChainOrder = 10;
+    PetscScalar dt = 0.05;//0.001;//0.0002;
+
     bool restart = true;
+    Vec initialVelocities;
+
+    PetscCall(VecDuplicate(opt->x, &initialVelocities));
 
     if (restart)
     {
-        std::string filePath = "/home/aidans/Hyperoptimization_using_Petsc/0deg_good/hypopt_output_restart1.h5";
+        std::string filePath = "/home/aidans/Hyperoptimization_using_Petsc/0deg_good/hypopt_output_restart2.h5";
 
-        PetscInt iteration = 9999;
+        PetscInt iteration = 4999;
 
         std::string vecName = "iteration" + std::to_string(iteration);
 
@@ -85,11 +95,15 @@ int main(int argc, char* argv[]) {
 
         PetscCall(VecDuplicate(opt->x, &initialValues));
         PetscCall(PetscObjectSetName((PetscObject)initialValues, vecName.c_str()));
-        PetscCall(FileManager::HDF5GetSavedVec(filePath, &initialValues));
+        PetscCall(FileManager::HDF5GetSavedVec(filePath, "/Dataset/State", &initialValues));
 
         PetscCall(VecCopy(initialValues, opt->x));
 
+        PetscCall(PetscObjectSetName((PetscObject)initialVelocities, "Final Velocity"));
+        PetscCall(FileManager::HDF5GetSavedVec(filePath, "/Dataset", &initialVelocities));
+
         PetscPrintf(PETSC_COMM_WORLD, "Requested restart successful!\n");
+
     }
     else
     {
@@ -117,16 +131,12 @@ int main(int argc, char* argv[]) {
         }
 
         PetscCall(VecRestoreArray(opt->x, &initialValues));
+        PetscCall(VecSet(initialVelocities, std::sqrt(temperature)));
     }
 
 
 // #endif
-    LagrangeMultiplier lagmult(filter, opt);
 
-    /** @todo Figure out how to pass stuff in from the wrapper! */
-    PetscScalar temperature = 0;//5;
-    PetscScalar NHChainOrder = 10;
-    PetscScalar dt = 0.05;//0.001;//0.0002;
 
     Hyperoptimization solver;
     PetscCall(solver.init(physics,
@@ -136,6 +146,7 @@ int main(int argc, char* argv[]) {
                 lagmult,
                 temperature,
                 opt->x, /** @todo initialize the positions properly */
+                initialVelocities,
                 NHChainOrder,
                 opt->maxItr,
                 dt,

@@ -30,6 +30,7 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
                                         LagrangeMultiplier lagMult,
                                         PetscScalar temperature,
                                         Vec initialPositions,
+                                        Vec initialVelocities,
                                         PetscScalar NHChainOrder,
                                         PetscInt numIterations,
                                         PetscScalar timestep)
@@ -40,6 +41,7 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
                         lagMult,
                         temperature,
                         initialPositions,
+                        initialVelocities,
                         NHChainOrder,
                         numIterations,
                         timestep,
@@ -53,6 +55,7 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
                                         LagrangeMultiplier lagMult,
                                         PetscScalar temperature,
                                         Vec initialPositions,
+                                        Vec initialVelocities,
                                         PetscScalar NHChainOrder,
                                         PetscInt numIterations,
                                         PetscScalar timestep,
@@ -105,7 +108,8 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
         PetscCall(VecSet(this->constraintSensitivities, 1.0)); /** @todo IMPLEMENT*/
 
         PetscCall(VecCopy(initialPositions, this->prevPosition));
-        PetscCall(VecSet(this->prevVelocity, std::sqrt(temperature)));
+        PetscCall(VecCopy(initialVelocities, this->prevVelocity));
+        
 
         PetscInt numPositionParticles;
         PetscCall(VecGetSize(initialPositions, &numPositionParticles));

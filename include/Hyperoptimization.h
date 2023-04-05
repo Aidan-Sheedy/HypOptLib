@@ -33,6 +33,7 @@ class Hyperoptimization
                             LagrangeMultiplier lagMult,
                             PetscScalar temperature,
                             Vec initialPositions,
+                            Vec initialVelocities,
                             PetscScalar NHChainOrder,
                             PetscInt numIterations,
                             PetscScalar timestep);
@@ -44,6 +45,7 @@ class Hyperoptimization
                             LagrangeMultiplier lagMult,
                             PetscScalar temperature,
                             Vec initialPositions,
+                            Vec initialVelocities,
                             PetscScalar NHChainOrder,
                             PetscInt numIterations,
                             PetscScalar timestep,

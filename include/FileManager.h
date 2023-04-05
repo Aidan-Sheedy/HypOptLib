@@ -21,7 +21,7 @@ class FileManager
 
         static PetscErrorCode HDF5SaveStdVector(PetscViewer HDF5saveFile, std::vector<PetscScalar> vector, const char * vectorName);
 
-        static PetscErrorCode HDF5GetSavedVec(std::string filePath, Vec *vector);
+        static PetscErrorCode HDF5GetSavedVec(std::string filePath, std::string location, Vec *vector);
 
 
     private:

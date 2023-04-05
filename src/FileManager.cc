@@ -33,7 +33,7 @@ PetscErrorCode FileManager::HDF5SaveStdVector(PetscViewer HDF5saveFile, std::vec
     return errorStatus;
 }
 
-PetscErrorCode FileManager::HDF5GetSavedVec(std::string filePath, Vec *vector)
+PetscErrorCode FileManager::HDF5GetSavedVec(std::string filePath, std::string location, Vec *vector)
 {
     PetscErrorCode errorStatus = 0;
 
@@ -41,7 +41,7 @@ PetscErrorCode FileManager::HDF5GetSavedVec(std::string filePath, Vec *vector)
 
     PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, filePath.c_str(), FILE_MODE_READ, &saveFile));
 
-    PetscCall(PetscViewerHDF5PushGroup(saveFile, "/Dataset/State"));
+    PetscCall(PetscViewerHDF5PushGroup(saveFile, location.c_str()));
     PetscCall(VecLoad(*vector, saveFile));
     PetscCall(PetscViewerHDF5PopGroup(saveFile));
 
