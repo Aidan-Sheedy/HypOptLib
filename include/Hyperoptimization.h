@@ -11,7 +11,7 @@
 #include "LinearElasticity.h"
 #include "TopOpt.h"
 #include "Filter.h"
-#include "LagrangianMultiplier.h"
+#include "LagrangeMultiplier.h"
 // #include "topoptlib.h"
 
 #include <petsc.h>
@@ -30,7 +30,7 @@ class Hyperoptimization
                             TopOpt* opt,
                             Filter* filter,
                             // DataObj data,
-                            LagrangianMultiplier lagMult,
+                            LagrangeMultiplier lagMult,
                             PetscScalar temperature,
                             Vec initialPositions,
                             PetscScalar NHChainOrder,
@@ -41,7 +41,7 @@ class Hyperoptimization
                             TopOpt* opt,
                             Filter* filter,
                             // DataObj data,
-                            LagrangianMultiplier lagMult,
+                            LagrangeMultiplier lagMult,
                             PetscScalar temperature,
                             Vec initialPositions,
                             PetscScalar NHChainOrder,
@@ -161,7 +161,7 @@ class Hyperoptimization
 
         PetscErrorCode calculateVelocityIncrement(Vec velocityOne, PetscScalar velocityTwo, Vec acceleration, PetscScalar timeStep, Vec *result);
 
-        PetscErrorCode assembleNewPositions(PetscScalar firstNoseHooverVelocity, PetscScalar *lagrangianMultiplier);
+        PetscErrorCode assembleNewPositions(PetscScalar firstNoseHooverVelocity, PetscScalar *LagrangeMultiplier);
 
         PetscErrorCode calculateTemperature(Vec velocities, PetscScalar *temperature);
 
@@ -184,7 +184,7 @@ class Hyperoptimization
 
         Filter* filter;
 
-        LagrangianMultiplier lagMult;
+        LagrangeMultiplier lagMult;
 
         std::string saveFilePath;
 
@@ -229,7 +229,7 @@ class Hyperoptimization
 
         Vec constraintSensitivities;
 
-        std::vector<PetscScalar> lagrangianMultipliers;
+        std::vector<PetscScalar> LagrangeMultipliers;
 
         std::vector<PetscScalar> hamiltonians;
 

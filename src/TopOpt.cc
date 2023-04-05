@@ -117,7 +117,7 @@ PetscErrorCode TopOpt::SetUp() {
 
     // SET DEFAULTS for optimization problems
     volfrac = 0.12;
-    maxItr  = 15000;//10;//25000;
+    maxItr  = 5000;//10;//25000;
     rmin    = 0.08;
     penal   = 3.0;
     Emin    = 1.0e-9;

@@ -27,7 +27,7 @@
 PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
                                         TopOpt* opt,
                                         Filter* filter,
-                                        LagrangianMultiplier lagMult,
+                                        LagrangeMultiplier lagMult,
                                         PetscScalar temperature,
                                         Vec initialPositions,
                                         PetscScalar NHChainOrder,
@@ -50,7 +50,7 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
 PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
                                         TopOpt* opt,
                                         Filter* filter,
-                                        LagrangianMultiplier lagMult,
+                                        LagrangeMultiplier lagMult,
                                         PetscScalar temperature,
                                         Vec initialPositions,
                                         PetscScalar NHChainOrder,
@@ -117,7 +117,7 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
         {
             initializeHDF5();
 
-            lagrangianMultipliers.reserve(numIterations);
+            LagrangeMultipliers.reserve(numIterations);
             hamiltonians.reserve(numIterations);
             compliance.reserve(numIterations);
             genericData.reserve(numIterations);
@@ -244,13 +244,17 @@ PetscErrorCode Hyperoptimization::saveFinalValues()
         FileManager::HDF5SaveStdVector(saveFileHDF5, this->hamiltonians, "Hamiltonian");
     }
     PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->temperatures,            "Temperature"));
-    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->lagrangianMultipliers,   "Lambda"));
+    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->LagrangeMultipliers,   "Lambda"));
     PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->compliance,              "Compliance"));
     PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->genericData,             "Volume Fraction"));
     PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->genericData2,            "Max Position"));
     PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->iterationTimes,           "Iteration Compute Time"));
 
+    PetscCall(PetscObjectSetName((PetscObject)(this->prevVelocity), "Final Velocity"));
+    PetscCall(VecView(this->prevVelocity, saveFileHDF5));
+
     PetscCall(PetscViewerHDF5PopGroup(saveFileHDF5));
+    
 
     PetscCall(PetscViewerDestroy(&saveFileHDF5));
 
@@ -559,7 +563,7 @@ PetscErrorCode Hyperoptimization::truncatePositions(Vec *positions)
     return errorStatus;
 }
 
-PetscErrorCode Hyperoptimization::assembleNewPositions(PetscScalar firstNoseHooverVelocity, PetscScalar *lagrangianMultiplier)
+PetscErrorCode Hyperoptimization::assembleNewPositions(PetscScalar firstNoseHooverVelocity, PetscScalar *LagrangeMultiplier)
 {
     PetscErrorCode errorStatus = 0;
 
@@ -568,23 +572,23 @@ PetscErrorCode Hyperoptimization::assembleNewPositions(PetscScalar firstNoseHoov
     PetscCall(VecDuplicate(this->newPosition, &(rightSide)));
     PetscCall(VecCopy(this->constraintSensitivities, rightSide));
 
-    /* Lagrangian Multipliers require properly constrained design variables */
+    /* Lagrange Multipliers require properly constrained design variables */
     truncatePositions(&(this->newPosition));
 
     // Fix all passive elements
     // opt->SetVariables(this->newPosition, opt->xPassive);
 
-    /* lagrangian multiplier */
+    /* Lagrange multiplier */
     PetscScalar scaleFactor = - this->timestep * this->halfTimestep * std::exp(-this->halfTimestep * firstNoseHooverVelocity);
     PetscCall(VecScale(rightSide, scaleFactor));
 
-    PetscScalar lagrangianMult;
-    this->lagMult.computeLagrangianMultiplier(this->newPosition, rightSide, this->numParticles, &lagrangianMult);
+    PetscScalar LagrangeMult;
+    this->lagMult.computeLagrangeMultiplier(this->newPosition, rightSide, this->numParticles, &LagrangeMult);
 
-    PetscCall(VecScale(rightSide, lagrangianMult));
+    PetscCall(VecScale(rightSide, LagrangeMult));
     PetscCall(VecAYPX(this->newPosition, 1, rightSide));
 
-    *lagrangianMultiplier = lagrangianMult;
+    *LagrangeMultiplier = LagrangeMult;
 
     truncatePositions(&(this->newPosition));
 
@@ -846,7 +850,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                 }
 
                 temperatures.push_back(temperature);
-                lagrangianMultipliers.push_back(lagMultiplier);
+                LagrangeMultipliers.push_back(lagMultiplier);
                 genericData.push_back(meanPos);
                 genericData2.push_back(maxPos);
                 iterationTimes.push_back(t2 - t1);

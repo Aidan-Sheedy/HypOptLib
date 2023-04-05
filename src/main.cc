@@ -9,7 +9,7 @@
 #include <random>
 
 #include "Hyperoptimization.h"
-
+#include "FileManager.h"
 /*
 Authors: Niels Aage, Erik Andreassen, Boyan Lazarov, August 2013
 
@@ -70,37 +70,63 @@ int main(int argc, char* argv[]) {
     // PetscCall(VecSetFromOptions(this->evenNoseHooverMass));
     // PetscCall(VecDuplicate(this->evenNoseHooverMass, &(this->oddNoseHooverMass)));
 // #if 0
-    PetscScalar *initialValues;
-    PetscCall(VecGetArray(opt->x, &initialValues));
 
-    PetscInt localSize;
-    PetscCall(VecGetLocalSize(opt->x, &localSize));
+    bool restart = true;
 
-    std::default_random_engine generator;
-    std::uniform_real_distribution<PetscScalar> distribution;
-
-    if (0.5 < opt->volfrac)
+    if (restart)
     {
-        distribution = std::uniform_real_distribution<PetscScalar>(2 * opt->volfrac - 1, 1);
+        std::string filePath = "/home/aidans/Hyperoptimization_using_Petsc/0deg_good/hypopt_output_restart1.h5";
+
+        PetscInt iteration = 9999;
+
+        std::string vecName = "iteration" + std::to_string(iteration);
+
+        Vec initialValues;
+
+        PetscCall(VecDuplicate(opt->x, &initialValues));
+        PetscCall(PetscObjectSetName((PetscObject)initialValues, vecName.c_str()));
+        PetscCall(FileManager::HDF5GetSavedVec(filePath, &initialValues));
+
+        PetscCall(VecCopy(initialValues, opt->x));
+
+        PetscPrintf(PETSC_COMM_WORLD, "Requested restart successful!\n");
     }
     else
     {
-        distribution = std::uniform_real_distribution<PetscScalar>(0, 2 * opt->volfrac);
+        PetscScalar *initialValues;
+        PetscCall(VecGetArray(opt->x, &initialValues));
+
+        PetscInt localSize;
+        PetscCall(VecGetLocalSize(opt->x, &localSize));
+
+        std::default_random_engine generator;
+        std::uniform_real_distribution<PetscScalar> distribution;
+
+        if (0.5 < opt->volfrac)
+        {
+            distribution = std::uniform_real_distribution<PetscScalar>(2 * opt->volfrac - 1, 1);
+        }
+        else
+        {
+            distribution = std::uniform_real_distribution<PetscScalar>(0, 2 * opt->volfrac);
+        }
+
+        for (PetscInt i = 0; i < localSize; i++)
+        {
+            initialValues[i] = distribution(generator); //opt->volfrac;
+        }
+
+        PetscCall(VecRestoreArray(opt->x, &initialValues));
     }
 
-    for (PetscInt i = 0; i < localSize; i++)
-    {
-        initialValues[i] = distribution(generator); //opt->volfrac;
-    }
 
-    PetscCall(VecRestoreArray(opt->x, &initialValues));
 // #endif
-    LagrangianMultiplier lagmult(filter, opt);
+    LagrangeMultiplier lagmult(filter, opt);
 
     /** @todo Figure out how to pass stuff in from the wrapper! */
     PetscScalar temperature = 0;//5;
     PetscScalar NHChainOrder = 10;
-    PetscScalar dt = 0.01;//0.001;//0.0002;
+    PetscScalar dt = 0.05;//0.001;//0.0002;
 
     Hyperoptimization solver;
     PetscCall(solver.init(physics,
@@ -113,7 +139,7 @@ int main(int argc, char* argv[]) {
                 NHChainOrder,
                 opt->maxItr,
                 dt,
-                1000,
+                100,
                 true));
 
     PetscPrintf(PETSC_COMM_WORLD, "Initialized, starting design loop\n");
