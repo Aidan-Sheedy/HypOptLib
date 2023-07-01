@@ -120,9 +120,10 @@ int main(int argc, char* argv[]) {
 // #endif
 
     FilterWrapper wrappedFilter(filter);
+    SensitivitiesWrapper currentState(physics, opt);
 
     Hyperoptimization solver;
-    PetscCall(solver.init(physics,
+    PetscCall(solver.init(&currentState,
                 opt,
                 &wrappedFilter,
                 lagmult,

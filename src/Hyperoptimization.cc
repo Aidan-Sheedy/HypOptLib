@@ -24,7 +24,7 @@
  * 
  * @todo ALL CALLS TO VecGetArrayRead MUST be followed up by "VecRestoreArrayRead()"!!!!!!!!!
 */
-PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
+PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper* currentState,
                                         TopOpt* opt,
                                         FilterWrapper* filter,
                                         LagrangeMultiplier lagMult,
@@ -35,7 +35,7 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
                                         PetscInt numIterations,
                                         PetscScalar timestep)
 {
-    return this->init(  physics,
+    return this->init(  currentState,
                         opt,
                         filter,
                         lagMult,
@@ -49,7 +49,7 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
                         true); /* Save 2000 iterations by defaultDefault */
 }
 
-PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
+PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper* currentState,
                                         TopOpt* opt,
                                         FilterWrapper* filter,
                                         LagrangeMultiplier lagMult,
@@ -64,7 +64,7 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
 {
     PetscErrorCode errorStatus = 0;
 
-    if ( (NULL == physics) || (NULL == opt) || (NULL == filter))
+    if ( (NULL == currentState) || (NULL == opt) || (NULL == filter))
     {
         errorStatus = PETSC_ERR_ARG_CORRUPT;
     }
@@ -72,7 +72,7 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
     if (0 == errorStatus)
     {
         /** @todo Make sure all the Vecs are being properly instantiated, this is not correct! */
-        this->physics               = physics;
+        this->currentState          = currentState;
         this->opt                   = opt;
         this->filter                = filter;
         this->lagMult               = lagMult;
@@ -612,16 +612,17 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
     CHKERRQ(errorStatus);
 
     // Compute sensitivities
-    errorStatus = physics->ComputeObjectiveConstraintsSensitivities(&(opt->fx), 
-                                                                    &(opt->gx[0]),
-                                                                    opt->dfdx,
-                                                                    opt->dgdx[0],
-                                                                    opt->xTilde,
-                                                                    // opt->xPhys,
-                                                                    opt->Emin,
-                                                                    opt->Emax,
-                                                                    opt->penal,
-                                                                    opt->volfrac);//,
+    errorStatus = currentState->computeSensitivities(opt->xTilde, opt->dfdx, opt->dgdx[0]);
+    // errorStatus = currentState->ComputeObjectiveConstraintsSensitivities(&(opt->fx), 
+    //                                                                 &(opt->gx[0]),
+    //                                                                 opt->dfdx,
+    //                                                                 opt->dgdx[0],
+    //                                                                 opt->xTilde,
+    //                                                                 // opt->xPhys,
+    //                                                                 opt->Emin,
+    //                                                                 opt->Emax,
+    //                                                                 opt->penal,
+    //                                                                 opt->volfrac);//,
                                                                     // data);
     CHKERRQ(errorStatus);
 
@@ -662,18 +663,21 @@ PetscErrorCode Hyperoptimization::calculateHamiltonian(Vec velocities, Vec posit
 
     errorStatus = filter->filterDesignVariable(positions, opt->xTilde);
 
-    errorStatus = physics->ComputeObjectiveConstraintsSensitivities(&(opt->fx), 
-                                                                    &(opt->gx[0]),
-                                                                    opt->dfdx,
-                                                                    opt->dgdx[0],
-                                                                    opt->xTilde,
-                                                                    // opt->xPhys,
-                                                                    opt->Emin,
-                                                                    opt->Emax,
-                                                                    opt->penal,
-                                                                    opt->volfrac);//,
+    // errorStatus = currentState->ComputeObjectiveConstraintsSensitivities(&(opt->fx), 
+    //                                                                 &(opt->gx[0]),
+    //                                                                 opt->dfdx,
+    //                                                                 opt->dgdx[0],
+    //                                                                 opt->xTilde,
+    //                                                                 // opt->xPhys,
+    //                                                                 opt->Emin,
+    //                                                                 opt->Emax,
+    //                                                                 opt->penal,
+    //                                                                 opt->volfrac);//,
 
-    PetscScalar currentCompliance = opt->fx;
+    // PetscScalar currentCompliance = opt->fx;
+    PetscScalar currentCompliance = 0;
+
+    errorStatus = currentState->computeObjectiveFunction(opt->xTilde, &currentCompliance);
 
     PetscCall(VecDot(velocities, velocities, &velocityDotProduct));
 

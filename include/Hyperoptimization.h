@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "LinearElasticity.h"
+#include "SensitivitiesWrapper.h"
 #include "TopOpt.h"
 #include "FilterWrapper.h"
 #include "LagrangeMultiplier.h"
@@ -25,10 +25,9 @@ class Hyperoptimization
     public:
         Hyperoptimization(){}
 
-        PetscErrorCode init(LinearElasticity* physics,
+        PetscErrorCode init(SensitivitiesWrapper* currentState,
                             TopOpt* opt,
                             FilterWrapper* filter,
-                            // DataObj data,
                             LagrangeMultiplier lagMult,
                             PetscScalar temperature,
                             Vec initialPositions,
@@ -37,10 +36,9 @@ class Hyperoptimization
                             PetscInt numIterations,
                             PetscScalar timestep);
 
-        PetscErrorCode init(LinearElasticity* physics,
+        PetscErrorCode init(SensitivitiesWrapper* currentState,
                             TopOpt* opt,
                             FilterWrapper* filter,
-                            // DataObj data,
                             LagrangeMultiplier lagMult,
                             PetscScalar temperature,
                             Vec initialPositions,
@@ -179,7 +177,7 @@ class Hyperoptimization
         PetscErrorCode truncatePositions(Vec *positions);
 
     private:
-        LinearElasticity* physics;
+        SensitivitiesWrapper* currentState;
 
         TopOpt* opt;
 
