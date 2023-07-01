@@ -26,7 +26,7 @@
 */
 PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
                                         TopOpt* opt,
-                                        Filter* filter,
+                                        FilterWrapper* filter,
                                         LagrangeMultiplier lagMult,
                                         PetscScalar temperature,
                                         Vec initialPositions,
@@ -51,7 +51,7 @@ PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
 
 PetscErrorCode Hyperoptimization::init( LinearElasticity* physics,
                                         TopOpt* opt,
-                                        Filter* filter,
+                                        FilterWrapper* filter,
                                         LagrangeMultiplier lagMult,
                                         PetscScalar temperature,
                                         Vec initialPositions,
@@ -608,7 +608,7 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
 {
     PetscErrorCode errorStatus = 0;
     // Positions used in constraint calculations
-    errorStatus = this->filter->FilterProject(positions, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
+    errorStatus = this->filter->filterDesignVariable(positions, opt->xTilde);
     CHKERRQ(errorStatus);
 
     // Compute sensitivities
@@ -625,9 +625,8 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
                                                                     // data);
     CHKERRQ(errorStatus);
 
-    // Filter sensitivities (chainrule)
-    errorStatus = filter->Gradients(opt->x, opt->xTilde, opt->dfdx, opt->m, opt->dgdx, opt->projectionFilter, opt->beta,
-                            opt->eta);
+    // Filter sensitivities (Standard Filter)
+    errorStatus = filter->filterSensitivities(positions, opt->dfdx, opt->dgdx);
     CHKERRQ(errorStatus);
 
     PetscCall(VecCopy(opt->dfdx, this->sensitivities));
@@ -661,7 +660,7 @@ PetscErrorCode Hyperoptimization::calculateHamiltonian(Vec velocities, Vec posit
 
     truncatePositions(&positions);
 
-    errorStatus = this->filter->FilterProject(positions, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
+    errorStatus = filter->filterDesignVariable(positions, opt->xTilde);
 
     errorStatus = physics->ComputeObjectiveConstraintsSensitivities(&(opt->fx), 
                                                                     &(opt->gx[0]),
@@ -822,9 +821,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                 Vec filtered_pos;
 
                 PetscCall(VecDuplicate(this->newPosition, &filtered_pos));
-                errorStatus = this->filter->FilterProject(newPosition, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
-
-                PetscCall(VecCopy(opt->xTilde, filtered_pos));
+                errorStatus = filter->filterDesignVariable(newPosition, filtered_pos);
 
                 PetscScalar temperature;
                 calculateTemperature(newVelocity, &temperature);

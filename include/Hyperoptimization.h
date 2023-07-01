@@ -10,9 +10,8 @@
 
 #include "LinearElasticity.h"
 #include "TopOpt.h"
-#include "Filter.h"
+#include "FilterWrapper.h"
 #include "LagrangeMultiplier.h"
-// #include "topoptlib.h"
 
 #include <petsc.h>
 #include <vector>
@@ -28,7 +27,7 @@ class Hyperoptimization
 
         PetscErrorCode init(LinearElasticity* physics,
                             TopOpt* opt,
-                            Filter* filter,
+                            FilterWrapper* filter,
                             // DataObj data,
                             LagrangeMultiplier lagMult,
                             PetscScalar temperature,
@@ -40,7 +39,7 @@ class Hyperoptimization
 
         PetscErrorCode init(LinearElasticity* physics,
                             TopOpt* opt,
-                            Filter* filter,
+                            FilterWrapper* filter,
                             // DataObj data,
                             LagrangeMultiplier lagMult,
                             PetscScalar temperature,
@@ -184,7 +183,7 @@ class Hyperoptimization
 
         TopOpt* opt;
 
-        Filter* filter;
+        FilterWrapper* filter;
 
         LagrangeMultiplier lagMult;
 

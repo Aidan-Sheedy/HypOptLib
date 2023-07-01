@@ -17,7 +17,7 @@ class LagrangeMultiplier
             this->opt       = opt;
         }
 
-        PetscScalar computeLagrangeMultiplier(Vec positions, Vec C, PetscInt numParticles, PetscScalar *returnValue);
+        virtual PetscScalar computeLagrangeMultiplier(Vec positions, Vec C, PetscInt numParticles, PetscScalar *returnValue);
 
     private:
         Filter *filter;

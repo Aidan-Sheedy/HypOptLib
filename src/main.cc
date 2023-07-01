@@ -1,7 +1,5 @@
 #include "Filter.h"
 #include "LinearElasticity.h"
-#include "MMA.h"
-#include "MPIIO.h"
 #include "TopOpt.h"
 #include "mpi.h"
 #include <petsc.h>
@@ -10,6 +8,7 @@
 
 #include "Hyperoptimization.h"
 #include "FileManager.h"
+#include "FilterWrapper.h"
 /*
 Authors: Niels Aage, Erik Andreassen, Boyan Lazarov, August 2013
 
@@ -41,24 +40,7 @@ int main(int argc, char* argv[]) {
     // STEP 3: THE FILTERING
     Filter* filter = new Filter(opt->da_nodes, opt->xPhys, opt->filter, opt->rmin);
 
-    // STEP 4: VISUALIZATION USING VTK
-    // MPIIO* output = new MPIIO(opt->da_nodes, 3, "ux, uy, uz", 3, "x, xTilde, xPhys");
-    // STEP 5: THE OPTIMIZER MMA
-    // MMA*     mma;
-    // PetscInt itr = 0;
-    // opt->AllocateMMAwithRestart(&itr, &mma); // allow for restart !
-    // mma->SetAsymptotes(0.2, 0.65, 1.05);
-
-    // STEP 6: FILTER THE INITIAL DESIGN/RESTARTED DESIGN
-    // ierr = filter->FilterProject(opt->x, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta);
-    // CHKERRQ(ierr);
-
-    // ierr = physics->ComputeObjectiveConstraintsSensitivities(&(opt->fx), &(opt->gx[0]), opt->dfdx, opt->dgdx[0],
-    //                                                         opt->xPhys, opt->Emin, opt->Emax, opt->penal,
-    //                                                         opt->volfrac);
-    // CHKERRQ(ierr);
-
-    // STEP 7: OPTIMIZATION LOOP
+     // STEP 7: OPTIMIZATION LOOP
     PetscPrintf(PETSC_COMM_WORLD, "\n\n######################## Hyperoptimization ########################\n");
 
     /* Setup random starting positions */
@@ -137,12 +119,12 @@ int main(int argc, char* argv[]) {
 
 // #endif
 
+    FilterWrapper wrappedFilter(filter);
 
     Hyperoptimization solver;
     PetscCall(solver.init(physics,
                 opt,
-                filter,
-                // data,
+                &wrappedFilter,
                 lagmult,
                 temperature,
                 opt->x, /** @todo initialize the positions properly */
@@ -164,17 +146,7 @@ int main(int argc, char* argv[]) {
 
     PetscPrintf(PETSC_COMM_WORLD, "\n\n###################################################################\n");
 
-
-    // // Write restart WriteRestartFiles
-    // opt->WriteRestartFiles(&itr, mma);  
-    // physics->WriteRestartFiles();
-
-    // Dump final design
-    // output->WriteVTK(physics->da_nodal, physics->GetStateField(), opt->x, opt->xTilde, opt->xPhys, itr + 1);
-
     // STEP 7: CLEAN UP AFTER YOURSELF
-    // delete mma;
-    // delete output;
     delete filter;
     delete opt;
     delete physics;
