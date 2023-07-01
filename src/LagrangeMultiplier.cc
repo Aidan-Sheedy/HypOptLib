@@ -1,7 +1,7 @@
 
-#include "LagrangianMultiplier.h"
+#include "LagrangeMultiplier.h"
 
-PetscScalar LagrangianMultiplier::computeLagrangianMultiplier(Vec positions, Vec C, PetscInt numParticles, PetscScalar *returnValue)
+PetscScalar LagrangeMultiplier::computeLagrangeMultiplier(Vec positions, Vec C, PetscInt numParticles, PetscScalar *returnValue)
 {
     PetscErrorCode errorStatus = 0;
 

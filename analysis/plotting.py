@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 import numpy as np
 import os
 
@@ -111,12 +112,20 @@ def plotAttributesOnTop(attributes,
                         logplots=None,
                         name="",
                         desiredLines=None,
-                        linewidth=4):
+                        linewidth=4,
+                        annotation="",
+                        biggerSpace=False,
+                        biggestSpace=True,
+                        poster=False,
+                        shareX=False,
+                        scale=1,
+                        png=False):
     '''
     Plots a given attribute against time given the timestep.
     '''
 
     numPlots = len(attributes)
+    print("######\nNUMPLOTS: ", numPlots)
 
     if (None == logplots):
         logplots = [False]*numPlots
@@ -131,17 +140,40 @@ def plotAttributesOnTop(attributes,
         if (realTimeValue):
             time[i] = time[i] * timesteps[i]
 
-    figure, subplots = plt.subplots(numPlots)
-    figure.set_size_inches(7, 1.8*numPlots)
+    if (shareX):
+        figure, subplots = plt.subplots(numPlots, sharex=True)
+    else:
+        figure, subplots = plt.subplots(numPlots)
 
+    if (1 == numPlots):
+        subplots = [subplots]
+    if (biggerSpace):
+        figure.set_size_inches(7*scale, 2*numPlots*scale)
+    elif(3 == numPlots or biggestSpace):
+        figure.set_size_inches(7*scale, 3*numPlots*scale)
+    else:
+        figure.set_size_inches(7*scale, 1.8*numPlots*scale)
+    
     # figure.suptitle(title, fontsize=config.figureTitleFontsize)
 
     if (1 == len(ylabels)):
         figure.supylabel(ylabels[0])
 
-    colours = ['b', 'g', 'r', 'tab:orange']
+    if (poster):
+        colours = ['#e74d4a', '#b13b39', '#740F0E', 'r'] # RED
+        # colours = ['#92b9f5', '#567ebb', '#2c3d55', 'r'] # BLUE
+    else:
+        colours = ['b', 'g', 'r', 'tab:orange']
 
     for i in range(0,numPlots):
+        if ("" != annotation and i == 0):
+            subplots[i].annotate(   annotation,
+                                    xy=(0, 1),
+                                    xycoords='figure fraction',
+                                    horizontalalignment='left',
+                                    verticalalignment='top',
+                                    fontsize=config.figureTitleFontsize+10,
+                                    color='#00007f')
         # subplots[i].set_title(titles[i])#, fontsize=config.generalFontsize)
         if (markers[i]):
             if (logplots[i]):
@@ -151,6 +183,9 @@ def plotAttributesOnTop(attributes,
         else:
             if (logplots[i]):
                 subplots[i].semilogy(time[i], attributes[i], c=colours.pop(0), linewidth=linewidth)
+                if (np.abs((np.log10(ylims[i][1]) - np.log10(ylims[i][0]))) > 3 ):
+                    subplots[i].set_yticks([10e-6, 10e-8, 10e-10])
+                    # subplots[i].yaxis.set_major_locator(mticker.LogLocator(numticks=5, subs="auto"))
             else:
                 subplots[i].plot(time[i], attributes[i], c=colours.pop(0), linewidth=linewidth)
         if (i == numPlots-1):
@@ -162,7 +197,14 @@ def plotAttributesOnTop(attributes,
             subplots[i].plot(time[i], [desiredLines[i]]*len(time[i]), c='k')
         if (1 < len(ylabels)):
             subplots[i].set_ylabel(ylabels[i])#, fontsize=config.generalFontsize)
-        subplots[i].set_title(titles[i], fontsize=config.generalFontsize)
+        print("I!!!!! ", i)
+        if (len(titles) > 1):
+            subplots[i].set_title(titles[i], fontsize=config.generalFontsize)
+        elif(len(titles) == 1 and i == 0):
+            subplots[i].set_title(titles[0], fontsize=config.generalFontsize)
+
+        # if (logplots[i] and (np.abs((np.log10(ylims[i][1]) - np.log10(ylims[i][0]))) > 3 ) ):
+        #     subplots[i].yaxis.set_major_locator(mticker.MaxNLocator(4))
 
         subplots[i].grid(linewidth=1.3, linestyle=':')
         subplots[i].tick_params(axis='both', labelsize=config.axisTickFontsize)
@@ -172,16 +214,23 @@ def plotAttributesOnTop(attributes,
         if (None != xlims):
             subplots[i].set_xlim(xlims[0], xlims[1])
 
-    figure.tight_layout(pad=0.6)
     # figure.subplots_adjust(top=0.9)
+    if (biggerSpace):
+        figure.tight_layout(pad=0.6)
+    else:
+        figure.tight_layout(pad=0.6)
     figure.align_ylabels()
 
     # plt.show()
 
     if (savePlots):
+        format="pdf"
+        if(png):
+            format="png"
         if (not os.path.isdir("../figures")):
             os.mkdir("../figures")
-        save_name = "../figures/" + name + ".pdf"
-        figure.savefig(save_name, format='pdf', dpi=1200,bbox_inches = 'tight')
+        save_name = "../figures/" + name + "." + format
+        figure.savefig(save_name, format=format, dpi=1200,bbox_inches = 'tight')
+        print("Saved figure:\n", save_name)
 
     return

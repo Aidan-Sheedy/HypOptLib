@@ -6,18 +6,18 @@
 
 #include <petsc.h>
 
-class LagrangianMultiplier
+class LagrangeMultiplier
 {
     public:
-        LagrangianMultiplier(){}
+        LagrangeMultiplier(){}
 
-        LagrangianMultiplier(Filter *filter, TopOpt *opt)
+        LagrangeMultiplier(Filter *filter, TopOpt *opt)
         {
             this->filter    = filter;
             this->opt       = opt;
         }
 
-        PetscScalar computeLagrangianMultiplier(Vec positions, Vec C, PetscInt numParticles, PetscScalar *returnValue);
+        PetscScalar computeLagrangeMultiplier(Vec positions, Vec C, PetscInt numParticles, PetscScalar *returnValue);
 
     private:
         Filter *filter;

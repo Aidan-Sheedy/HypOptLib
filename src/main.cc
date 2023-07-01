@@ -9,7 +9,7 @@
 #include <random>
 
 #include "Hyperoptimization.h"
-
+#include "FileManager.h"
 /*
 Authors: Niels Aage, Erik Andreassen, Boyan Lazarov, August 2013
 
@@ -70,37 +70,73 @@ int main(int argc, char* argv[]) {
     // PetscCall(VecSetFromOptions(this->evenNoseHooverMass));
     // PetscCall(VecDuplicate(this->evenNoseHooverMass, &(this->oddNoseHooverMass)));
 // #if 0
-    PetscScalar *initialValues;
-    PetscCall(VecGetArray(opt->x, &initialValues));
 
-    PetscInt localSize;
-    PetscCall(VecGetLocalSize(opt->x, &localSize));
-
-    std::default_random_engine generator;
-    std::uniform_real_distribution<PetscScalar> distribution;
-
-    if (0.5 < opt->volfrac)
-    {
-        distribution = std::uniform_real_distribution<PetscScalar>(2 * opt->volfrac - 1, 1);
-    }
-    else
-    {
-        distribution = std::uniform_real_distribution<PetscScalar>(0, 2 * opt->volfrac);
-    }
-
-    for (PetscInt i = 0; i < localSize; i++)
-    {
-        initialValues[i] = distribution(generator); //opt->volfrac;
-    }
-
-    PetscCall(VecRestoreArray(opt->x, &initialValues));
-// #endif
-    LagrangianMultiplier lagmult(filter, opt);
+    LagrangeMultiplier lagmult(filter, opt);
 
     /** @todo Figure out how to pass stuff in from the wrapper! */
     PetscScalar temperature = 0;//5;
     PetscScalar NHChainOrder = 10;
-    PetscScalar dt = 0.01;//0.001;//0.0002;
+    PetscScalar dt = 0.05;//0.001;//0.0002;
+
+    bool restart = true;
+    Vec initialVelocities;
+
+    PetscCall(VecDuplicate(opt->x, &initialVelocities));
+
+    if (restart)
+    {
+        std::string filePath = "/home/aidans/Hyperoptimization_using_Petsc/0deg_good/hypopt_output_restart2.h5";
+
+        PetscInt iteration = 4999;
+
+        std::string vecName = "iteration" + std::to_string(iteration);
+
+        Vec initialValues;
+
+        PetscCall(VecDuplicate(opt->x, &initialValues));
+        PetscCall(PetscObjectSetName((PetscObject)initialValues, vecName.c_str()));
+        PetscCall(FileManager::HDF5GetSavedVec(filePath, "/Dataset/State", &initialValues));
+
+        PetscCall(VecCopy(initialValues, opt->x));
+
+        PetscCall(PetscObjectSetName((PetscObject)initialVelocities, "Final Velocity"));
+        PetscCall(FileManager::HDF5GetSavedVec(filePath, "/Dataset", &initialVelocities));
+
+        PetscPrintf(PETSC_COMM_WORLD, "Requested restart successful!\n");
+
+    }
+    else
+    {
+        PetscScalar *initialValues;
+        PetscCall(VecGetArray(opt->x, &initialValues));
+
+        PetscInt localSize;
+        PetscCall(VecGetLocalSize(opt->x, &localSize));
+
+        std::default_random_engine generator;
+        std::uniform_real_distribution<PetscScalar> distribution;
+
+        if (0.5 < opt->volfrac)
+        {
+            distribution = std::uniform_real_distribution<PetscScalar>(2 * opt->volfrac - 1, 1);
+        }
+        else
+        {
+            distribution = std::uniform_real_distribution<PetscScalar>(0, 2 * opt->volfrac);
+        }
+
+        for (PetscInt i = 0; i < localSize; i++)
+        {
+            initialValues[i] = distribution(generator); //opt->volfrac;
+        }
+
+        PetscCall(VecRestoreArray(opt->x, &initialValues));
+        PetscCall(VecSet(initialVelocities, std::sqrt(temperature)));
+    }
+
+
+// #endif
+
 
     Hyperoptimization solver;
     PetscCall(solver.init(physics,
@@ -110,10 +146,11 @@ int main(int argc, char* argv[]) {
                 lagmult,
                 temperature,
                 opt->x, /** @todo initialize the positions properly */
+                initialVelocities,
                 NHChainOrder,
                 opt->maxItr,
                 dt,
-                60000,
+                100,
                 true));
 
     PetscPrintf(PETSC_COMM_WORLD, "Initialized, starting design loop\n");
