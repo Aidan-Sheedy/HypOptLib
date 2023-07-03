@@ -9,9 +9,9 @@
 #pragma once
 
 #include "SensitivitiesWrapper.h"
-#include "TopOpt.h"
 #include "FilterWrapper.h"
 #include "LagrangeMultiplier.h"
+#include "FileManager.h"
 
 #include <petsc.h>
 #include <vector>
@@ -26,18 +26,6 @@ class Hyperoptimization
         Hyperoptimization(){}
 
         PetscErrorCode init(SensitivitiesWrapper* currentState,
-                            TopOpt* opt,
-                            FilterWrapper* filter,
-                            LagrangeMultiplier lagMult,
-                            PetscScalar temperature,
-                            Vec initialPositions,
-                            Vec initialVelocities,
-                            PetscScalar NHChainOrder,
-                            PetscInt numIterations,
-                            PetscScalar timestep);
-
-        PetscErrorCode init(SensitivitiesWrapper* currentState,
-                            TopOpt* opt,
                             FilterWrapper* filter,
                             LagrangeMultiplier lagMult,
                             PetscScalar temperature,
@@ -46,6 +34,18 @@ class Hyperoptimization
                             PetscScalar NHChainOrder,
                             PetscInt numIterations,
                             PetscScalar timestep,
+                            FileManager* fileManager);
+
+        PetscErrorCode init(SensitivitiesWrapper* currentState,
+                            FilterWrapper* filter,
+                            LagrangeMultiplier lagMult,
+                            PetscScalar temperature,
+                            Vec initialPositions,
+                            Vec initialVelocities,
+                            PetscScalar NHChainOrder,
+                            PetscInt numIterations,
+                            PetscScalar timestep,
+                            FileManager* fileManager,
                             PetscInt numIterationsToSave,
                             bool saveHamiltonian);
 
@@ -166,8 +166,6 @@ class Hyperoptimization
 
         PetscErrorCode calculateHamiltonian(Vec velocities, Vec positions, PetscScalar *hamiltonian);
 
-        PetscErrorCode initializeHDF5();
-
         PetscErrorCode saveIteration(PetscInt iteration, Vec positions);
 
         PetscErrorCode saveFinalValues();
@@ -177,19 +175,13 @@ class Hyperoptimization
         PetscErrorCode truncatePositions(Vec *positions);
 
     private:
-        SensitivitiesWrapper* currentState;
+        FileManager* fileManager;
 
-        TopOpt* opt;
+        SensitivitiesWrapper* currentState;
 
         FilterWrapper* filter;
 
         LagrangeMultiplier lagMult;
-
-        std::string saveFilePath;
-
-        const std::string stateGroup = "/Dataset/State";
-
-        const std::string dataGroup = "/Dataset";
 
         PetscScalar temperature;
 

@@ -7,7 +7,7 @@ PetscErrorCode FilterWrapper::filterDesignVariable(Vec unfiltered, Vec filtered)
 
     this->filter->FilterProject(unfiltered, filtered, unused, PETSC_FALSE, 0, 0);
 
-    VecDestroy(&unused);
+    PetscCall(VecDestroy(&unused));
 
     return 0;
 }
@@ -25,7 +25,7 @@ PetscErrorCode FilterWrapper::filterSensitivities(Vec position, Vec sensitivitie
         filter->Gradients(position, unused, sensitivities, 0, constraintSensitivities, PETSC_FALSE, 0, 0)
         );
     
-    VecDestroy(&unused);
+    PetscCall(VecDestroy(&unused));
 
     return 0;
 }

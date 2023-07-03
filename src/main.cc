@@ -121,10 +121,22 @@ int main(int argc, char* argv[]) {
 
     FilterWrapper wrappedFilter(filter);
     SensitivitiesWrapper currentState(physics, opt);
+    FileManager output;
+
+    output.initializeHDF5(opt->volfrac,
+                          dt,
+                          temperature,
+                          opt->nxyz[0]-1,
+                          opt->nxyz[1]-1,
+                          opt->nxyz[2]-1,
+                          opt->penal,
+                          opt->rmin,
+                          opt->maxItr,
+                          opt->maxItr,
+                          NHChainOrder);
 
     Hyperoptimization solver;
     PetscCall(solver.init(&currentState,
-                opt,
                 &wrappedFilter,
                 lagmult,
                 temperature,
@@ -133,6 +145,7 @@ int main(int argc, char* argv[]) {
                 NHChainOrder,
                 opt->maxItr,
                 dt,
+                &output,
                 100,
                 true));
 

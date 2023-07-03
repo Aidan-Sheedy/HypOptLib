@@ -9,7 +9,6 @@
 #include "Hyperoptimization.h"
 
 #include "PetscExtensions.h"
-#include "FileManager.h"
 #include <petscviewerhdf5.h>
 
 #include <cmath>
@@ -25,32 +24,6 @@
  * @todo ALL CALLS TO VecGetArrayRead MUST be followed up by "VecRestoreArrayRead()"!!!!!!!!!
 */
 PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper* currentState,
-                                        TopOpt* opt,
-                                        FilterWrapper* filter,
-                                        LagrangeMultiplier lagMult,
-                                        PetscScalar temperature,
-                                        Vec initialPositions,
-                                        Vec initialVelocities,
-                                        PetscScalar NHChainOrder,
-                                        PetscInt numIterations,
-                                        PetscScalar timestep)
-{
-    return this->init(  currentState,
-                        opt,
-                        filter,
-                        lagMult,
-                        temperature,
-                        initialPositions,
-                        initialVelocities,
-                        NHChainOrder,
-                        numIterations,
-                        timestep,
-                        2000,
-                        true); /* Save 2000 iterations by defaultDefault */
-}
-
-PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper* currentState,
-                                        TopOpt* opt,
                                         FilterWrapper* filter,
                                         LagrangeMultiplier lagMult,
                                         PetscScalar temperature,
@@ -59,12 +32,38 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper* currentState,
                                         PetscScalar NHChainOrder,
                                         PetscInt numIterations,
                                         PetscScalar timestep,
+                                        FileManager* fileManager)
+{
+    return this->init(  currentState,
+                        filter,
+                        lagMult,
+                        temperature,
+                        initialPositions,
+                        initialVelocities,
+                        NHChainOrder,
+                        numIterations,
+                        timestep,
+                        fileManager,
+                        2000,
+                        true); /* Save 2000 iterations by defaultDefault */
+}
+
+PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper* currentState,
+                                        FilterWrapper* filter,
+                                        LagrangeMultiplier lagMult,
+                                        PetscScalar temperature,
+                                        Vec initialPositions,
+                                        Vec initialVelocities,
+                                        PetscScalar NHChainOrder,
+                                        PetscInt numIterations,
+                                        PetscScalar timestep,
+                                        FileManager* fileManager,
                                         PetscInt numIterationsToSave,
                                         bool saveHamiltonian) /** @todo this might need to be a scalar? */
 {
     PetscErrorCode errorStatus = 0;
 
-    if ( (NULL == currentState) || (NULL == opt) || (NULL == filter))
+    if ( (NULL == currentState) || (NULL == filter) || (NULL == fileManager) )
     {
         errorStatus = PETSC_ERR_ARG_CORRUPT;
     }
@@ -72,8 +71,8 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper* currentState,
     if (0 == errorStatus)
     {
         /** @todo Make sure all the Vecs are being properly instantiated, this is not correct! */
+        this->fileManager           = fileManager;
         this->currentState          = currentState;
-        this->opt                   = opt;
         this->filter                = filter;
         this->lagMult               = lagMult;
         this->temperature           = temperature;
@@ -119,8 +118,6 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper* currentState,
 
         if (saveData)
         {
-            initializeHDF5();
-
             LagrangeMultipliers.reserve(numIterations);
             hamiltonians.reserve(numIterations);
             compliance.reserve(numIterations);
@@ -139,127 +136,32 @@ Hyperoptimization::~Hyperoptimization()
 
 }
 
-PetscErrorCode Hyperoptimization::initializeHDF5()
-{
-    PetscErrorCode errorStatus = 0;
-
-    std::string filename = "hypopt_output";
-    std::string fileExtension = ".h5";
-    std::string fullPath = "";
-
-    // Check PETSc input for a work directory
-    // char      filenameChar[PETSC_MAX_PATH_LEN];
-    // PetscBool flg = PETSC_FALSE;
-    // PetscOptionsGetString(NULL, NULL, "-workdir", filenameChar, sizeof(filenameChar), &flg);
-
-    // If input, change path of the file in filename
-    // if (flg) {
-    //     fullPath.append(filenameChar);
-    //     fullPath.append("/");
-    // }
-    // else
-    // {
-    //     fullPath.append("output/");
-    // }
-    fullPath.append(filename);
-
-    // std::filesystem::path filePath{fullPath + fileExtension};
-    // int i = 0;
-    std::string appendor = "";
-    // while (std::filesystem::exists(filePath))
-    // {
-    //     i++;
-    //     appendor = std::string(i);
-    //     filePath = std::filesystem::path(fullPath + appendor + fileExtension);
-    // }
-
-    fullPath.append(appendor + fileExtension);
-
-    this->saveFilePath = fullPath;
-
-    PetscPrintf(PETSC_COMM_WORLD, "Trying to save to file: %s\n", fullPath.c_str());
-
-    PetscViewer saveFileHDF5;
-
-    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, fullPath.c_str(), FILE_MODE_WRITE, &(saveFileHDF5)));
-
-    // std::time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    // std::string timeString = std::asctime(currentTime);
-    // PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/", "create_date", PETSC_STRING, &()));
-
-    PetscCall(PetscViewerHDF5WriteGroup(saveFileHDF5, "/Setting"));
-    PetscCall(PetscViewerHDF5WriteGroup(saveFileHDF5, this->stateGroup.c_str()));
-
-    /* Write all settings */
-
-    PetscInt nelx = opt->nxyz[0]-1;
-    PetscInt nely = opt->nxyz[1]-1;
-    PetscInt nelz = opt->nxyz[2]-1;
-
-    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "volfrac",    PETSC_SCALAR,   &(opt->volfrac)));
-    // PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "weights",    PETSC_SCALAR, &(opt->volfrac)));
-    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "dt",         PETSC_SCALAR,   &(this->timestep)));
-    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "T",          PETSC_SCALAR,   &(this->temperature)));
-    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "nelx",       PETSC_INT,      &(nelx)));
-    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "nely",       PETSC_INT,      &(nely)));
-    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "nelz",       PETSC_INT,      &(nelz)));
-    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "penal",      PETSC_SCALAR,   &(opt->penal)));
-    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "rmin",       PETSC_SCALAR,   &(opt->rmin)));
-    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "stepN",      PETSC_INT,      &(opt->maxItr)));
-    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "sampleN",    PETSC_INT,      &(opt->maxItr))); /** @todo IMPLEMENT */
-    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "ch_Order",   PETSC_SCALAR,   &(this->NHChainOrder)));
-
-    PetscCall(PetscViewerDestroy(&(saveFileHDF5)));
-
-    return errorStatus;
-}
-
-PetscErrorCode Hyperoptimization::saveIteration(PetscInt iteration, Vec positions)
-{
-    PetscErrorCode errorStatus = 0;
-
-    PetscViewer saveFileHDF5;
-    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, this->saveFilePath.c_str(), FILE_MODE_APPEND, &(saveFileHDF5)));
-
-    // Set positions name
-    std::string stateName = "iteration";
-    stateName.append(std::to_string(iteration));
-
-    PetscCall(PetscObjectSetName((PetscObject)positions, stateName.c_str()));
-    PetscCall(PetscViewerHDF5PushGroup(saveFileHDF5, stateGroup.c_str()));
-    PetscCall(VecView(positions, saveFileHDF5));
-    PetscCall(PetscViewerHDF5PopGroup(saveFileHDF5));
-
-    PetscCall(PetscViewerDestroy(&saveFileHDF5));
-
-    return errorStatus;
-}
-
 PetscErrorCode Hyperoptimization::saveFinalValues()
 {
     PetscErrorCode errorStatus = 0;
 
     /* Save Vectors */
+    std::string saveFilePath = fileManager->getSaveFilePath();
+    std::string dataGroup = fileManager->getDataGroup();
+
     PetscViewer saveFileHDF5;
-    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, this->saveFilePath.c_str(), FILE_MODE_APPEND, &(saveFileHDF5)));
+    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, saveFilePath.c_str(), FILE_MODE_APPEND, &(saveFileHDF5)));
     PetscCall(PetscViewerHDF5PushGroup(saveFileHDF5, dataGroup.c_str()));
     if (saveHamiltonian)
     {
         FileManager::HDF5SaveStdVector(saveFileHDF5, this->hamiltonians, "Hamiltonian");
     }
-    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->temperatures,            "Temperature"));
+    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->temperatures,          "Temperature"));
     PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->LagrangeMultipliers,   "Lambda"));
-    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->compliance,              "Compliance"));
-    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->genericData,             "Volume Fraction"));
-    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->genericData2,            "Max Position"));
-    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->iterationTimes,           "Iteration Compute Time"));
+    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->compliance,            "Compliance"));
+    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->genericData,           "Volume Fraction"));
+    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->genericData2,          "Max Position"));
+    PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->iterationTimes,        "Iteration Compute Time"));
 
     PetscCall(PetscObjectSetName((PetscObject)(this->prevVelocity), "Final Velocity"));
     PetscCall(VecView(this->prevVelocity, saveFileHDF5));
 
     PetscCall(PetscViewerHDF5PopGroup(saveFileHDF5));
-    
-
     PetscCall(PetscViewerDestroy(&saveFileHDF5));
 
     return errorStatus;
@@ -579,9 +481,6 @@ PetscErrorCode Hyperoptimization::assembleNewPositions(PetscScalar firstNoseHoov
     /* Lagrange Multipliers require properly constrained design variables */
     truncatePositions(&(this->newPosition));
 
-    // Fix all passive elements
-    // opt->SetVariables(this->newPosition, opt->xPassive);
-
     /* Lagrange multiplier */
     PetscScalar scaleFactor = - this->timestep * this->halfTimestep * std::exp(-this->halfTimestep * firstNoseHooverVelocity);
     PetscCall(VecScale(rightSide, scaleFactor));
@@ -596,9 +495,6 @@ PetscErrorCode Hyperoptimization::assembleNewPositions(PetscScalar firstNoseHoov
 
     truncatePositions(&(this->newPosition));
 
-    // Fix all passive elements
-    // opt->SetVariables(this->newPosition, opt->xPassive);
-
     PetscCall(VecDestroy(&rightSide));
 
     return errorStatus;
@@ -607,32 +503,21 @@ PetscErrorCode Hyperoptimization::assembleNewPositions(PetscScalar firstNoseHoov
 PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
 {
     PetscErrorCode errorStatus = 0;
+
+    Vec filteredPositions;
+    PetscCall(VecDuplicate(positions, &filteredPositions));
+
     // Positions used in constraint calculations
-    errorStatus = this->filter->filterDesignVariable(positions, opt->xTilde);
-    CHKERRQ(errorStatus);
+    PetscCall(this->filter->filterDesignVariable(positions, filteredPositions));
 
     // Compute sensitivities
-    errorStatus = currentState->computeSensitivities(opt->xTilde, opt->dfdx, opt->dgdx[0]);
-    // errorStatus = currentState->ComputeObjectiveConstraintsSensitivities(&(opt->fx), 
-    //                                                                 &(opt->gx[0]),
-    //                                                                 opt->dfdx,
-    //                                                                 opt->dgdx[0],
-    //                                                                 opt->xTilde,
-    //                                                                 // opt->xPhys,
-    //                                                                 opt->Emin,
-    //                                                                 opt->Emax,
-    //                                                                 opt->penal,
-    //                                                                 opt->volfrac);//,
-                                                                    // data);
-    CHKERRQ(errorStatus);
+    PetscCall(currentState->computeSensitivities(filteredPositions, sensitivities, constraintSensitivities));
 
     // Filter sensitivities (Standard Filter)
-    errorStatus = filter->filterSensitivities(positions, opt->dfdx, opt->dgdx);
-    CHKERRQ(errorStatus);
-
-    PetscCall(VecCopy(opt->dfdx, this->sensitivities));
+    PetscCall(filter->filterSensitivities(positions, this->sensitivities, &constraintSensitivities));
     PetscCall(VecScale(this->sensitivities, -1));
-    PetscCall(VecCopy(opt->dgdx[0], this->constraintSensitivities));
+
+    PetscCall(VecDestroy(&filteredPositions));
 
     return errorStatus;
 }
@@ -656,34 +541,21 @@ PetscErrorCode Hyperoptimization::calculateTemperature(Vec velocities, PetscScal
 PetscErrorCode Hyperoptimization::calculateHamiltonian(Vec velocities, Vec positions, PetscScalar *hamiltonian)
 {
     PetscErrorCode errorStatus = 0;
-
+    PetscScalar currentCompliance = 0;
     PetscScalar velocityDotProduct;
 
+    Vec filteredPositions;
+    PetscCall(VecDuplicate(positions, &filteredPositions));
+
     truncatePositions(&positions);
-
-    errorStatus = filter->filterDesignVariable(positions, opt->xTilde);
-
-    // errorStatus = currentState->ComputeObjectiveConstraintsSensitivities(&(opt->fx), 
-    //                                                                 &(opt->gx[0]),
-    //                                                                 opt->dfdx,
-    //                                                                 opt->dgdx[0],
-    //                                                                 opt->xTilde,
-    //                                                                 // opt->xPhys,
-    //                                                                 opt->Emin,
-    //                                                                 opt->Emax,
-    //                                                                 opt->penal,
-    //                                                                 opt->volfrac);//,
-
-    // PetscScalar currentCompliance = opt->fx;
-    PetscScalar currentCompliance = 0;
-
-    errorStatus = currentState->computeObjectiveFunction(opt->xTilde, &currentCompliance);
-
+    errorStatus = filter->filterDesignVariable(positions, filteredPositions);
+    errorStatus = currentState->computeObjectiveFunction(filteredPositions, &currentCompliance);
     PetscCall(VecDot(velocities, velocities, &velocityDotProduct));
-
     *hamiltonian = currentCompliance + velocityDotProduct / 2;
 
     this->compliance.push_back(currentCompliance);
+
+    PetscCall(VecDestroy(&filteredPositions));
 
     return errorStatus;
 }
@@ -817,7 +689,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
         {
             if ( (this->numIterations - iteration) <= numIterationsToSave)
             {
-                saveIteration(iteration, this->newPosition);
+                fileManager->saveIteration(iteration, this->newPosition);
             }
 
             if (temperatureCheck)

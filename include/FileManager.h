@@ -15,7 +15,7 @@
 class FileManager
 {
     public:
-        FileManager() = delete;
+        FileManager(){}
 
         // initializeHDF5(std::string fileName, std::vector<std::string> settings);
 
@@ -23,10 +23,28 @@ class FileManager
 
         static PetscErrorCode HDF5GetSavedVec(std::string filePath, std::string location, Vec *vector);
 
+        PetscErrorCode initializeHDF5(PetscScalar volfrac,
+                                      PetscScalar timestep,
+                                      PetscScalar temperature,
+                                      PetscInt numberElementsX,
+                                      PetscInt numberElementsY,
+                                      PetscInt numberElementsZ,
+                                      PetscScalar penalty,
+                                      PetscScalar filterRadius,
+                                      PetscInt numberSteps,
+                                      PetscInt numberSamples,
+                                      PetscScalar NoseHooverChainOrder);
+
+        PetscErrorCode saveIteration(PetscInt iteration, Vec positions);
+
+        std::string getSaveFilePath();
+        std::string getDataGroup();
 
     private:
         // const std::string stateGroup = "/Dataset/State";
+        std::string saveFilePath;
 
+        const std::string stateGroup = "/Dataset/State";
 
-
+        const std::string dataGroup = "/Dataset";
 };

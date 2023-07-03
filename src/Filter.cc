@@ -242,6 +242,8 @@ PetscErrorCode Filter::HeavisideFilter(Vec y, Vec x, PetscReal beta, PetscReal e
     CHKERRQ(ierr);
     ierr = VecRestoreArray(y, &yp);
     CHKERRQ(ierr);
+
+    return ierr;
 }
 
 PetscErrorCode Filter::ChainruleHeavisideFilter(Vec y, Vec x, PetscReal beta, PetscReal eta) {
@@ -262,6 +264,8 @@ PetscErrorCode Filter::ChainruleHeavisideFilter(Vec y, Vec x, PetscReal beta, Pe
     CHKERRQ(ierr);
     ierr = VecRestoreArray(y, &yp);
     CHKERRQ(ierr);
+
+    return ierr;
 }
 
 // Continuation function
