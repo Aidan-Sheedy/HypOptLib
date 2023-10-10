@@ -14,7 +14,7 @@ set(CMAKE_C_COMPILER mpicc)
 set(CMAKE_CXX_COMPILER mpicxx)
 
 # set the project name
-project(hypopt VERSION 0.0.1
+project(HypOptLib VERSION 0.0.1
                   DESCRIPTION "Hyperoptimization extension of the functionality of the TopOpt_in_PETSc framework")
 
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake-modules)
@@ -30,7 +30,8 @@ find_package(PETSc REQUIRED)
 message (STATUS "PETSC COMPILER ${PETSC_COMPILER}")
 
 add_definitions (-std=c++0x)
-include_directories("${CMAKE_SOURCE_DIR}/include" "${CMAKE_BINARY_DIR}/include" "${PETSC_INCLUDES}")
+
+# include_directories("${CMAKE_SOURCE_DIR}/include" "${CMAKE_BINARY_DIR}/include" "${PETSC_INCLUDES}" "pybind11/include")
 
 add_definitions (${PETSC_DEFINITIONS})
 add_definitions (-g)
@@ -38,15 +39,22 @@ add_definitions (-g)
 message (STATUS "PETSC_DEFINITIONS ${PETSC_DEFINITIONS}")
 
 file(GLOB SOURCES "src/*.cc")
-add_executable(hypopt ${SOURCES})
+# add_executable(HypOptLib ${SOURCES})
 
-target_link_libraries(hypopt ${PETSC_LIBRARIES})
-# target_link_libraries(topoptlib ${PYTHON_LIBRARIES})
+add_subdirectory(pybind11)
+pybind11_add_module(HypOptLib SHARED ${SOURCES})
+target_include_directories(HypOptLib PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/include ${PETSC_INCLUDES} pybind11/include)
+
+target_link_libraries(HypOptLib PUBLIC ${PETSC_LIBRARIES})
+
+# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/python)
+
+
 
 set_target_properties(
-    hypopt
+    HypOptLib
     PROPERTIES
         PREFIX ""
-        OUTPUT_NAME "hypopt"
-        RUNTIME_OUTPUT_DIRECTORY "../bin"
+        OUTPUT_NAME "HypOptLib"
+        LIBRARY_OUTPUT_DIRECTORY "../run"
     )

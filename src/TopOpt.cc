@@ -15,16 +15,22 @@
 TopOpt::TopOpt(PetscInt nconstraints) {
 
     m = nconstraints;
-    Init();
+    Init(65, 33, 33, 3.0, 0.08);
 }
 
 TopOpt::TopOpt() {
 
     m = 1;
-    Init();
+    Init(65, 33, 33, 3.0, 0.08);
 }
 
-void TopOpt::Init() { // Dummy constructor
+TopOpt::TopOpt(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscScalar penalty, PetscScalar minimumFilterRadius) {
+
+    m = 1;
+    Init(xDimensions, yDimensions, zDimensions, penalty, minimumFilterRadius);
+}
+
+void TopOpt::Init(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscScalar penalty, PetscScalar minimumFilterRadius) { // Dummy constructor
 
     x        = NULL;
     xPhys    = NULL;
@@ -39,7 +45,7 @@ void TopOpt::Init() { // Dummy constructor
     U   = NULL;
     L   = NULL;
 
-    SetUp();
+    SetUp(xDimensions, yDimensions, zDimensions, penalty, minimumFilterRadius);
 }
 
 TopOpt::~TopOpt() {
@@ -99,13 +105,13 @@ TopOpt::~TopOpt() {
 
 // NO METHODS !
 // PetscErrorCode TopOpt::SetUp(Vec CRAPPY_VEC){
-PetscErrorCode TopOpt::SetUp() {
+PetscErrorCode TopOpt::SetUp(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscScalar penalty, PetscScalar minimumFilterRadius) {
     PetscErrorCode ierr;
 
     // SET DEFAULTS for FE mesh and levels for MG solver
-    nxyz[0] = 129;//33; //65; // 
-    nxyz[1] = 65;//17; //33; // 
-    nxyz[2] = 65;//17; //33; // 
+    nxyz[0] = xDimensions;  //33; //65; // 
+    nxyz[1] = yDimensions;  //17; //33; // 
+    nxyz[2] = zDimensions;  //17; //33; // 
     xc[0]   = 0.0;  
     xc[1]   = 2.0;
     xc[2]   = 0.0;
@@ -118,8 +124,8 @@ PetscErrorCode TopOpt::SetUp() {
     // SET DEFAULTS for optimization problems
     volfrac = 0.12;
     maxItr  = 5000;//10;//25000;
-    rmin    = 0.08;
-    penal   = 3.0;
+    rmin    = minimumFilterRadius;
+    penal   = penalty;
     Emin    = 1.0e-9;
     Emax    = 1.0;
     filter  = 1; // 0=sens,1=dens,2=PDE - other val == no filtering

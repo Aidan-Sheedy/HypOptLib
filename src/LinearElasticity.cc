@@ -301,6 +301,10 @@ PetscErrorCode LinearElasticity::ComputeSensitivities(Vec dfdx, Vec dgdx, Vec xP
 
     PetscErrorCode ierr;
 
+    // Solve state eqs
+    ierr = SolveState(xPhys, Emin, Emax, penal);
+    CHKERRQ(ierr);
+
     // Get the FE mesh structure (from the nodal mesh)
     PetscInt        nel, nen;
     const PetscInt* necon;

@@ -37,6 +37,7 @@ class TopOpt {
 
   public:
     // Constructor/Destructor
+    TopOpt(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscScalar penalty, PetscScalar minimumFilterRadius);
     TopOpt(PetscInt nconstraint);
     TopOpt();
     ~TopOpt();
@@ -98,8 +99,8 @@ class TopOpt {
 
   private:
     // Allocate and set default values
-    void           Init();
-    PetscErrorCode SetUp();
+    void           Init(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscScalar penalty, PetscScalar minimumFilterRadius);
+    PetscErrorCode SetUp(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscScalar penalty, PetscScalar minimumFilterRadius);
 
     PetscErrorCode SetUpMESH();
     PetscErrorCode SetUpOPT();

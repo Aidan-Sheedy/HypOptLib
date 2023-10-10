@@ -463,6 +463,8 @@ PetscErrorCode Filter::SetUp(DM da_nodes, Vec x) {
         pdef = new PDEFilt(da_nodes, R);
     }
 
+    PetscPrintf(PETSC_COMM_WORLD, "\n\n######################## Filter done ########################\n");
+
     return ierr;
 }
 

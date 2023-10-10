@@ -22,7 +22,7 @@ PetscErrorCode FilterWrapper::filterSensitivities(Vec position, Vec sensitivitie
 
 
     PetscCall(
-        filter->Gradients(position, unused, sensitivities, 0, constraintSensitivities, PETSC_FALSE, 0, 0)
+        filter->Gradients(position, unused, sensitivities, numConstraints, constraintSensitivities, PETSC_FALSE, 0, 0)
         );
     
     PetscCall(VecDestroy(&unused));

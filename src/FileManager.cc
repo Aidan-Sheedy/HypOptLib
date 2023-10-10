@@ -62,6 +62,7 @@ PetscErrorCode FileManager::initializeHDF5(PetscScalar volfrac,
                                            PetscInt numberSamples,
                                            PetscScalar NoseHooverChainOrder)
 {
+    PetscPrintf(PETSC_COMM_WORLD, "\t- Entered File Manager\n");
     PetscErrorCode errorStatus = 0;
 
     std::string filename = "hypopt_output";

@@ -1,5 +1,7 @@
 #include "SensitivitiesWrapper.h"
 
+#include "PetscExtensions.h"
+
 PetscErrorCode SensitivitiesWrapper::computeSensitivities(Vec filteredPositions,
                                                           Vec sensitivities,
                                                           Vec constraintSensitivities)

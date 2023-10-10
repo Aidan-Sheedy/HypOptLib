@@ -1,2 +1,7 @@
 build
 bin
+run
+pybind11
+outputs
+figures
+.vscode

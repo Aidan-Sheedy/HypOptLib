@@ -183,7 +183,7 @@ PetscErrorCode PetscExtensions::PrintVecMinMaxMean(Vec vector, const char * name
     PetscCall(VecMean(vector, &meanPos));
 
     PetscPrintf(PETSC_COMM_WORLD, "\n-------------------------------------------\n%s", name);
-    PetscPrintf(PETSC_COMM_WORLD, "\nmax: %e, min: %e, mean: %e\n", maxPos, minPos, meanPos);
+    PetscPrintf(PETSC_COMM_WORLD, "\nmax: %.10e, min: %.10e, mean: %.10e\n", maxPos, minPos, meanPos);
 
     return 0;
 }

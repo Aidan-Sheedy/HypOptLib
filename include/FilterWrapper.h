@@ -9,11 +9,12 @@
 class FilterWrapper
 {
     public:
-        FilterWrapper(){}
+        // FilterWrapper(){}
 
-        FilterWrapper(Filter *filter)
+        FilterWrapper(Filter *filter, PetscInt numConstraints)
         {
-            this->filter    = filter;
+            this->filter         = filter;
+            this->numConstraints = numConstraints;
         }
 
         virtual PetscErrorCode filterDesignVariable(Vec unfiltered, Vec filtered);
@@ -21,5 +22,7 @@ class FilterWrapper
 
     private:
         Filter *filter;
+
+        PetscInt numConstraints;
 
 };

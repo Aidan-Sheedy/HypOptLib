@@ -733,7 +733,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                 iterationTimes.push_back(t2 - t1);
 
                 // PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Max Pos: %f, Min Pos: %f, Mean Pos: %f, Max Vel: %f, Min Vel: %f, Mean Vel: %f, Temperature: %f, LM: %f, HM: %f\n", iteration, maxPos, minPos, meanPos, maxVel, minVel, meanVel, temperature, lagMultiplier);//, hamiltonian);
-                PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Max Pos: %f, Min Pos: %f, Mean Pos: %f, Max Vel: %f, Min Vel: %f, Mean Vel: %f, Temp: %f, LM: %f,\ttime: %f\n", iteration, maxPos, minPos, meanPos, maxVel, minVel, meanVel, temperature, lagMultiplier, t2 - t1);//, hamiltonian);
+                PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Max Pos: %e, Min Pos: %e, Mean Pos: %e, Max Vel: %e, Min Vel: %e, Mean Vel: %e, Temp: %e, LM: %e,\ttime: %f\n", iteration, maxPos, minPos, meanPos, maxVel, minVel, meanVel, temperature, lagMultiplier, t2 - t1);//, hamiltonian);
 
                 PetscCall(VecDestroy(&filtered_pos));
             }
