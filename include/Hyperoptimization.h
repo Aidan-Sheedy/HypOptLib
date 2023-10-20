@@ -11,6 +11,7 @@
 #include "SensitivitiesWrapper.h"
 #include "FilterWrapper.h"
 #include "LagrangeMultiplier.h"
+#include "HypOptParameters.h"
 #include "FileManager.h"
 
 #include <petsc.h>
@@ -31,29 +32,47 @@ class Hyperoptimization
                             PetscScalar temperature,
                             Vec initialPositions,
                             Vec initialVelocities,
-                            PetscScalar NHChainOrder,
-                            PetscInt numIterations,
-                            PetscScalar timestep,
-                            FileManager* fileManager);
-
-        PetscErrorCode init(SensitivitiesWrapper* currentState,
-                            FilterWrapper* filter,
-                            LagrangeMultiplier lagMult,
-                            PetscScalar temperature,
-                            Vec initialPositions,
-                            Vec initialVelocities,
-                            PetscScalar NHChainOrder,
+                            PetscInt NHChainOrder,
                             PetscInt numIterations,
                             PetscScalar timestep,
                             FileManager* fileManager,
-                            PetscInt numIterationsToSave,
+                            std::vector<uint32_t> iterationSaveRange,
                             bool saveHamiltonian);
 
+        PetscErrorCode init(SensitivitiesWrapper* currentState,
+                            LagrangeMultiplier lagMult,
+                            FilterWrapper* filter,
+                            FileManager* fileManager,
+                            PetscInt NHChainOrder,
+                            PetscScalar timestep,
+                            PetscScalar temperature,
+                            PetscInt numIterations,
+                            std::vector<uint32_t> iterationSaveRange,
+                            Vec initialPositions,
+                            Vec initialVelocities,
+                            Vec initialEvenNoseHooverPosition,
+                            Vec initialEvenNoseHooverVelocity,
+                            Vec initialOddNoseHooverPosition,
+                            Vec initialOddNoseHooverVelocity,
+                            bool saveHamiltonian);
 
         ~Hyperoptimization();
 
         PetscErrorCode runDesignLoop(); /* @note Maybe this should have some of the parameters? like initial values and such? Unsure. */
 
+        std::vector<PetscScalar> getHamiltonians() {return hamiltonians;}
+
+        std::vector<PetscScalar> getCompliance() {return compliance;}
+
+        std::vector<PetscScalar> getTemperatures() {return temperatures;}
+
+        std::vector<PetscScalar> getLagrangeMultipliers() {return LagrangeMultipliers;}
+
+        std::vector<PetscScalar> getIterationTimes() {return iterationTimes;}
+
+        HypOptParameters getFinalState() {return prevState;}
+
+        bool getSaveHamiltonian() {return saveHamiltonian;}
 
     private:
         /**
@@ -166,9 +185,9 @@ class Hyperoptimization
 
         PetscErrorCode calculateHamiltonian(Vec velocities, Vec positions, PetscScalar *hamiltonian);
 
-        PetscErrorCode saveIteration(PetscInt iteration, Vec positions);
+        // PetscErrorCode saveIteration(PetscInt iteration, Vec positions);
 
-        PetscErrorCode saveFinalValues();
+        // PetscErrorCode saveFinalValues(Vec evenNoseHooverPosition, Vec evenNoseHooverVelocity, Vec oddNoseHooverPosition, Vec oddNoseHooverVelocity);
 
         PetscErrorCode calculateSensitvities(Vec positions);
 
@@ -185,7 +204,7 @@ class Hyperoptimization
 
         PetscScalar temperature;
 
-        PetscScalar NHChainOrder;
+        PetscInt NHChainOrder;
 
         PetscInt numParticles;
 
@@ -210,9 +229,7 @@ class Hyperoptimization
         /** @todo confirm if this is needed*/
         // Vec passiveElements;
 
-        Vec prevPosition;
-
-        Vec prevVelocity;
+        HypOptParameters prevState;
 
         Vec newPosition;
 
@@ -234,12 +251,15 @@ class Hyperoptimization
 
         std::vector<PetscScalar> iterationTimes;
 
-        PetscInt numIterationsToSave;
+        std::vector<uint32_t> iterationSaveRange;
 
         /** @todo make this a pass-in variable/debugging parameter! */
         bool temperatureCheck = true;
 
         bool saveData = true;
 
+        bool doneSolving = false;
+
         bool saveHamiltonian;
+
 };

@@ -22,6 +22,7 @@ class LinearElasticity {
 
   public:
     // Constructor
+    LinearElasticity(DM da_nodes, Vec U);
     LinearElasticity(DM da_nodes);
 
     // Destructor
@@ -50,6 +51,18 @@ class LinearElasticity {
 
     // Get pointer to DMDA
     DM GetDM() { return (da_nodal); };
+
+    PetscErrorCode DuplicateStateField(Vec *vecToDuplicateTo)
+    {
+      PetscCall(VecDuplicate(U, vecToDuplicateTo));
+      return 0;
+    }
+
+    PetscErrorCode CopyVecToStateField(Vec vecToCopyFrom)
+    {
+      PetscCall(VecCopy(vecToCopyFrom, U));
+      return 0;
+    }
 
     // Logical mesh
     DM da_nodal; // Nodal mesh
@@ -95,7 +108,8 @@ class LinearElasticity {
     PetscScalar Inverse3M(PetscScalar J[][3], PetscScalar invJ[][3]);
 
     // Restart
-    PetscBool   restart, flip;
+    PetscBool   restart = PETSC_TRUE; /* True by default */
+    PetscBool   flip;
     std::string filename00, filename01;
 
     // File existence

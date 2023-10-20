@@ -1,7 +1,8 @@
 build
 bin
-run
+run/HypOptLib*
 pybind11
 outputs
 figures
 .vscode
+*.h5

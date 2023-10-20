@@ -9,6 +9,7 @@
 #include "FileManager.h"
 
 #include "PetscExtensions.h"
+#include "HypOptException.h"
 #include <petscviewerhdf5.h>
 
 PetscErrorCode FileManager::HDF5SaveStdVector(PetscViewer HDF5saveFile, std::vector<PetscScalar> vector, const char * vectorName)
@@ -33,16 +34,17 @@ PetscErrorCode FileManager::HDF5SaveStdVector(PetscViewer HDF5saveFile, std::vec
     return errorStatus;
 }
 
-PetscErrorCode FileManager::HDF5GetSavedVec(std::string filePath, std::string location, Vec *vector)
+PetscErrorCode FileManager::HDF5GetSavedVec(std::string filePath, std::string location, Vec vector)
 {
     PetscErrorCode errorStatus = 0;
 
     PetscViewer saveFile;
 
+
     PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, filePath.c_str(), FILE_MODE_READ, &saveFile));
 
     PetscCall(PetscViewerHDF5PushGroup(saveFile, location.c_str()));
-    PetscCall(VecLoad(*vector, saveFile));
+    PetscCall(VecLoad(vector, saveFile));
     PetscCall(PetscViewerHDF5PopGroup(saveFile));
 
     PetscCall(PetscViewerDestroy(&saveFile));
@@ -50,60 +52,72 @@ PetscErrorCode FileManager::HDF5GetSavedVec(std::string filePath, std::string lo
     return errorStatus;
 }
 
-PetscErrorCode FileManager::initializeHDF5(PetscScalar volfrac,
-                                           PetscScalar timestep,
-                                           PetscScalar temperature,
-                                           PetscInt numberElementsX,
-                                           PetscInt numberElementsY,
-                                           PetscInt numberElementsZ,
-                                           PetscScalar penalty,
-                                           PetscScalar filterRadius,
-                                           PetscInt numberSteps,
-                                           PetscInt numberSamples,
-                                           PetscScalar NoseHooverChainOrder)
+bool FileManager::doesFileExist(std::string filePath)
 {
-    PetscPrintf(PETSC_COMM_WORLD, "\t- Entered File Manager\n");
+    std::ifstream testFile;
+    testFile.open(filePath);
+    if (!testFile)
+    {
+        return false;
+    }
+    testFile.close();
+
+    return true;
+}
+
+std::string FileManager::autoAppendFilePath(std::string fileName, std::string fileExtension)
+{
+    std::string filePath;
+    std::string suffix = "";
+    PetscInt    fileNumber = 0;
+
+    do
+    {
+        filePath = fileName + suffix + fileExtension;
+        if (doesFileExist(filePath))
+        {
+            suffix = " (" + std::to_string(++fileNumber) + ")";
+        }
+    } while (doesFileExist(filePath));
+
+    return filePath;
+}
+
+PetscErrorCode FileManager::initializeHDF5(PetscScalar  volfrac,
+                                           PetscScalar  timestep,
+                                           PetscScalar  temperature,
+                                           PetscInt     numberElementsX,
+                                           PetscInt     numberElementsY,
+                                           PetscInt     numberElementsZ,
+                                           PetscScalar  penalty,
+                                           PetscScalar  filterRadius,
+                                           PetscInt     numberSteps,
+                                           PetscInt     numberSamples,
+                                           PetscInt     NoseHooverChainOrder,
+                                           std::string  filePath)
+{
     PetscErrorCode errorStatus = 0;
 
-    std::string filename = "hypopt_output";
-    std::string fileExtension = ".h5";
-    std::string fullPath = "";
+    if ("" == filePath)
+    {
+        filePath = autoAppendFilePath("hypopt_output", ".h5");
+    }
+    else
+    {
+        if (".h5" != filePath.substr(filePath.size() - 3))
+        {
+            throw HypOptException("Bad input file path. Must have file extension \'.h5!");
+        }
+        filePath = autoAppendFilePath(filePath.substr(0, filePath.size() - 3), ".h5");
+    }
 
-    // Check PETSc input for a work directory
-    // char      filenameChar[PETSC_MAX_PATH_LEN];
-    // PetscBool flg = PETSC_FALSE;
-    // PetscOptionsGetString(NULL, NULL, "-workdir", filenameChar, sizeof(filenameChar), &flg);
+    this->saveFilePath = filePath;
 
-    // If input, change path of the file in filename
-    // if (flg) {
-    //     fullPath.append(filenameChar);
-    //     fullPath.append("/");
-    // }
-    // else
-    // {
-    //     fullPath.append("output/");
-    // }
-    fullPath.append(filename);
-
-    // std::filesystem::path filePath{fullPath + fileExtension};
-    // int i = 0;
-    std::string appendor = "";
-    // while (std::filesystem::exists(filePath))
-    // {
-    //     i++;
-    //     appendor = std::string(i);
-    //     filePath = std::filesystem::path(fullPath + appendor + fileExtension);
-    // }
-
-    fullPath.append(appendor + fileExtension);
-
-    this->saveFilePath = fullPath;
-
-    PetscPrintf(PETSC_COMM_WORLD, "Trying to save to file: %s\n", fullPath.c_str());
+    PetscPrintf(PETSC_COMM_WORLD, "# Saving to file: %s\n", filePath.c_str());
 
     PetscViewer saveFileHDF5;
 
-    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, fullPath.c_str(), FILE_MODE_WRITE, &(saveFileHDF5)));
+    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, filePath.c_str(), FILE_MODE_WRITE, &(saveFileHDF5)));
 
     // std::time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     // std::string timeString = std::asctime(currentTime);
@@ -123,7 +137,7 @@ PetscErrorCode FileManager::initializeHDF5(PetscScalar volfrac,
     PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "rmin",       PETSC_SCALAR,   &filterRadius));
     PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "stepN",      PETSC_INT,      &numberSteps));
     PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "sampleN",    PETSC_INT,      &numberSamples)); /** @todo IMPLEMENT */
-    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "ch_Order",   PETSC_SCALAR,   &NoseHooverChainOrder));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, "/Setting", "ch_order",   PETSC_INT,      &NoseHooverChainOrder));
 
     PetscCall(PetscViewerDestroy(&(saveFileHDF5)));
 
@@ -159,4 +173,123 @@ std::string FileManager::getSaveFilePath()
 std::string FileManager::getDataGroup()
 {
     return dataGroup;
+}
+
+PetscErrorCode FileManager::getHDF5Settings(std::string             filePath,
+                                            PetscInt               *noseHooverChainOrder,
+                                            PetscInt               *numSavedIterations,
+                                            PetscScalar            *volumeFraction,
+                                            PetscScalar            *timestep,
+                                            PetscScalar            *targetTemperature,
+                                            PetscScalar            *penalty,
+                                            PetscScalar            *minimumFilterRadius,
+                                            std::vector<uint32_t>  *gridDimensions)
+{
+    /* Open file */
+    PetscViewer saveFile;
+    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, filePath.c_str(), FILE_MODE_READ, &saveFile));
+
+    /* Start with simple values. No default values are used, if the value is not found the file is invalid. */
+
+    PetscInt numberElementsX;
+    PetscInt numberElementsY;
+    PetscInt numberElementsZ;
+
+    PetscCall(PetscViewerHDF5ReadAttribute(saveFile, "/Setting", "ch_order",    PETSC_INT,      NULL, noseHooverChainOrder));
+    PetscCall(PetscViewerHDF5ReadAttribute(saveFile, "/Setting", "stepN",       PETSC_INT,      NULL, numSavedIterations));
+    PetscCall(PetscViewerHDF5ReadAttribute(saveFile, "/Setting", "volfrac",     PETSC_SCALAR,   NULL, volumeFraction));
+    PetscCall(PetscViewerHDF5ReadAttribute(saveFile, "/Setting", "dt",          PETSC_SCALAR,   NULL, timestep));
+    PetscCall(PetscViewerHDF5ReadAttribute(saveFile, "/Setting", "T",           PETSC_SCALAR,   NULL, targetTemperature));
+    PetscCall(PetscViewerHDF5ReadAttribute(saveFile, "/Setting", "penal",       PETSC_SCALAR,   NULL, penalty));
+    PetscCall(PetscViewerHDF5ReadAttribute(saveFile, "/Setting", "rmin",        PETSC_SCALAR,   NULL, minimumFilterRadius));
+    PetscCall(PetscViewerHDF5ReadAttribute(saveFile, "/Setting", "nelx",        PETSC_INT,      NULL, &numberElementsX));
+    PetscCall(PetscViewerHDF5ReadAttribute(saveFile, "/Setting", "nely",        PETSC_INT,      NULL, &numberElementsY));
+    PetscCall(PetscViewerHDF5ReadAttribute(saveFile, "/Setting", "nelz",        PETSC_INT,      NULL, &numberElementsZ));
+
+    gridDimensions->push_back(numberElementsX);
+    gridDimensions->push_back(numberElementsY);
+    gridDimensions->push_back(numberElementsZ);
+
+    PetscCall(PetscViewerDestroy(&(saveFile)));
+
+    return 0;
+}
+
+PetscErrorCode FileManager::getHDF5Vectors( std::string         filePath,
+                                            HypOptParameters    finalState,
+                                            Vec                 finalStateField)
+{
+    /* Use number of saved iterations to get final position */
+    PetscCall(PetscObjectSetName((PetscObject)finalState.position,               "Final Position"));
+    PetscCall(PetscObjectSetName((PetscObject)finalState.velocity,               "Final Velocity"));
+    PetscCall(PetscObjectSetName((PetscObject)finalState.evenNoseHooverPosition, "Final even NH Pos"));
+    PetscCall(PetscObjectSetName((PetscObject)finalState.evenNoseHooverVelocity, "Final even NH Vel"));
+    PetscCall(PetscObjectSetName((PetscObject)finalState.oddNoseHooverPosition,  "Final odd NH Pos"));
+    PetscCall(PetscObjectSetName((PetscObject)finalState.oddNoseHooverVelocity,  "Final odd NH Vel"));
+    PetscCall(PetscObjectSetName((PetscObject)finalStateField,                   "Final State Field"));
+
+    PetscCall(HDF5GetSavedVec(filePath, "/Dataset", finalState.position));
+    PetscCall(HDF5GetSavedVec(filePath, "/Dataset", finalState.velocity));
+    PetscCall(HDF5GetSavedVec(filePath, "/Dataset", finalState.evenNoseHooverPosition));
+    PetscCall(HDF5GetSavedVec(filePath, "/Dataset", finalState.evenNoseHooverVelocity));
+    PetscCall(HDF5GetSavedVec(filePath, "/Dataset", finalState.oddNoseHooverPosition));
+    PetscCall(HDF5GetSavedVec(filePath, "/Dataset", finalState.oddNoseHooverVelocity));
+    PetscCall(HDF5GetSavedVec(filePath, "/Dataset", finalStateField));
+
+    return 0;
+}
+
+PetscErrorCode FileManager::saveFinalState( bool saveHamiltionan,
+                                            HypOptParameters finalState,
+                                            std::vector<PetscScalar> hamiltonians,
+                                            std::vector<PetscScalar> compliance,
+                                            std::vector<PetscScalar> temperatures,
+                                            std::vector<PetscScalar> LagrangeMultipliers,
+                                            std::vector<PetscScalar> iterationTimes)
+{
+    PetscErrorCode errorStatus = 0;
+
+    /* Set up save file */
+    PetscViewer saveFileHDF5;
+    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, saveFilePath.c_str(), FILE_MODE_APPEND, &(saveFileHDF5)));
+    PetscCall(PetscViewerHDF5PushGroup(saveFileHDF5, dataGroup.c_str()));
+
+    /* Save std vectors */
+    if (saveHamiltionan)
+    {
+        PetscCall(HDF5SaveStdVector(saveFileHDF5, hamiltonians, "Hamiltonian"));
+        PetscCall(HDF5SaveStdVector(saveFileHDF5, compliance,   "Compliance"));
+    }
+    PetscCall(HDF5SaveStdVector(saveFileHDF5, temperatures,          "Temperature"));
+    PetscCall(HDF5SaveStdVector(saveFileHDF5, LagrangeMultipliers,   "Lambda"));
+    // PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->genericData,           "Volume Fraction"));
+    // PetscCall(FileManager::HDF5SaveStdVector(saveFileHDF5, this->genericData2,          "Max Position"));
+    PetscCall(HDF5SaveStdVector(saveFileHDF5, iterationTimes,        "Iteration Compute Time"));
+
+    PetscPrintf(PETSC_COMM_WORLD, "# Saving final state...");
+
+    /* save Petsc type vectors */
+    PetscCall(PetscObjectSetName((PetscObject)(finalState.position),                "Final Position"));
+    PetscCall(PetscObjectSetName((PetscObject)(finalState.velocity),                "Final Velocity"));
+    PetscCall(PetscObjectSetName((PetscObject)(finalState.evenNoseHooverPosition),  "Final even NH Pos"));
+    PetscCall(PetscObjectSetName((PetscObject)(finalState.evenNoseHooverVelocity),  "Final even NH Vel"));
+    PetscCall(PetscObjectSetName((PetscObject)(finalState.oddNoseHooverPosition),   "Final odd NH Pos"));
+    PetscCall(PetscObjectSetName((PetscObject)(finalState.oddNoseHooverVelocity),   "Final odd NH Vel"));
+    PetscCall(PetscObjectSetName((PetscObject)(physics->GetStateField()),           "Final State Field"));
+
+    PetscCall(VecView(finalState.position,                  saveFileHDF5));
+    PetscCall(VecView(finalState.velocity,                  saveFileHDF5));
+    PetscCall(VecView(finalState.evenNoseHooverPosition,    saveFileHDF5));
+    PetscCall(VecView(finalState.evenNoseHooverVelocity,    saveFileHDF5));
+    PetscCall(VecView(finalState.oddNoseHooverPosition,     saveFileHDF5));
+    PetscCall(VecView(finalState.oddNoseHooverVelocity,     saveFileHDF5));
+    PetscCall(VecView(physics->GetStateField(),             saveFileHDF5));
+
+    PetscPrintf(PETSC_COMM_WORLD, "# ...saved!\n");
+
+    /* Close file */
+    PetscCall(PetscViewerHDF5PopGroup(saveFileHDF5));
+    PetscCall(PetscViewerDestroy(&saveFileHDF5));
+
+    return errorStatus;
 }

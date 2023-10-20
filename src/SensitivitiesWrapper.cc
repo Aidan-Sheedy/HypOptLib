@@ -16,6 +16,8 @@ PetscErrorCode SensitivitiesWrapper::computeSensitivities(Vec filteredPositions,
                                       opt->volfrac);
     );
 
+    
+
     return 0;
 }
 

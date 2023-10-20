@@ -557,7 +557,7 @@ PetscErrorCode LinearElasticity::SetUpSolver() {
     PetscErrorCode ierr;
 
     // CHECK FOR RESTART POINT
-    restart = PETSC_TRUE;
+    restart = PETSC_FALSE;
     flip    = PETSC_TRUE;
     PetscBool flg, onlyDesign;
     onlyDesign = PETSC_FALSE;
