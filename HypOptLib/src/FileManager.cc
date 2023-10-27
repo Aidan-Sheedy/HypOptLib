@@ -48,6 +48,8 @@ const std::string FileManager::complainceName            = "Compliance";
 const std::string FileManager::temperatureName           = "Temperature";
 const std::string FileManager::lagrangianMultipliarName  = "Lambda";
 const std::string FileManager::iterationComputeTimeName  = "Iteration Compute Time";
+const std::string FileManager::timestepsName             = "Timestep";
+const std::string FileManager::energyErrorsName          = "Energy Error";
 const std::string FileManager::finalPositionName         = "Final Position";
 const std::string FileManager::finalVelocityName         = "Final Velocity";
 const std::string FileManager::finalEvenNHPositionName   = "Final even NH Pos";
@@ -55,6 +57,10 @@ const std::string FileManager::finalEvenNHVelocityName   = "Final even NH Vel";
 const std::string FileManager::finalOddNHPositionName    = "Final odd NH Pos";
 const std::string FileManager::finalOddNHVelocityName    = "Final odd NH Vel";
 const std::string FileManager::finalStateFieldName       = "Final State Field";
+
+/* Test file names */
+const std::string FileManager::initialPositionName = "Initial Position";
+const std::string FileManager::initialVelocityName = "Initial Velocity";
 
 PetscErrorCode FileManager::initializeHDF5(PetscScalar  volfrac,
                                            PetscScalar  timestep,
@@ -73,7 +79,7 @@ PetscErrorCode FileManager::initializeHDF5(PetscScalar  volfrac,
 
     if (".h5" != filePath.substr(filePath.size() - 3))
     {
-        throw HypOptException("Bad input file path. Must have file extension \'.h5!");
+        throw HypOptException("Bad input file path. Must have file extension \'.h5\'!");
     }
 
     /* Avoid overwriting existing files */
@@ -135,7 +141,10 @@ PetscErrorCode FileManager::saveFinalState( bool                     saveHamilti
                                             std::vector<PetscScalar> compliance,
                                             std::vector<PetscScalar> temperatures,
                                             std::vector<PetscScalar> LagrangeMultipliers,
-                                            std::vector<PetscScalar> iterationTimes)
+                                            std::vector<PetscScalar> iterationTimes,
+                                            std::vector<PetscScalar> timesteps,
+                                            std::vector<PetscScalar> energyErrors,
+                                            std::vector<PetscScalar> volFracs)
 {
     PetscErrorCode errorStatus = 0;
 
@@ -155,6 +164,9 @@ PetscErrorCode FileManager::saveFinalState( bool                     saveHamilti
     PetscCall(HDF5SaveStdVector(saveFileHDF5, temperatures,          temperatureName.c_str()));
     PetscCall(HDF5SaveStdVector(saveFileHDF5, LagrangeMultipliers,   lagrangianMultipliarName.c_str()));
     PetscCall(HDF5SaveStdVector(saveFileHDF5, iterationTimes,        iterationComputeTimeName.c_str()));
+    PetscCall(HDF5SaveStdVector(saveFileHDF5, timesteps,             timestepsName.c_str()));
+    PetscCall(HDF5SaveStdVector(saveFileHDF5, energyErrors,          energyErrorsName.c_str()));
+    PetscCall(HDF5SaveStdVector(saveFileHDF5, volFracs,          "Volume Fraction"));
 
     /* save Petsc type vectors */
     PetscCall(PetscObjectSetName((PetscObject)(finalState.position),                finalPositionName.c_str()));
@@ -334,3 +346,77 @@ std::string FileManager::autoAppendFilePath(std::string fileName, std::string fi
 
     return filePath;
 }
+
+PetscErrorCode FileManager::saveInitialConditions(Vec positions, Vec velocities, std::string filePath)
+{
+    if (".h5" != filePath.substr(filePath.size() - 3))
+    {
+        throw HypOptException("Bad input file path. Must have file extension \'.h5\'!");
+    }
+
+    /* Open and set up the save file */
+    PetscViewer saveFileHDF5;
+    PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, filePath.c_str(), FILE_MODE_WRITE, &(saveFileHDF5)));
+
+    /* Can't assume that the provided vectors are already correctly named, so rename them. */
+    PetscCall(PetscObjectSetName((PetscObject)positions,  initialPositionName.c_str()));
+    PetscCall(PetscObjectSetName((PetscObject)velocities, initialVelocityName.c_str()));
+
+    /* Get the vectors from the appropriate file. */
+    PetscCall(VecView(positions,  saveFileHDF5));
+    PetscCall(VecView(velocities, saveFileHDF5));
+
+    PetscCall(PetscViewerDestroy(&saveFileHDF5));
+
+    return 0;
+}
+
+PetscErrorCode FileManager::loadInitialConditions(Vec positions, Vec velocities, std::string filePath)
+{
+    if (".h5" != filePath.substr(filePath.size() - 3))
+    {
+        throw HypOptException("Bad input file path. Must have file extension \'.h5\'!");
+    }
+
+    /* Can't assume that the provided vectors are already correctly named, so rename them. */
+    PetscCall(PetscObjectSetName((PetscObject)positions,  initialPositionName.c_str()));
+    PetscCall(PetscObjectSetName((PetscObject)velocities, initialVelocityName.c_str()));
+
+    PetscCall(HDF5GetSavedVec(filePath, "", positions));
+    PetscCall(HDF5GetSavedVec(filePath, "", velocities));
+
+    return 0;
+}
+
+// PetscErrorCode FileManager::preparetoIterate(Vec *positions, PetscInt firstTimestep)
+// {
+//     PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, this->saveFilePath.c_str(), FILE_MODE_APPEND, &(iterationViewer)));
+//     PetscCall(PetscViewerHDF5PushTimestepping(iterationViewer));
+//     PetscCall(PetscViewerHDF5PushGroup(iterationViewer, stateGroup.c_str()));
+//     PetscCall(PetscObjectSetName((PetscObject)*positions, "Positions"));
+
+//     /* If VecCreate is used to make generate the iterating vector, then this is not necessary. */
+//     PetscCall(DMSetOutputSequenceNumber(physics->GetDM(), 0, firstTimestep));
+//     return 0;
+// }
+
+// PetscErrorCode FileManager::finishIterating()
+// {
+//     PetscCall(PetscViewerHDF5PopGroup(iterationViewer));
+//     PetscCall(PetscViewerHDF5PopTimestepping(iterationViewer));
+//     PetscCall(PetscViewerDestroy(&iterationViewer));
+//     return 0;
+// }
+
+// PetscErrorCode FileManager::saveIteration(PetscInt iteration, Vec positions, PetscInt nextTimestep)
+// {
+//     PetscErrorCode errorStatus = 0;
+//     PetscCall(PetscViewerHDF5SetTimestep(iterationViewer, nextTimestep));
+//     PetscCall(VecView(positions, iterationViewer));
+
+//      /* If VecCreate is used to make generate the iterating vector, then this use
+//       * PetscViewerHDF5IncrementTimestep instead. 
+//       */
+//     PetscCall(DMSetOutputSequenceNumber(physics->GetDM(), iteration+1, nextTimestep));
+//     return errorStatus;
+// }

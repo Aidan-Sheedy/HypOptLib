@@ -88,7 +88,10 @@ class FileManager
                                         std::vector<PetscScalar> compliance,
                                         std::vector<PetscScalar> temperatures,
                                         std::vector<PetscScalar> LagrangeMultipliers,
-                                        std::vector<PetscScalar> iterationTimes);
+                                        std::vector<PetscScalar> iterationTimes,
+                                        std::vector<PetscScalar> timesteps,
+                                        std::vector<PetscScalar> energyErrors,
+                                        std::vector<PetscScalar> volFracs);
 
         /**
          * Save file path accessor.
@@ -180,6 +183,14 @@ class FileManager
                                                 PetscScalar            *minimumFilterRadius,
                                                 std::vector<uint32_t>  *gridDimensions);
 
+        static PetscErrorCode saveInitialConditions(Vec positions, Vec velocities, std::string filePath);
+
+        static PetscErrorCode loadInitialConditions(Vec positions, Vec velocities, std::string filePath);
+
+        PetscErrorCode saveIteration(PetscInt iteration, Vec positions, PetscInt timestep);
+        PetscErrorCode finishIterating();
+        PetscErrorCode preparetoIterate(Vec *positions, PetscInt firstTimestep);
+
     private:
         /**
          * Private helper function which finds a unique file name in the given path.
@@ -224,6 +235,8 @@ class FileManager
         static const std::string temperatureName;
         static const std::string lagrangianMultipliarName;
         static const std::string iterationComputeTimeName;
+        static const std::string timestepsName;
+        static const std::string energyErrorsName;
         static const std::string finalPositionName;
         static const std::string finalVelocityName;
         static const std::string finalEvenNHPositionName;
@@ -231,4 +244,8 @@ class FileManager
         static const std::string finalOddNHPositionName;
         static const std::string finalOddNHVelocityName;
         static const std::string finalStateFieldName;
+
+        /* Test file names */
+        static const std::string initialPositionName;
+        static const std::string initialVelocityName;
 };

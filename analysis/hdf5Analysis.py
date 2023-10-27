@@ -355,10 +355,13 @@ if(False):
 
 if (True):
     # filePath = "../outputs/finally_good_for_real/0.001 Deg/hypopt_output_small_0.001deg_0.01dt_50000.h5"
-    filePath = '../run/testing_all_the_way.h5'
+    filePath = '../run/test_timestepping (61).h5'
 
-    attributes  = ["Temperature"]
-    names       = ["Temperature"]
+    attributes  = ["timesteps", "Temperature"]
+    names       = ["timesteps", "Temperature"]
+
+    # attributes  = ["Timestep", "Temperature", "Energy Error", "Volume Fraction"]
+    # names       = ["Timestep", "Temperature", "Energy Error", "Volume Fraction"]
 
 
     hdf5AnalyzeSpecificAttributes(filePath,

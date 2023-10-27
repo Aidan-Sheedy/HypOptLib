@@ -68,6 +68,8 @@ class HypOptLib
         uint32_t restartRun(std::string restartPath,
                             std::vector<uint32_t> *iterationSaveRange);
 
+        void generateRandomInitialConditionsFile(std::vector<uint32_t> *gridDimensions, std::string filePath);
+
         /**
          * Optional setting. Sets the save path and file name of the simulation result.
          *
@@ -190,6 +192,22 @@ class HypOptLib
             this->saveHamiltonian = saveHamiltonian;
         }
 
+        void enableVariableTimestep(double timestepConstantAlpha,
+                                    double timestepConstantBeta,
+                                    double diffusionConstant)
+        {
+            this->timestepConstantAlpha = timestepConstantAlpha;
+            this->timestepConstantBeta = timestepConstantBeta;
+            this->diffusionConstant = diffusionConstant;
+            this->variableTimestep = true;
+        }
+
+        void loadInitialConditionsFromFile(std::string filePath)
+        {
+            this->initialConditionsFile = filePath;
+            this->initialConditionsFromFile = true;
+        }
+
     private:
         /**
          * Utility function, runs the design loop set up by either newRun or restartRun.
@@ -202,6 +220,8 @@ class HypOptLib
          */
         PetscErrorCode runLoop(Hyperoptimization solver, PetscInt numItr, FileManager output);
 
+        PetscErrorCode randomizeStartingVectors(Vec initialPosition, Vec initialVelocity);
+
         std::string savePath                = "hypopt_output.h5";
         double      targetTemperature       = 0;
         double      penalty                 = 3;
@@ -212,6 +232,14 @@ class HypOptLib
         uint32_t    maximumIterations       = 100;
         bool        randomStartingValues    = true;
         bool        saveHamiltonian         = false;
+
+        bool   variableTimestep = false;
+        double timestepConstantAlpha = 1.1;
+        double timestepConstantBeta = 0.99;
+        double diffusionConstant = 0.00000001;
+
+        bool        initialConditionsFromFile = false;
+        std::string initialConditionsFile = "";
 };
 
 /**
@@ -261,7 +289,10 @@ PYBIND11_MODULE(HypOptLib, m)
         .def("setNoseHooverChainOrder", &HypOptLib::setNoseHooverChainOrder,"Recommended setting. Sets the number of Nose Hoover particles in the chain.")
         .def("setMaximumIterations",    &HypOptLib::setMaximumIterations,   "Recommended setting. Sets the number of Nose Hoover particles in the chain.")
         .def("setRandomStartingValues", &HypOptLib::setRandomStartingValues,"Debugging setting. If false, all positions be initialized to the volume fraction.")
-        .def("setSaveHamiltonian",      &HypOptLib::setSaveHamiltonian,     "Debugging parameter. Enabling will double run time, but save the compliance and Hamiltonian.");
+        .def("setSaveHamiltonian",      &HypOptLib::setSaveHamiltonian,     "Debugging parameter. Enabling will double run time, but save the compliance and Hamiltonian.")
+        .def("enableVariableTimestep",  &HypOptLib::enableVariableTimestep, "Enables variable timestepping with the provided parameters.")
+        .def("generateRandomInitialConditionsFile",  &HypOptLib::generateRandomInitialConditionsFile, "Generates an HDF5 file with randomized initial position and velocity vectors.")
+        .def("loadInitialConditionsFromFile",  &HypOptLib::loadInitialConditionsFromFile, "Optional setting to load initial conditions from a file.");
 
     py::register_exception<HypOptException>(m, "HypOptError");
 }

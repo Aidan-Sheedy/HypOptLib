@@ -4,14 +4,26 @@ import HypOptLib
 
 solver = HypOptLib.HypOptLib()
 
-solver.setSavePath("testing_all_the_way.h5")
+solver.setSavePath("test_timestepping.h5")
 
-solver.setTargetTemperature(0.001)
-solver.setTimestep(0.01)
-solver.setMaximumIterations(10)
+timestep = 0.01
 
-solver.newRun(  [2,8],              # iterationSaveRange
+solver.setTargetTemperature(0.01)
+solver.setTimestep(timestep)
+solver.setMaximumIterations(5000)
+
+# solver.setRandomStartingValues(False)
+
+solver.enableVariableTimestep(1.04,          # timestepConstantAlpha
+                              0.98,         # timestepConstantBeta
+                              0.000000001)   # diffusionConstant
+
+solver.loadInitialConditionsFromFile("../tests/randomInitial32x16x16_T0.01.h5")
+
+solver.newRun(  [0,0],              # iterationSaveRange
                 [32,16,16])         # gridDimensions
+
+# solver.generateRandomInitialConditionsFile([32, 16, 16], "../tests/randomInitial32x16x16_T0.01.h5")
 
 # solver.newRun(  False,              # randomStartingValues
 #                 False,              # saveHamiltonian

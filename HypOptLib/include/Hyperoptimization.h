@@ -66,6 +66,7 @@ class Hyperoptimization
          * @param fileManager
          * @param iterationSaveRange
          * @param saveHamiltonian
+         * @param variableTimestep
          *
          * @returns 0 on success, PetscError otherwise.
          */
@@ -80,7 +81,8 @@ class Hyperoptimization
                             PetscScalar timestep,
                             FileManager* fileManager,
                             std::vector<uint32_t> iterationSaveRange,
-                            bool saveHamiltonian);
+                            bool saveHamiltonian,
+                            PetscScalar volumeFraction);
 
         /**
          * Overloaded initialization funciton.
@@ -103,6 +105,7 @@ class Hyperoptimization
          * @param initialOddNoseHooverPosition
          * @param initialOddNoseHooverVelocity
          * @param saveHamiltonian
+         * @param variableTimestep
          *
          * @returns 0 on success, PetscError otherwise.
          */
@@ -121,7 +124,22 @@ class Hyperoptimization
                             Vec initialEvenNoseHooverVelocity,
                             Vec initialOddNoseHooverPosition,
                             Vec initialOddNoseHooverVelocity,
-                            bool saveHamiltonian);
+                            bool saveHamiltonian,
+                            PetscScalar volumeFraction);
+
+        /**
+         * Sets up variable timestepping.
+         * 
+         * @todo fill out info on how the algorithm works.
+         * 
+         * @param timestepConstantAlpha
+         * @param timestepConstantBeta
+         * @param timestepConstantK
+         * @param diffusionConstant
+         */
+        void enableVariableTimestep(PetscScalar timestepConstantAlpha,
+                                    PetscScalar timestepConstantBeta,
+                                    PetscScalar diffusionConstant);
 
         /**
          * Main iteration loop which implements the hyperoptimization design algorithm.
@@ -182,6 +200,10 @@ class Hyperoptimization
          * @returns save hamiltonian option.
          */
         bool getSaveHamiltonian() {return saveHamiltonian;}
+
+        std::vector<PetscScalar> getTimesteps() {return timesteps;}
+        std::vector<PetscScalar> getEnergyErrors() {return energyErrors;}
+        std::vector<PetscScalar> getVolFracs() {return volfracs;}
 
     private:
         /**
@@ -386,6 +408,10 @@ class Hyperoptimization
          */
         PetscErrorCode truncatePositions(Vec *positions);
 
+        void calculateNextTimeStep();
+
+        PetscErrorCode doesIterationRequireRerun(PetscScalar energyError, bool *requiresRerun);
+
     private:
         FileManager* fileManager;
         SensitivitiesWrapper sensitivitiesWrapper; /** @todo find a better name than sensitivitiesWrapper */
@@ -415,4 +441,16 @@ class Hyperoptimization
         bool doneSolving = false;
         bool saveHamiltonian;
 
+        bool variableTimestep = false;
+        PetscScalar previousTimestep = 0;
+        PetscScalar timestepConstantAlpha = 1.1;
+        PetscScalar timestepConstantBeta = 0.99;
+        PetscScalar timestepConstantK = 1;
+        PetscScalar diffusionConstant = 0.00000001;
+        PetscScalar previousTemperature = 0;
+
+        std::vector<PetscScalar> timesteps;
+        std::vector<PetscScalar> energyErrors;
+        std::vector<PetscScalar> volfracs;
+        PetscScalar volumeFraction;
 };

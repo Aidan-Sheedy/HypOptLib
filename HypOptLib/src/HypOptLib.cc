@@ -61,41 +61,20 @@ uint32_t HypOptLib::newRun( std::vector<uint32_t>  *iterationSaveRange,
 
     if (randomStartingValues)
     {
-        /* Get underlying vector array of initial positions */
-        PetscScalar *initialValues;
-        PetscInt     localSize;
-        PetscCall(VecGetArray(initialPositions, &initialValues));
-        PetscCall(VecGetLocalSize(initialPositions, &localSize));
-
-        PetscPrintf(PETSC_COMM_WORLD, "# Initializing random number genrator\n");
-
-        /* Initialize random number generator */
-        std::default_random_engine generator;
-        std::uniform_real_distribution<PetscScalar> distribution;
-        if (0.5 < volumeFraction)
-        {
-            distribution = std::uniform_real_distribution<PetscScalar>(2 * volumeFraction - 1, 1);
-        }
-        else
-        {
-            distribution = std::uniform_real_distribution<PetscScalar>(0, 2 * volumeFraction);
-        }
-
-        /* Assign uniform random distribution as initial values */
-        for (PetscInt i = 0; i < localSize; i++)
-        {
-            initialValues[i] = distribution(generator); //volumeFraction;
-        }
-
-        /* Restore Vector */
-        PetscCall(VecRestoreArray(initialPositions, &initialValues));
+        PetscPrintf(PETSC_COMM_WORLD, "# Randomizing initial values.\n");
+        randomizeStartingVectors(initialPositions, initialVelocities);
+    }
+    else if (initialConditionsFromFile)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "# Loading initial values from file: %s\n", initialConditionsFile.c_str());
+        FileManager::loadInitialConditions(initialPositions, initialVelocities, initialConditionsFile);
     }
     else
     {
+        PetscPrintf(PETSC_COMM_WORLD, "# Using all identical initial conditions.\n");
         PetscCall(VecSet(initialPositions, volumeFraction));
+        PetscCall(VecSet(initialVelocities, std::sqrt(targetTemperature)));
     }
-
-    PetscCall(VecSet(initialVelocities, std::sqrt(targetTemperature)));
 
     SensitivitiesWrapper    sensitivities(physics, opt->Emin, opt->Emax, penalty, volumeFraction);
     FilterWrapper           wrappedFilter(filter, opt->m);
@@ -131,7 +110,8 @@ uint32_t HypOptLib::newRun( std::vector<uint32_t>  *iterationSaveRange,
                                         timestep,
                                         &output,
                                        *iterationSaveRange,
-                                        saveHamiltonian);
+                                        saveHamiltonian,
+                                        volumeFraction);
 
     if (0 != status)
     {
@@ -252,7 +232,8 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
                                         finalState.evenNoseHooverVelocity,
                                         finalState.oddNoseHooverPosition,
                                         finalState.oddNoseHooverVelocity,
-                                        saveHamiltonian);
+                                        saveHamiltonian,
+                                        volumeFraction);
 
     if (0 != status)
     {
@@ -271,9 +252,87 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
    return 0;
 }
 
+void HypOptLib::generateRandomInitialConditionsFile(std::vector<uint32_t> *gridDimensions, std::string filePath)
+{
+    /* Check for valid input parameters */
+    if (3 != gridDimensions->size())
+    {
+        throw HypOptException("Invalid grid dimensions. Must provide a list of exactly three dimensions; x, y, and z.");
+    }
+
+    PetscErrorCode status = 0;
+
+    /* Initialize PETSc / MPI and pass input arguments to PETSc */
+    PetscInitializeNoArguments();
+
+    /* Initialize TopOpt object */
+    PetscInt xMeshDimension = gridDimensions->at(0)+1;
+    PetscInt yMeshDimension = gridDimensions->at(1)+1;
+    PetscInt zMeshDimension = gridDimensions->at(2)+1;
+    TopOpt* opt = new TopOpt(xMeshDimension, yMeshDimension, zMeshDimension, penalty, minimumFilterRadius);
+
+    /* Clone Petsc vectors from topopt */
+    Vec initialPositions;
+    Vec initialVelocities;
+    VecDuplicate(opt->x, &initialPositions);
+    VecDuplicate(opt->x, &initialVelocities);
+
+    status = randomizeStartingVectors(initialPositions, initialVelocities);
+
+    if (0 != status)
+    {
+        throw HypOptException((std::string("Error randomizing starting values: ") + std::to_string(status)).c_str());
+    }
+
+    FileManager::saveInitialConditions(initialPositions, initialVelocities, filePath);
+
+    VecDestroy(&initialPositions);
+    VecDestroy(&initialVelocities);
+    delete opt;
+}
+
+PetscErrorCode HypOptLib::randomizeStartingVectors(Vec initialPosition, Vec initialVelocity)
+{
+    /* Get underlying vector array of initial positions */
+    PetscScalar *initialValues;
+    PetscInt     localSize;
+    PetscCall(VecGetArray(initialPosition, &initialValues));
+    PetscCall(VecGetLocalSize(initialPosition, &localSize));
+
+    /* Initialize random number generator */
+    std::default_random_engine generator;
+    std::uniform_real_distribution<PetscScalar> distribution;
+    if (0.5 < volumeFraction)
+    {
+        distribution = std::uniform_real_distribution<PetscScalar>(2 * volumeFraction - 1, 1);
+    }
+    else
+    {
+        distribution = std::uniform_real_distribution<PetscScalar>(0, 2 * volumeFraction);
+    }
+
+    /* Assign uniform random distribution as initial values */
+    for (PetscInt i = 0; i < localSize; i++)
+    {
+        initialValues[i] = distribution(generator); //volumeFraction;
+    }
+
+    /* Restore Vector */
+    PetscCall(VecRestoreArray(initialPosition, &initialValues));
+    PetscCall(VecSet(initialVelocity, std::sqrt(targetTemperature)));
+
+    return 0;
+}
+
 PetscErrorCode HypOptLib::runLoop(Hyperoptimization solver, PetscInt numItr, FileManager output)
 {
     PetscPrintf(PETSC_COMM_WORLD, "# Initialized, starting design loop\n");
+
+    if (variableTimestep)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "#   - Enabling variable timestep\n");
+        solver.enableVariableTimestep(timestepConstantAlpha, timestepConstantBeta, diffusionConstant);
+    }
 
     double t1 = MPI_Wtime();
     PetscErrorCode status = solver.runDesignLoop();
@@ -291,7 +350,10 @@ PetscErrorCode HypOptLib::runLoop(Hyperoptimization solver, PetscInt numItr, Fil
                                 solver.getCompliance(),
                                 solver.getTemperatures(),
                                 solver.getLagrangeMultipliers(),
-                                solver.getIterationTimes());
+                                solver.getIterationTimes(),
+                                solver.getTimesteps(),
+                                solver.getEnergyErrors(),
+                                solver.getVolFracs());
 
         PetscPrintf(PETSC_COMM_WORLD, "# Done loop!\n#\n# Total Runtime: %f\n# Average Iteration Time: %f\n# ***Note these timings include file saving***", t2 - t1, (t2-t1)/numItr);
         PetscPrintf(PETSC_COMM_WORLD, "\n# Hyperoptimization complete, cleaning up resources.\n# Call init or restart before using this object again.\n");
