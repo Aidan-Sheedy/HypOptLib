@@ -56,5 +56,5 @@ set_target_properties(
     PROPERTIES
         PREFIX ""
         OUTPUT_NAME "HypOptLib"
-        LIBRARY_OUTPUT_DIRECTORY "../run"
+        LIBRARY_OUTPUT_DIRECTORY "../../run"
     )

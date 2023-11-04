@@ -1,4 +1,13 @@
-
+/***************************************************************************//**
+ * @file HypOptLib.c
+ *
+ * Contains the main HypOptLib class, implementation
+ *
+ * @author Aidan Sheedy
+ *
+ * @todo THIS FILE NEEDS LICENSE INFORMATION
+ *
+ ******************************************************************************/
 
 #include "HypOptLib.h"
 #include "SensitivitiesWrapper.h"
@@ -11,16 +20,7 @@
 #include <random>
 #include <fstream>
 
-uint32_t HypOptLib::newRun( bool                    randomStartingValues,
-                            bool                    saveHamiltonian,
-                            double                  targetTemperature,
-                            double                  penalty,
-                            double                  minimumFilterRadius,
-                            double                  volumeFraction,
-                            double                  timestep,
-                            uint32_t                noseHooverChainOrder,
-                            uint32_t                maximumIterations,
-                            std::vector<uint32_t>  *iterationSaveRange,
+uint32_t HypOptLib::newRun( std::vector<uint32_t>  *iterationSaveRange,
                             std::vector<uint32_t>  *gridDimensions)
 {
     /* Check for valid input parameters */
@@ -150,13 +150,11 @@ uint32_t HypOptLib::newRun( bool                    randomStartingValues,
     return 0;
 }
 
-uint32_t HypOptLib::restartRun( std::string filePath,
-                            uint32_t maximumIterations,
-                            std::vector<uint32_t> *iterationSaveRange,
-                            bool saveHamiltonian)
+uint32_t HypOptLib::restartRun( std::string restartPath,
+                                std::vector<uint32_t> *iterationSaveRange)
 {
     /* Try and find the file to see if it exists */
-    if (!FileManager::doesFileExist(filePath))
+    if (!FileManager::doesFileExist(restartPath))
     {
         throw HypOptException("Failed to find desired restart file.");
     }
@@ -178,7 +176,7 @@ uint32_t HypOptLib::restartRun( std::string filePath,
     PetscScalar minimumFilterRadius;
     std::vector<uint32_t>   gridDimensions;
 
-    FileManager::getHDF5Settings(filePath,
+    FileManager::getHDF5Settings(restartPath,
                                 &noseHooverChainOrder,
                                 &numSavedIterations,
                                 &volumeFraction,
@@ -212,7 +210,7 @@ uint32_t HypOptLib::restartRun( std::string filePath,
     PetscCall(VecCreate(PETSC_COMM_WORLD, &(finalState.oddNoseHooverVelocity)));
     PetscCall(VecCreate(PETSC_COMM_WORLD, &(finalState.oddNoseHooverPosition)));
 
-    FileManager::getHDF5Vectors(filePath,
+    FileManager::getHDF5Vectors(restartPath,
                                 finalState,
                                 finalStateField);
 
