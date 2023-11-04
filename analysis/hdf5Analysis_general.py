@@ -31,9 +31,8 @@ def hdf5Analysis(filePaths, attributeKey, attributeName):
 
 
 
-filePath1 = '../outputs/hypopt_output_first_run_broke.h5'
-filePath2 = '../outputs/hypopt_output_smallscale_system.h5'
+filePath1 = '../run/testing_all_the_way.h5'
 
-filePaths = [filePath1, filePath2]
+filePaths = [filePath1]
 
 hdf5Analysis(filePaths, "Temperature", "Temperature")

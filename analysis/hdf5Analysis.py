@@ -354,23 +354,24 @@ if(False):
                                 png=True)
 
 if (True):
-    filePath = "../outputs/finally_good_for_real/0.001 Deg/hypopt_output_small_0.001deg_0.01dt_50000.h5"
+    # filePath = "../outputs/finally_good_for_real/0.001 Deg/hypopt_output_small_0.001deg_0.01dt_50000.h5"
+    filePath = '../run/testing_all_the_way.h5'
 
-    attributes  = ["Compliance"]
-    names       = ["Compliance"]
+    attributes  = ["Temperature"]
+    names       = ["Temperature"]
 
 
     hdf5AnalyzeSpecificAttributes(filePath,
                                 attributes,
                                 names,
-                                "Desired Temperature 0.001",
-                                ylims=[[0,2.5]],
-                                xlims=[-50, 30000],
-                                saveFig=True,
+                                "Test",
+                                # ylims=[[0,2.5]],
+                                # xlims=[-50, 30000],
+                                # saveFig=True,
                                 # annotation="A",
                                 # biggerSpace=True,
-                                poster=True,
-                                scale=1,
+                                # poster=True,
+                                # scale=1,
                                 png=True)
 
 ################## Specific File ####################

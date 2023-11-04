@@ -6,3 +6,5 @@ outputs
 figures
 .vscode
 *.h5
+doxyxml
+analysis
