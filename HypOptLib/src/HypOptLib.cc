@@ -121,7 +121,7 @@ uint32_t HypOptLib::newRun( std::vector<uint32_t>  *iterationSaveRange,
 
     Hyperoptimization solver;
     PetscErrorCode status = solver.init(&sensitivities,
-                                        &wrappedFilter,
+                                        wrappedFilter,
                                         lagrangianMultiplier,
                                         targetTemperature,
                                         initialPositions,
@@ -168,7 +168,6 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
     PetscInitializeNoArguments();
 
     PetscInt    noseHooverChainOrder;
-    PetscInt    numSavedIterations;
     PetscScalar volumeFraction;
     PetscScalar timestep;
     PetscScalar targetTemperature;
@@ -178,7 +177,6 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
 
     FileManager::getHDF5Settings(restartPath,
                                 &noseHooverChainOrder,
-                                &numSavedIterations,
                                 &volumeFraction,
                                 &timestep,
                                 &targetTemperature,
@@ -210,7 +208,7 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
     PetscCall(VecCreate(PETSC_COMM_WORLD, &(finalState.oddNoseHooverVelocity)));
     PetscCall(VecCreate(PETSC_COMM_WORLD, &(finalState.oddNoseHooverPosition)));
 
-    FileManager::getHDF5Vectors(restartPath,
+    FileManager::getFinalStateVectors(restartPath,
                                 finalState,
                                 finalStateField);
 
@@ -241,8 +239,8 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
     Hyperoptimization solver;
     PetscErrorCode status = solver.init(&sensitivities,
                                         lagrangianMultiplier,
-                                        &wrappedFilter,
-                                        &output,
+                                        wrappedFilter,
+                                       &output,
                                         noseHooverChainOrder,
                                         timestep,
                                         targetTemperature,
@@ -262,7 +260,7 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
     }
     else
     {
-        runLoop(solver, numSavedIterations, output);
+        runLoop(solver, maximumIterations, output);
     }
 
     delete filter;

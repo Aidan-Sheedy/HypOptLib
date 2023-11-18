@@ -29,7 +29,9 @@
 namespace py = pybind11;
 
 /**
- * Main HypOptLib class. This is the equivalent to a "main" function, and
+ * Main HypOptLib class.
+ * 
+ * This is the equivalent to a "main" function, and
  * provides access to the Python wrapper to the essential functions to run
  * Hyperoptimization.
  */
@@ -211,9 +213,36 @@ class HypOptLib
         bool        saveHamiltonian         = false;
 };
 
-
 /**
  * Python wrapper. Defines functions which are directly accessible to the python library.
+ * 
+ * The wrapper exposes the following class and functions:
+ * 
+ * **class** *HypOptLib* class responsible for initializing parameters and starting simulations.
+ * 
+ * **function** *newRun* Initializes all parameters and starts a run
+ * 
+ * **function** *restartRun* Restarts a Design Loop from a given file
+ *
+ * **function** *setSavePath* Sets save path for all runs.
+ *
+ * **function** *setTargetTemperature* Optional setting. Sets the save path and file name of the simulation result.
+ *
+ * **function** *setPenalty* Debugging setting. If false, all positions be initialized to the volume fraction.
+ *
+ * **function** *setMinimumFilterRadius* Optional setting. Sets optimization penalty power.
+ *
+ * **function** *setVolumeFraction* Optional setting. Sets the minimum filter radius. Must be greater than 0.
+ *
+ * **function** *setTimestep* Recommended setting. Sets the timestep between each iteration.
+ *
+ * **function** *setNoseHooverChainOrder* Recommended setting. Sets the number of Nose Hoover particles in the chain.
+ *
+ * **function** *setMaximumIterations* Recommended setting. Sets the number of Nose Hoover particles in the chain.
+ *
+ * **function** *setRandomStartingValues* Debugging setting. If false, all positions be initialized to the volume fraction.
+ *
+ * **function** *setSaveHamiltonian* Debugging parameter. Enabling will double run time, but save the compliance and Hamiltonian."
  */
 PYBIND11_MODULE(HypOptLib, m)
 {
@@ -221,7 +250,7 @@ PYBIND11_MODULE(HypOptLib, m)
         .def(py::init<>())
 
         .def("newRun",                  &HypOptLib::newRun,                 "Initializes all parameters and starts a run")
-        .def("restartRun",              &HypOptLib::restartRun,             "Restartrs a Design Loop from a given file")
+        .def("restartRun",              &HypOptLib::restartRun,             "Restarts a Design Loop from a given file")
         .def("setSavePath",             &HypOptLib::setSavePath,            "Sets save path for all runs.")
         .def("setTargetTemperature",    &HypOptLib::setTargetTemperature,   "Optional setting. Sets the save path and file name of the simulation result.")
         .def("setPenalty",              &HypOptLib::setPenalty,             "Debugging setting. If false, all positions be initialized to the volume fraction.")

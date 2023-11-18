@@ -23,14 +23,17 @@
  *       GO THROUGH THE WHOLE CODE AND UPDATE THIS.
  *
  * @todo ALL CALLS TO VecGetArrayRead MUST be followed up by "VecRestoreArrayRead()"!!!!!!!!!
+ * 
+ * @todo Convert ALL wrappers to use pass by reference using &!!!!!! This will ensure that overwritten functions
+ * are actually processed properly.
 */
 PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper*   currentState,
-                                        FilterWrapper*          filter,
+                                        FilterWrapper&          filter,
                                         LagrangeMultiplier      lagMult,
                                         PetscScalar             temperature,
                                         Vec                     initialPositions,
                                         Vec                     initialVelocities,
-                                        PetscInt             NHChainOrder,
+                                        PetscInt                NHChainOrder,
                                         PetscInt                numIterations,
                                         PetscScalar             timestep,
                                         FileManager*            fileManager,
@@ -71,9 +74,9 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper*   currentState,
 
 PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper*   currentState,
                                         LagrangeMultiplier      lagMult,
-                                        FilterWrapper*          filter,
+                                        FilterWrapper&          filter,
                                         FileManager*            fileManager,
-                                        PetscInt             NHChainOrder,
+                                        PetscInt                NHChainOrder,
                                         PetscScalar             timestep,
                                         PetscScalar             temperature,
                                         PetscInt                numIterations,
@@ -88,7 +91,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper*   currentState,
 {
     PetscErrorCode errorStatus = 0;
 
-    if ( (NULL == currentState) || (NULL == filter) || (NULL == fileManager) )
+    if ( (NULL == currentState) || (NULL == fileManager) )
     {
         throw HypOptException("Null pointer error.");
     }
@@ -508,7 +511,10 @@ PetscErrorCode Hyperoptimization::assembleNewPositions(PetscScalar firstNoseHoov
     PetscCall(VecScale(rightSide, LagrangeMult));
     PetscCall(VecAYPX(this->newPosition, 1, rightSide));
 
-    *LagrangeMultiplier = LagrangeMult;
+    if (nullptr != LagrangeMultiplier)
+    {
+        *LagrangeMultiplier = LagrangeMult;
+    }
 
     truncatePositions(&(this->newPosition));
 
@@ -525,13 +531,13 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
     PetscCall(VecDuplicate(positions, &filteredPositions));
 
     // Positions used in constraint calculations
-    PetscCall(this->filter->filterDesignVariable(positions, filteredPositions));
+    PetscCall(this->filter.filterDesignVariable(positions, filteredPositions));
 
     // Compute sensitivities
     PetscCall(currentState->computeSensitivities(filteredPositions, sensitivities, constraintSensitivities));
 
     // Filter sensitivities (Standard Filter)
-    PetscCall(filter->filterSensitivities(positions, this->sensitivities, &constraintSensitivities));
+    PetscCall(filter.filterSensitivities(positions, this->sensitivities, &constraintSensitivities));
     PetscCall(VecScale(this->sensitivities, -1));
 
     PetscCall(VecDestroy(&filteredPositions));
@@ -565,7 +571,7 @@ PetscErrorCode Hyperoptimization::calculateHamiltonian(Vec velocities, Vec posit
     PetscCall(VecDuplicate(positions, &filteredPositions));
 
     truncatePositions(&positions);
-    errorStatus = filter->filterDesignVariable(positions, filteredPositions);
+    errorStatus = filter.filterDesignVariable(positions, filteredPositions);
     errorStatus = currentState->computeObjectiveFunction(filteredPositions, &currentCompliance);
     PetscCall(VecDot(velocities, velocities, &velocityDotProduct));
     *hamiltonian = currentCompliance + velocityDotProduct / 2;
@@ -688,7 +694,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                 Vec filtered_pos;
 
                 PetscCall(VecDuplicate(this->newPosition, &filtered_pos));
-                errorStatus = filter->filterDesignVariable(newPosition, filtered_pos);
+                errorStatus = filter.filterDesignVariable(newPosition, filtered_pos);
 
                 PetscScalar systemTemperature;
                 calculateTemperature(newVelocity, &systemTemperature);
