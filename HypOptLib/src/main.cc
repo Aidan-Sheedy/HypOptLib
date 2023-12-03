@@ -120,7 +120,7 @@
 // // #endif
 
 //     FilterWrapper wrappedFilter(filter);
-//     SensitivitiesWrapper currentState(physics, opt);
+//     SensitivitiesWrapper sensitivitiesWrapper(physics, opt);
 //     FileManager output;
 
 //     output.initializeHDF5(opt->volfrac,
@@ -136,7 +136,7 @@
 //                           NHChainOrder);
 
 //     Hyperoptimization solver;
-//     PetscCall(solver.init(&currentState,
+//     PetscCall(solver.init(&sensitivitiesWrapper,
 //                 &wrappedFilter,
 //                 lagmult,
 //                 temperature,

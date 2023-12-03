@@ -1,14 +1,10 @@
-
 ========================
-Getting Started
+Installation and Setup
 ========================
 
 HypOptLib is designed to run in Linux environments. It has been tested mainly
 on WSL and Ubuntu, but should in theory support any Linux distribution with the
 appropriate requirements.
-
-Installation and Setup
-========================
 
 HypOptLib can be setup in two main ways. A conveniance script `macros.sh` is
 provided which can automatically install any prerequisites along with other
@@ -17,7 +13,7 @@ installation are also provided here. For full documentation of the macros script
 see this link **TODO - include link.**
 
 Automatic Install
-------------------------
+========================
 
 1. Clone the HypOptLib repository from https://github.com/Aidan-Sheedy/Hyperoptimization_using_Petsc.git.
 
@@ -28,7 +24,7 @@ Automatic Install
         ./macros.sh setup
 
 Manual Install
-------------------------
+========================
 
 For manual install, clone the HypOptLib repository as above, then install each
 of the following requirements:
@@ -47,7 +43,7 @@ of the following requirements:
 |    1   |                1                |        1       |
 +--------+---------------------------------+----------------+
 
-
+========================
 Building and Running
 ========================
 

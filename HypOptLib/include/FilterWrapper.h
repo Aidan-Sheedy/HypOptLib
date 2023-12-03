@@ -17,7 +17,7 @@
 /**
  * Class used to abstract filtering from the hyperoptimization class.
  *
- * Any inherited class can be used in lue of this class when initializing hyperoptimization.
+ * Any inherited class can be used in lieu of this class when initializing hyperoptimization.
  * Instances are passed by reference, so any virtual functions in the derived class which
  * overwrite the ones provided here will be called by the design loop.
  */
@@ -28,23 +28,23 @@ class FilterWrapper
          * Empty constructor to allow passing by reference.
          *
          * @warning Do not instantiate using this constructor! This is only
-         * provided as a means to pass by reference to the hyperoptimization class.
-         *
-         * @note Inherited classes are free to use this constructor as they may not need
-         * to use the default parameters used here.
+         * provided as a means to pass by reference to the Hyperoptimization class.
          */
         FilterWrapper(){}
 
         /**
          * Correct constructor to use.
          *
-         * @param filter Topopt filter opbject to be abstracted.
+         * @param filter Topopt filter object to be abstracted.
          * @param numConstraints Initialized by the TopOpt class: TopOpt::m.
          */
         FilterWrapper(Filter *filter, PetscInt numConstraints);
 
         /**
          * Applies the Topopt standard filter to the given design variables.
+         * 
+         * @warning unfiltered and filtered must be different objects (Petsc limitation). ie
+         * cannot call FilterWrapper::filterDesignVariable(y, y).
          * 
          * @param unfiltered the design variable to filter.
          * @param filtered [out] filtered positions. Must be identical settings to unfiltered Vec.

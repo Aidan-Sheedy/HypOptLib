@@ -389,6 +389,7 @@ PetscErrorCode TopOpt::SetUpOPT() {
     return (ierr);
 }
 
+#ifdef MMA
 PetscErrorCode TopOpt::AllocateMMAwithRestart(PetscInt* itr, MMA** mma) {
 
     PetscErrorCode ierr = 0;
@@ -574,3 +575,4 @@ PetscErrorCode TopOpt::WriteRestartFiles(PetscInt* itr, MMA* mma) {
     // PetscPrintf(PETSC_COMM_WORLD,"DONE WRITING DATA\n");
     return ierr;
 }
+#endif

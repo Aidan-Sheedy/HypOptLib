@@ -30,9 +30,15 @@ master_doc = 'index'
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
-extensions = ['breathe', 'exhale']
+extensions = ['breathe', 'exhale', 'sphinx.ext.todo']
 breathe_projects = {"HypOptLib": "../doxyxml/xml"}
 breathe_default_project = "HypOptLib"
+numfig = True
+todo_include_tools = True
+
+# breathe_projects_source = {
+#     "HypOptLib" : 
+# }
 
 def specificationsForKind(kind):
     '''
@@ -68,7 +74,7 @@ exhale_args = {
     "exhaleExecutesDoxygen": False,
     "fullToctreeMaxDepth": 1,
     # "exhaleDoxygenStdin":    "INPUT = ../../HypOptLib/include"
-    "unabridgedOrphanKinds": {"File"},
+    # "unabridgedOrphanKinds": {"File"},
     # "listingExclude": ["G:/Projects/ENPH455/PETSc_paper_github/Hyperoptimization_using_Petsc/"],
     "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
         specificationsForKind

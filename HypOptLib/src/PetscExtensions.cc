@@ -1,3 +1,14 @@
+/***************************************************************************//**
+ * @file PetscExtensions.cc
+ *
+ * Implementation of useful functions not included in the standard Petsc
+ * library.
+ *
+ * @author Aidan Sheedy
+ *
+ * @todo THIS FILE NEEDS LICENSE INFORMATION
+ *
+ ******************************************************************************/
 
 #include "PetscExtensions.h"
 
@@ -112,9 +123,17 @@ PetscErrorCode PetscExtensions::VecGetOffProcessIndex(Vec parallelVector, PetscI
     return errorStatus;
 }
 
-PetscErrorCode PetscExtensions::VecParallelFromStdVector(Vec parallel, std::vector<PetscScalar> stdVector)
+PetscErrorCode PetscExtensions::VecParallelFromStdVector(std::vector<PetscScalar> stdVector, Vec parallel)
 {
     PetscErrorCode errorStatus = 0;
+
+    PetscInt parallelGlobalSize = 0;
+    PetscCall(VecGetSize(parallel, &parallelGlobalSize));
+
+    if (parallelGlobalSize != stdVector.size())
+    {
+        return PETSC_ERR_ARG_SIZ;
+    }
 
     PetscScalar *parallelArray;
     PetscInt localParallelLowerIndex;
@@ -123,6 +142,11 @@ PetscErrorCode PetscExtensions::VecParallelFromStdVector(Vec parallel, std::vect
     PetscCall(VecGetOwnershipRange(parallel, &localParallelLowerIndex, &localParallelUpperIndex));
 
     PetscInt localParallelSize = localParallelUpperIndex - localParallelLowerIndex;
+
+    if (stdVector.size() < localParallelLowerIndex + localParallelSize )
+    {
+        return PETSC_ERR_INT_OVERFLOW;
+    }
 
     for (PetscInt i = 0; i < localParallelSize; i++)
     {

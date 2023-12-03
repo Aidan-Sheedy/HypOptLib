@@ -1,5 +1,5 @@
 /***************************************************************************//**
- * @file HypOptLib.c
+ * @file HypOptLib.cc
  *
  * Contains the main HypOptLib class, implementation
  *
@@ -97,9 +97,9 @@ uint32_t HypOptLib::newRun( std::vector<uint32_t>  *iterationSaveRange,
 
     PetscCall(VecSet(initialVelocities, std::sqrt(targetTemperature)));
 
-    SensitivitiesWrapper    sensitivities(physics, opt);
+    SensitivitiesWrapper    sensitivities(physics, opt->Emin, opt->Emax, penalty, volumeFraction);
     FilterWrapper           wrappedFilter(filter, opt->m);
-    LagrangeMultiplier      lagrangianMultiplier(filter, opt);
+    LagrangeMultiplier      lagrangianMultiplier(wrappedFilter, volumeFraction);
     FileManager             output(physics);
 
     PetscPrintf(PETSC_COMM_WORLD, "# Initialing File Manager\n");
@@ -120,7 +120,7 @@ uint32_t HypOptLib::newRun( std::vector<uint32_t>  *iterationSaveRange,
     PetscPrintf(PETSC_COMM_WORLD, "# Initialing Solver\n");
 
     Hyperoptimization solver;
-    PetscErrorCode status = solver.init(&sensitivities,
+    PetscErrorCode status = solver.init(sensitivities,
                                         wrappedFilter,
                                         lagrangianMultiplier,
                                         targetTemperature,
@@ -214,9 +214,9 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
 
     physics->CopyVecToStateField(finalStateField);
 
-    SensitivitiesWrapper    sensitivities(physics, opt);
+    SensitivitiesWrapper    sensitivities(physics, opt->Emin, opt->Emax, penalty, volumeFraction);
     FilterWrapper           wrappedFilter(filter, opt->m);
-    LagrangeMultiplier      lagrangianMultiplier(filter, opt);
+    LagrangeMultiplier      lagrangianMultiplier(wrappedFilter, volumeFraction);
     FileManager             output(physics);
 
     PetscPrintf(PETSC_COMM_WORLD, "# Initialing File Manager\n");
@@ -237,7 +237,7 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
     PetscPrintf(PETSC_COMM_WORLD, "# Initialing Solver\n");
 
     Hyperoptimization solver;
-    PetscErrorCode status = solver.init(&sensitivities,
+    PetscErrorCode status = solver.init(sensitivities,
                                         lagrangianMultiplier,
                                         wrappedFilter,
                                        &output,

@@ -1,10 +1,11 @@
-/**
- * @file Hyperoptimization.h
+/***************************************************************************//**
+ * @file Hyperoptimization.cc
  *
  * This file describes the layout of the Hyperoptimization class.
  *
- * @todo LICENSE
-**/
+ * @todo THIS FILE NEEDS LICENSE INFORMATION
+ *
+******************************************************************************/
 
 #include "Hyperoptimization.h"
 #include "HypOptException.h"
@@ -27,9 +28,9 @@
  * @todo Convert ALL wrappers to use pass by reference using &!!!!!! This will ensure that overwritten functions
  * are actually processed properly.
 */
-PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper*   currentState,
+PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWrapper,
                                         FilterWrapper&          filter,
-                                        LagrangeMultiplier      lagMult,
+                                        LagrangeMultiplier&     lagMult,
                                         PetscScalar             temperature,
                                         Vec                     initialPositions,
                                         Vec                     initialVelocities,
@@ -54,7 +55,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper*   currentState,
     PetscCall(VecSet(prevState.oddNoseHooverPosition,     0));
     PetscCall(VecSet(prevState.oddNoseHooverVelocity,     0));
 
-    return init(currentState,
+    return init(sensitivitiesWrapper,
                 lagMult,
                 filter,
                 fileManager,
@@ -72,8 +73,8 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper*   currentState,
                 saveHamiltonian);
 }
 
-PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper*   currentState,
-                                        LagrangeMultiplier      lagMult,
+PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWrapper,
+                                        LagrangeMultiplier&     lagMult,
                                         FilterWrapper&          filter,
                                         FileManager*            fileManager,
                                         PetscInt                NHChainOrder,
@@ -91,7 +92,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper*   currentState,
 {
     PetscErrorCode errorStatus = 0;
 
-    if ( (NULL == currentState) || (NULL == fileManager) )
+    if (NULL == fileManager)
     {
         throw HypOptException("Null pointer error.");
     }
@@ -106,7 +107,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper*   currentState,
 
     /** @todo Make sure all the Vecs are being properly instantiated, this is not correct! */
     this->fileManager           = fileManager;
-    this->currentState          = currentState;
+    this->sensitivitiesWrapper          = sensitivitiesWrapper;
     this->filter                = filter;
     this->lagMult               = lagMult;
     this->temperature           = temperature;
@@ -220,7 +221,6 @@ PetscErrorCode Hyperoptimization::calculateFirstNoseHooverAcceleration(Vec allVe
     PetscCall(VecDestroy(&tempVelocities));
 
     return errorStatus;
-
 }
 
 PetscErrorCode Hyperoptimization::calculateRemainingNoseHooverAccelerations(Vec noseHooverVelocities, bool evenOutput, Vec *result)
@@ -534,7 +534,7 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
     PetscCall(this->filter.filterDesignVariable(positions, filteredPositions));
 
     // Compute sensitivities
-    PetscCall(currentState->computeSensitivities(filteredPositions, sensitivities, constraintSensitivities));
+    PetscCall(sensitivitiesWrapper.computeSensitivities(filteredPositions, sensitivities, constraintSensitivities));
 
     // Filter sensitivities (Standard Filter)
     PetscCall(filter.filterSensitivities(positions, this->sensitivities, &constraintSensitivities));
@@ -572,7 +572,7 @@ PetscErrorCode Hyperoptimization::calculateHamiltonian(Vec velocities, Vec posit
 
     truncatePositions(&positions);
     errorStatus = filter.filterDesignVariable(positions, filteredPositions);
-    errorStatus = currentState->computeObjectiveFunction(filteredPositions, &currentCompliance);
+    errorStatus = sensitivitiesWrapper.computeObjectiveFunction(filteredPositions, &currentCompliance);
     PetscCall(VecDot(velocities, velocities, &velocityDotProduct));
     *hamiltonian = currentCompliance + velocityDotProduct / 2;
 
@@ -725,8 +725,6 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
 
                 temperatures.push_back(systemTemperature);
                 LagrangeMultipliers.push_back(lagMultiplier);
-                // genericData.push_back(meanPos);
-                // genericData2.push_back(maxPos);
                 iterationTimes.push_back(t2 - t1);
 
                 // PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Max Pos: %f, Min Pos: %f, Mean Pos: %f, Max Vel: %f, Min Vel: %f, Mean Vel: %f, Temperature: %f, LM: %f, HM: %f\n", iteration, maxPos, minPos, meanPos, maxVel, minVel, meanVel, temperature, lagMultiplier);//, hamiltonian);

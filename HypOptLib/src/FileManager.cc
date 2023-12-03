@@ -246,7 +246,7 @@ PetscErrorCode FileManager::HDF5SaveStdVector(PetscViewer HDF5saveFile, std::vec
     PetscCall(VecSetFromOptions(outputVector));
 
     /* Get values from standard vectors */
-    PetscCall(PetscExtensions::VecParallelFromStdVector(outputVector, vector));
+    PetscCall(PetscExtensions::VecParallelFromStdVector(vector, outputVector));
     PetscCall(PetscObjectSetName((PetscObject)outputVector, vectorName));
 
     /* Save Vectors */

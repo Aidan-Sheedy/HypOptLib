@@ -2,6 +2,7 @@
 
 #include "PetscExtensions.h"
 
+/** @todo figure out the opt-> issue (probably just pass these in?)*/
 PetscErrorCode SensitivitiesWrapper::computeSensitivities(Vec filteredPositions,
                                                           Vec sensitivities,
                                                           Vec constraintSensitivities)
@@ -10,28 +11,26 @@ PetscErrorCode SensitivitiesWrapper::computeSensitivities(Vec filteredPositions,
         physics->ComputeSensitivities(sensitivities,
                                       constraintSensitivities,
                                       filteredPositions,
-                                      opt->Emin,
-                                      opt->Emax,
-                                      opt->penal,
-                                      opt->volfrac);
+                                      Emin,
+                                      Emax,
+                                      penal,
+                                      volfrac);
     );
-
-    
 
     return 0;
 }
 
-PetscErrorCode SensitivitiesWrapper::computeObjectiveFunction(Vec positions, PetscScalar *objectiveFunction)
+PetscErrorCode SensitivitiesWrapper::computeObjectiveFunction(Vec filteredPositions, PetscScalar *objectiveFunction)
 {
     PetscScalar unused;
     PetscCall(
         physics->ComputeObjectiveConstraints(objectiveFunction,
                                             &unused,
-                                            positions,
-                                            opt->Emin,
-                                            opt->Emax,
-                                            opt->penal,
-                                            opt->volfrac);
+                                            filteredPositions,
+                                            Emin,
+                                            Emax,
+                                            penal,
+                                            volfrac);
     );
 
     return 0;

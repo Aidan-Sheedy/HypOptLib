@@ -16,7 +16,6 @@
 #include <string>
 
 #include <petsc.h>
-#include "TopOpt.h"
 #include "LinearElasticity.h"
 #include "Filter.h"
 #include "HypOptException.h"
@@ -198,6 +197,8 @@ class HypOptLib
          * @param solver used to run the design loop.
          * @param numItr number of iterations to run.
          * @param output HDF5 file manager.
+         * 
+         * @returns 0 on success, PetscError otherwise.
          */
         PetscErrorCode runLoop(Hyperoptimization solver, PetscInt numItr, FileManager output);
 
@@ -242,7 +243,7 @@ class HypOptLib
  *
  * **function** *setRandomStartingValues* Debugging setting. If false, all positions be initialized to the volume fraction.
  *
- * **function** *setSaveHamiltonian* Debugging parameter. Enabling will double run time, but save the compliance and Hamiltonian."
+ * **function** *setSaveHamiltonian* Debugging parameter. Enabling will double run time, but save the compliance and Hamiltonian.
  */
 PYBIND11_MODULE(HypOptLib, m)
 {

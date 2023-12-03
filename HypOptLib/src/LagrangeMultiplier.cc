@@ -1,40 +1,40 @@
+/***************************************************************************//**
+ * @file LagrangeMultiplier.cc
+ *
+ * This file implements the default LagrangeMultiplier wrapper.
+ *
+ * @author Aidan Sheedy
+ *
+ * @todo THIS FILE NEEDS LICENSE INFORMATION
+ *
+******************************************************************************/
 
 #include "LagrangeMultiplier.h"
 
-PetscScalar LagrangeMultiplier::computeLagrangeMultiplier(Vec positions, Vec C, PetscInt numParticles, PetscScalar *returnValue)
+PetscScalar LagrangeMultiplier::computeLagrangeMultiplier(Vec positions, Vec C, PetscInt numParticles, PetscScalar *LagrangeMultiplier)
 {
     PetscErrorCode errorStatus = 0;
-
-    // Copies of input parameters
-    Vec positionCopy;
-    Vec CCopy;
-
-    PetscCall(VecDuplicate(positions, &positionCopy));
-    PetscCall(VecDuplicate(C, &CCopy));
-    PetscCall(VecCopy(positions, positionCopy));
-    PetscCall(VecCopy(C, CCopy));
-
-    // Filter positions
-    PetscCall(VecCopy(positionCopy, opt->x));
-    PetscCall(this->filter->FilterProject(opt->x, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta));
-    PetscCall(VecCopy(opt->xTilde, positionCopy));
-
-    // Filter positions
-    PetscCall(VecCopy(CCopy, opt->x));
-    PetscCall(this->filter->FilterProject(opt->x, opt->xTilde, opt->xPhys, opt->projectionFilter, opt->beta, opt->eta));
-    PetscCall(VecCopy(opt->xTilde, CCopy));
-
-    // Sum values
     PetscScalar positionSum;
-    PetscCall(VecSum(positionCopy, &positionSum));
     PetscScalar CSum;
-    PetscCall(VecSum(CCopy, &CSum));
+    Vec filteredPosition;
+    Vec filteredC;
+    
+    PetscCall(VecDuplicate(positions, &filteredPosition));
+    PetscCall(VecDuplicate(C, &filteredC));
 
+    /* Filter positions and C */
+    PetscCall(this->filter.filterDesignVariable(positions, filteredPosition));
+    PetscCall(this->filter.filterDesignVariable(C, filteredC));
 
-    *returnValue = (numParticles * opt->volfrac - positionSum )/ CSum;
+    /* Calculate sums */
+    PetscCall(VecSum(filteredPosition, &positionSum));
+    PetscCall(VecSum(filteredC, &CSum));
 
-    PetscCall(VecDestroy(&positionCopy));
-    PetscCall(VecDestroy(&CCopy));
+    /* Calculate Lagrangee multiplier */
+    *LagrangeMultiplier = (numParticles * volfrac - positionSum )/ CSum;
+
+    PetscCall(VecDestroy(&filteredPosition));
+    PetscCall(VecDestroy(&filteredC));
 
     return errorStatus;
 }

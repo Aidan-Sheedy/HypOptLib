@@ -54,7 +54,7 @@ class Hyperoptimization
          * for new runs with no restart variables. Chains the initialization by calling the overloaded
          * initialization function.
          *
-         * @param currentState
+         * @param sensitivitiesWrapper
          * @param filter
          * @param lagMult
          * @param temperature
@@ -69,9 +69,9 @@ class Hyperoptimization
          *
          * @returns 0 on success, PetscError otherwise.
          */
-        PetscErrorCode init(SensitivitiesWrapper* currentState,
+        PetscErrorCode init(SensitivitiesWrapper& sensitivitiesWrapper,
                             FilterWrapper& filter,
-                            LagrangeMultiplier lagMult,
+                            LagrangeMultiplier& lagMult,
                             PetscScalar temperature,
                             Vec initialPositions,
                             Vec initialVelocities,
@@ -87,7 +87,7 @@ class Hyperoptimization
          *
          * Sets up the design loop. This version takes restarted Nose Hoover chain variables.
          *
-         * @param currentState
+         * @param sensitivitiesWrapper
          * @param lagMult
          * @param filter
          * @param fileManager
@@ -106,8 +106,8 @@ class Hyperoptimization
          *
          * @returns 0 on success, PetscError otherwise.
          */
-        PetscErrorCode init(SensitivitiesWrapper* currentState,
-                            LagrangeMultiplier lagMult,
+        PetscErrorCode init(SensitivitiesWrapper& sensitivitiesWrapper,
+                            LagrangeMultiplier& lagMult,
                             FilterWrapper& filter,
                             FileManager* fileManager,
                             PetscInt NHChainOrder,
@@ -179,7 +179,7 @@ class Hyperoptimization
         /**
          * Accessor for final vector of Hamiltonians after running design loop.
          * 
-         * @returns save hamiltonian option..
+         * @returns save hamiltonian option.
          */
         bool getSaveHamiltonian() {return saveHamiltonian;}
 
@@ -318,81 +318,101 @@ class Hyperoptimization
          */
         PetscErrorCode assembleNewPositions(PetscScalar firstNoseHooverVelocity, PetscScalar *LagrangeMultiplier);
 
+        /**
+         * Calcualtes the system temperature given the vector of design particle velocities.
+         *
+         * The temperature is calculated as:
+         * 
+         * @f[ 
+         * T = \frac{\sum_{i=0}^{N}{v_i^2}}{N}
+         * @f]
+         * 
+         * where:
+         *  - \f$ T \f$ is the system temperature.
+         *  - \f$ N \f$ is the number of design particles.
+         *  - \f$ v_i \f$ is the i'th design particle velocity.
+         * 
+         * @param velocities the design particle velocities from which to calculate temperature.
+         * @param temperature [out] resulting temperature to populate.
+         * 
+         * @returns 0 on success, PetscError otherwise.
+         */
         PetscErrorCode calculateTemperature(Vec velocities, PetscScalar *temperature);
 
+        /**
+         * Calculates the Hamiltonian and objective function of the system.
+         * 
+         * The Hamiltonian is calculated as:
+         * 
+         * @f[
+         * H = O + \frac{v^2}{2},
+         * @f]
+         *
+         * where:
+         *  - \f$ H \f$ is the Hamiltonian,
+         *  - \f$ O \f$ is the objective function, which is abstracted and calculated by the problem-specific SensitivitiesWrapper,
+         *  - \f$ v \f$ is the vector of disgn particle velocities.
+         * 
+         * @param velocities vector of disgn particle velocities.
+         * @param positions vector of disgn particle positions (used for calculating the objective function).
+         * @param hamiltonian [out] resulting Hamiltonian to populate.
+         * 
+         * @returns 0 on success, PetscError otherwise.
+         */
         PetscErrorCode calculateHamiltonian(Vec velocities, Vec positions, PetscScalar *hamiltonian);
 
+        /** 
+         * Calculates both constraint and objective sensitivities.
+         *
+         * The provided design particle positions are first filtered, before calculating the sensitivities using the
+         * abstracted-sensitivity wrapper. Finally, the sensitivities are filtered. The results are stored in
+         * Hyperoptimization::sensitivities and Hyperoptimization::constraintSensitivities respectively.
+         *
+         * @param positions vector of disgn particle positions.
+         *
+         * @returns 0 on success, PetscError otherwise.
+         */
         PetscErrorCode calculateSensitvities(Vec positions);
 
+        /**
+         * Truncates the design particle positions to be real-valued, within the range [0,1].
+         *
+         * All values greater than 1 are truncated to exactly 1, and all values less than 0 are truncated to
+         * exactly 0. While this does add some small error to the resulting volume fraction and velocity distributions,
+         * it is sufficiently small as to not affect the design iteration process. It is interesting to note that low
+         * temperature systems will tend to have many particles close to zero, meaning that more particles are truncated
+         * from negative values to 0 than from high values to 1. This gives a high tendancy to slightly err high on the
+         * objective function.
+         */
         PetscErrorCode truncatePositions(Vec *positions);
 
     private:
         FileManager* fileManager;
-
-        SensitivitiesWrapper* currentState;
-
+        SensitivitiesWrapper sensitivitiesWrapper; /** @todo find a better name than sensitivitiesWrapper */
         FilterWrapper filter;
-
         LagrangeMultiplier lagMult;
-
         PetscScalar temperature;
-
         PetscInt NHChainOrder;
-
         PetscInt numParticles;
-
         PetscInt numIterations;
-
         PetscInt numConstraints;
-
         PetscScalar timestep;
-
         PetscScalar halfTimestep;
-
-        /**
-         * Mass of Nose Hoover particles.
-         * 
-         * @note    This is initialized automatically to 1 for now, 
-         *          a better constructor should be made later.
-        */
-        Vec evenNoseHooverMass;
-
+        Vec evenNoseHooverMass; /** Mass of Nose Hoover particles.  @note This is initialized automatically to 1 for now, a better constructor should be made later. */
         Vec oddNoseHooverMass;
-
-        /** @todo confirm if this is needed*/
-        // Vec passiveElements;
-
         HypOptParameters prevState;
-
         Vec newPosition;
-
         Vec sensitivities;
-
         Vec constraintSensitivities;
-
         std::vector<PetscScalar> LagrangeMultipliers;
-
         std::vector<PetscScalar> hamiltonians;
-
         std::vector<PetscScalar> compliance;
-
-        std::vector<PetscScalar> genericData2;
-
-        std::vector<PetscScalar> genericData;
-
         std::vector<PetscScalar> temperatures;
-
         std::vector<PetscScalar> iterationTimes;
-
         std::vector<uint32_t> iterationSaveRange;
-
-        /** @todo make this a pass-in variable/debugging parameter! */
-        bool temperatureCheck = true;
-
+        bool temperatureCheck = true; /** @todo make this a pass-in variable/debugging parameter! */
         bool saveData = true;
-
         bool doneSolving = false;
-
         bool saveHamiltonian;
 
 };
