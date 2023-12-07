@@ -782,6 +782,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                     PetscScalar systemTemperature;
                     calculateTemperature(newVelocity, &systemTemperature);
 
+                    errorStatus = filter.filterDesignVariable(newPosition, filtered_pos);
                     PetscReal minPos;
                     PetscReal maxPos;
                     PetscScalar meanPos;
