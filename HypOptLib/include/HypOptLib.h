@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <vector>
 #include <string>
+#include <limits>
 
 #include <petsc.h>
 #include "LinearElasticity.h"
@@ -192,6 +193,11 @@ class HypOptLib
             this->saveHamiltonian = saveHamiltonian;
         }
 
+        void setMaxSimulationTime(double simTime)
+        {
+            this->maxSimTime = simTime;
+        }
+
         void enableVariableTimestep(double timestepConstantAlpha,
                                     double timestepConstantBeta,
                                     double diffusionConstant)
@@ -237,6 +243,7 @@ class HypOptLib
         double timestepConstantAlpha = 1.1;
         double timestepConstantBeta = 0.99;
         double diffusionConstant = 0.00000001;
+        double maxSimTime = std::numeric_limits<double>::max();
 
         bool        initialConditionsFromFile = false;
         std::string initialConditionsFile = "";
@@ -292,7 +299,8 @@ PYBIND11_MODULE(HypOptLib, m)
         .def("setSaveHamiltonian",      &HypOptLib::setSaveHamiltonian,     "Debugging parameter. Enabling will double run time, but save the compliance and Hamiltonian.")
         .def("enableVariableTimestep",  &HypOptLib::enableVariableTimestep, "Enables variable timestepping with the provided parameters.")
         .def("generateRandomInitialConditionsFile",  &HypOptLib::generateRandomInitialConditionsFile, "Generates an HDF5 file with randomized initial position and velocity vectors.")
-        .def("loadInitialConditionsFromFile",  &HypOptLib::loadInitialConditionsFromFile, "Optional setting to load initial conditions from a file.");
+        .def("loadInitialConditionsFromFile",  &HypOptLib::loadInitialConditionsFromFile, "Optional setting to load initial conditions from a file.")
+        .def("setMaxSimulationTime",    &HypOptLib::setMaxSimulationTime,   "Optional setting to finish simulation at a given time.");
 
     py::register_exception<HypOptException>(m, "HypOptError");
 }

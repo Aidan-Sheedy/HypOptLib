@@ -133,12 +133,19 @@ def plotAttributesOnTop(attributes,
     if (None == markers):
         markers = [False]*numPlots
 
-    time = []*numPlots
-
-    for i in range(0, numPlots):
-        time.append(np.arange(0,len(attributes[i])))# * timesteps[i]
-        if (realTimeValue):
-            time[i] = time[i] * timesteps[i]
+    if (realTimeValue):
+        time = []
+        for i in range(0, numPlots):
+            subtime = []
+            prev_time = 0
+            for j in range(0,len(timesteps)):
+                prev_time += timesteps[j]
+                subtime.append(prev_time)
+            time.append(subtime)            
+    else:
+        time = []
+        for i in range(0, numPlots):
+            time.append(np.arange(0,len(attributes[i])))
 
     if (shareX):
         figure, subplots = plt.subplots(numPlots, sharex=True)

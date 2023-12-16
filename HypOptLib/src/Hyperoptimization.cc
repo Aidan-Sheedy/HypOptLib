@@ -40,7 +40,8 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
                                         FileManager*            fileManager,
                                         std::vector<uint32_t>   iterationSaveRange,
                                         bool                    saveHamiltonian,
-                                        PetscScalar volumeFraction) /** @todo this might need to be a scalar? */
+                                        PetscScalar             volumeFraction,
+                                        double                  maxSimTime)
 {
     PetscCall(VecCreate(PETSC_COMM_WORLD, &(prevState.evenNoseHooverPosition)));
     PetscCall(VecSetSizes(prevState.evenNoseHooverPosition, PETSC_DETERMINE, NHChainOrder/2));
@@ -72,7 +73,8 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
                 prevState.oddNoseHooverPosition,
                 prevState.oddNoseHooverVelocity,
                 saveHamiltonian,
-                volumeFraction);
+                volumeFraction,
+                maxSimTime);
 }
 
 PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWrapper,
@@ -91,7 +93,8 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
                                         Vec                     initialOddNoseHooverPosition,
                                         Vec                     initialOddNoseHooverVelocity,
                                         bool                    saveHamiltonian,
-                                        PetscScalar volumeFraction) /** @todo this might need to be a scalar? */
+                                        PetscScalar             volumeFraction,
+                                        double                  maxSimTime)
 {
     PetscErrorCode errorStatus = 0;
 
@@ -110,7 +113,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
 
     /** @todo Make sure all the Vecs are being properly instantiated, this is not correct! */
     this->fileManager           = fileManager;
-    this->sensitivitiesWrapper          = sensitivitiesWrapper;
+    this->sensitivitiesWrapper  = sensitivitiesWrapper;
     this->filter                = filter;
     this->lagMult               = lagMult;
     this->temperature           = temperature;
@@ -119,7 +122,24 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
     this->timestep              = timestep;
     this->iterationSaveRange    = iterationSaveRange;
     this->saveHamiltonian       = saveHamiltonian;
-    this->volumeFraction = volumeFraction;
+    this->volumeFraction        = volumeFraction;
+    this->maxSimTime            = maxSimTime;
+
+    /* Pre-allocate vector memory
+     * 
+     * While C++ does have good dynamic memory alloocation, it is better to pre-allocate and hit memory limits
+     * NOW instead of 5 minutes before the end of a simulation. Also -- it is possible that the max number of iterations
+     * is higher than the number of iterations actually needed - but again we don't konw that so better to allocate more
+     * than necessary.
+     */
+    LagrangeMultipliers.reserve(numIterations);
+    hamiltonians.reserve(numIterations);
+    compliance.reserve(numIterations);
+    temperatures.reserve(numIterations);
+    iterationTimes.reserve(numIterations);
+    timesteps.reserve(numIterations);
+    energyErrors.reserve(numIterations);
+    volfracs.reserve(numIterations);
 
     /* Locally set initial values */
     this->numConstraints    = 1; /** @todo This may need to be passed in */
@@ -196,11 +216,11 @@ void Hyperoptimization::enableVariableTimestep(PetscScalar timestepConstantAlpha
     this->variableTimestep = true;
 }
 
-/** @todo FIX THIS */
-Hyperoptimization::~Hyperoptimization()
-{
+// /** @todo FIX THIS */
+// Hyperoptimization::~Hyperoptimization()
+// {
 
-}
+// }
 
 PetscErrorCode Hyperoptimization::calculateFirstNoseHooverAcceleration(Vec allVelocities, Vec *accelerations)
 {
@@ -610,6 +630,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
     PetscErrorCode errorStatus = 0;
     bool rerun = false;
     double t1 = 0;
+    double simTime = 0;
 
     PetscInt numOddNHIndices = this->NHChainOrder/2;
     PetscInt numEvenNHIndices = this->NHChainOrder/2;
@@ -628,6 +649,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
     Vec newEvenNoseHooverPosition;
     Vec newEvenNoseHooverVelocity;
     Vec newOddNoseHooverVelocity;
+    Vec extendedOddNoseHooverVelocity;
     // Vec extendedOddNoseHooverVelocity;
 
     /* Setup all vectors */
@@ -648,11 +670,15 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
     PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &(newEvenNoseHooverPosition)));
     PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &(newEvenNoseHooverVelocity)));
     PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &(newOddNoseHooverVelocity)));
-    // PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &extendedOddNoseHooverVelocity));
+    PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &extendedOddNoseHooverVelocity));
+
+    // VecSet(tempEvenNoseHooverAccelerations, 1);
+    // VecSet(extendedOddNoseHooverVelocity, 1);
+    // VecSet(newEvenNoseHooverVelocity, 1);
 
     // PetscCall(fileManager->preparetoIterate(&newPosition, this->timestep));
 
-    for (PetscInt iteration = 0; iteration < this->numIterations; iteration++)
+    for (PetscInt iteration = 0; (iteration < this->numIterations) && (maxSimTime > simTime); iteration++)
     {
         if (false == rerun)
         {
@@ -678,11 +704,11 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
         // PetscExtensions::PrintVecMinMaxMean(tempPosition, "tempPosition");
 
         /* Get objective and constraint sensitivities */
+// vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv maybe here too? vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
         calculateSensitvities(tempPosition);
-
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ maybe here too? ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         /* Get first nose hoover velocity */
-        PetscScalar firstNoseHooverVelocity;
-        const PetscScalar *tempOddNoseHooverVelocityArray;
+        PetscScalar firstNoseHooverVelocity = 0;
 
         PetscCall(PetscExtensions::VecGetOffProcessIndex(tempOddNoseHooverVelocity, 0, &firstNoseHooverVelocity));
 
@@ -694,7 +720,6 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
         calculateRemainingNoseHooverAccelerations(tempOddNoseHooverVelocity, true, &tempEvenNoseHooverAccelerations);
 
         /* Add 0 to the end of the odd nose hoover velocities */
-        Vec extendedOddNoseHooverVelocity;
         PetscExtensions::VecLeftShift(tempOddNoseHooverVelocity, &extendedOddNoseHooverVelocity);
 
         /* Continue calculating full-timestep values */
@@ -710,6 +735,8 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
         PetscCall(VecWAXPY(newVelocity, -1, prevState.position, newPosition));
         PetscCall(VecScale(newVelocity, 1/this->timestep));
 
+
+
         if (variableTimestep)
         {
             // PetscScalar systemTemperature;
@@ -718,9 +745,10 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
             errorStatus = filter.filterDesignVariable(newPosition, filtered_pos);
             PetscScalar systemVolumeFraction;
             PetscCall(VecMean(filtered_pos, &systemVolumeFraction));
-            if (iteration > 0)
+            if (iteration > 1)
             {
                 PetscScalar energyError = (volumeFraction - systemVolumeFraction);
+                // PetscScalar energyError = (previousTemperature - systemTemperature);
                 if (0 > energyError)
                 {
                     energyError *= -1;
@@ -743,6 +771,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                     energyErrors.push_back(energyError);
                     rerun = false;
                     previousTimestep = timestep;
+                    // previousTemperature = systemTemperature;
                     previousTemperature = systemVolumeFraction;
                 }
             }
@@ -750,6 +779,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
             {
                 rerun = false;
                 previousTimestep = timestep;
+                // previousTemperature = systemTemperature;
                 previousTemperature = systemVolumeFraction;
             }
         }
@@ -771,6 +801,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
 
             if (saveData)
             {
+                double t3 = MPI_Wtime();
                 if ( (this->numIterations - iteration) <= iterationSaveRange[1] &&
                     (this->numIterations - iteration) >= iterationSaveRange[0]  )
                 {
@@ -811,16 +842,14 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                     LagrangeMultipliers.push_back(lagMultiplier);
                     iterationTimes.push_back(t2 - t1);
                     volfracs.push_back(meanPos);
+                    timesteps.push_back(timestep);
 
-                    if (variableTimestep)
-                    {
-                        timesteps.push_back(previousTimestep);
-                    }
+                    simTime += timestep;
 
-                    PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Max Pos: %e, Min Pos: %e, Mean Pos: %e, Max Vel: %e, Min Vel: %e, Mean Vel: %e, Temp: %e, LM: %e,\ttime: %f, dt: %e\n",
-                                                iteration, maxPos, minPos, meanPos, maxVel, minVel, meanVel, systemTemperature, lagMultiplier, t2 - t1, previousTimestep);//, hamiltonian);
+                    double t4 = MPI_Wtime();
 
-                    
+                    PetscPrintf(PETSC_COMM_WORLD, "iter: %i, Max Pos: %e, Min Pos: %e, Mean Pos: %e, Max Vel: %e, Min Vel: %e, Mean Vel: %e, Temp: %e, LM: %e,\ttime: %f, dt: %e, simTime: %f, saveTime: %f\n",
+                                                iteration, maxPos, minPos, meanPos, maxVel, minVel, meanVel, systemTemperature, lagMultiplier, t2 - t1, timestep, simTime, t4-t3);//, hamiltonian);
                 }
             }
 
@@ -860,7 +889,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
     PetscCall(VecDestroy(&newEvenNoseHooverPosition));
     PetscCall(VecDestroy(&newEvenNoseHooverVelocity));
     PetscCall(VecDestroy(&newOddNoseHooverVelocity));
-    // PetscCall(VecDestroy(&extendedOddNoseHooverVelocity));
+    PetscCall(VecDestroy(&extendedOddNoseHooverVelocity));
 
     return errorStatus;
 }

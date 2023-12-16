@@ -73,7 +73,9 @@ PetscErrorCode FileManager::initializeHDF5(PetscScalar  volfrac,
                                            PetscInt     numberSteps,
                                            PetscInt     numberSamples,
                                            PetscInt     NoseHooverChainOrder,
-                                           std::string  filePath)
+                                           std::string  filePath,
+                                           bool         randomStartingValues,
+                                           std::string  initialConditionsFile)
 {
     PetscErrorCode errorStatus = 0;
 
@@ -105,6 +107,8 @@ PetscErrorCode FileManager::initializeHDF5(PetscScalar  volfrac,
     PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, settingsGroup.c_str(), numStepName.c_str(),      PETSC_INT,      &numberSteps));
     PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, settingsGroup.c_str(), numSampleName.c_str(),    PETSC_INT,      &numberSamples)); /** @todo IMPLEMENT */
     PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, settingsGroup.c_str(), chainOrdName.c_str(),     PETSC_INT,      &NoseHooverChainOrder));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, settingsGroup.c_str(), "Random Init Conditions", PETSC_BOOL,     &randomStartingValues));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, settingsGroup.c_str(), "Init Conditions File",   PETSC_STRING,   initialConditionsFile.c_str()));
 
     PetscCall(PetscViewerDestroy(&(saveFileHDF5)));
 

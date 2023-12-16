@@ -19,6 +19,7 @@
 #include <petscsystypes.h>
 #include <random>
 #include <fstream>
+#include <iostream>
 
 uint32_t HypOptLib::newRun( std::vector<uint32_t>  *iterationSaveRange,
                             std::vector<uint32_t>  *gridDimensions)
@@ -94,7 +95,9 @@ uint32_t HypOptLib::newRun( std::vector<uint32_t>  *iterationSaveRange,
                           maximumIterations,
                           maximumIterations,
                           noseHooverChainOrder,
-                          this->savePath);
+                          this->savePath,
+                          randomStartingValues,
+                          initialConditionsFile);
 
     PetscPrintf(PETSC_COMM_WORLD, "# Initialing Solver\n");
 
@@ -111,7 +114,8 @@ uint32_t HypOptLib::newRun( std::vector<uint32_t>  *iterationSaveRange,
                                         &output,
                                        *iterationSaveRange,
                                         saveHamiltonian,
-                                        volumeFraction);
+                                        volumeFraction,
+                                        maxSimTime);
 
     if (0 != status)
     {
@@ -121,6 +125,9 @@ uint32_t HypOptLib::newRun( std::vector<uint32_t>  *iterationSaveRange,
     {
         runLoop(solver, maximumIterations, output);
     }
+
+    PetscCall(VecDestroy(&initialPositions));
+    PetscCall(VecDestroy(&initialVelocities));
 
     delete filter;
     delete opt;
@@ -212,7 +219,9 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
                           maximumIterations,
                           maximumIterations,
                           noseHooverChainOrder,
-                          this->savePath);
+                          this->savePath,
+                          randomStartingValues,
+                          initialConditionsFile);
 
     PetscPrintf(PETSC_COMM_WORLD, "# Initialing Solver\n");
 
@@ -233,7 +242,8 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
                                         finalState.oddNoseHooverPosition,
                                         finalState.oddNoseHooverVelocity,
                                         saveHamiltonian,
-                                        volumeFraction);
+                                        volumeFraction,
+                                        maxSimTime);
 
     if (0 != status)
     {
@@ -243,6 +253,15 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
     {
         runLoop(solver, maximumIterations, output);
     }
+
+
+    PetscCall(VecDestroy(&(finalState.evenNoseHooverPosition)));
+    PetscCall(VecDestroy(&(finalState.evenNoseHooverVelocity)));
+    PetscCall(VecDestroy(&(finalState.oddNoseHooverPosition)));
+    PetscCall(VecDestroy(&(finalState.oddNoseHooverVelocity)));
+    PetscCall(VecDestroy(&(finalState.position)));
+    PetscCall(VecDestroy(&(finalState.velocity)));
+    PetscCall(VecDestroy(&finalStateField));
 
     delete filter;
     delete opt;
@@ -296,8 +315,10 @@ PetscErrorCode HypOptLib::randomizeStartingVectors(Vec initialPosition, Vec init
     /* Get underlying vector array of initial positions */
     PetscScalar *initialValues;
     PetscInt     localSize;
+    PetscInt     globalSize;
     PetscCall(VecGetArray(initialPosition, &initialValues));
     PetscCall(VecGetLocalSize(initialPosition, &localSize));
+    PetscCall(VecGetSize(initialPosition, &globalSize));
 
     /* Initialize random number generator */
     std::default_random_engine generator;
@@ -320,6 +341,43 @@ PetscErrorCode HypOptLib::randomizeStartingVectors(Vec initialPosition, Vec init
     /* Restore Vector */
     PetscCall(VecRestoreArray(initialPosition, &initialValues));
     PetscCall(VecSet(initialVelocity, std::sqrt(targetTemperature)));
+
+    /* Assign velocity initial as Maxwell Boltzmann distribution */
+    PetscCall(VecGetArray(initialVelocity, &initialValues));
+    PetscCall(VecGetLocalSize(initialVelocity, &localSize));
+
+    std::default_random_engine generator2;
+    std::uniform_real_distribution<PetscScalar> distribution2;
+
+    // distribution2.reset();
+    distribution2 = std::uniform_real_distribution<PetscScalar>(-0.5, 0.5);
+    for (PetscInt i = 0; i < localSize; i++)
+    {
+        initialValues[i] = distribution2(generator); //volumeFraction;
+    }
+
+    PetscCall(VecRestoreArray(initialVelocity, &initialValues));
+
+    Vec temp;
+    PetscScalar sumV;
+    PetscScalar sumV2;
+
+    PetscCall(VecDuplicate(initialVelocity, &temp));
+    PetscCall(VecCopy(initialVelocity, temp));
+    PetscCall(VecPointwiseMult(temp, initialVelocity, initialVelocity));
+
+    PetscCall(VecMean(initialVelocity, &sumV));
+    PetscCall(VecMean(temp, &sumV2));
+
+    std::cout << "sumV: " << sumV << std::endl;
+    std::cout << "sumV2: " << sumV2 << std::endl;
+
+    PetscScalar offset = sqrt(targetTemperature / sumV2);
+
+    PetscCall(VecShift(initialVelocity, -sumV));
+    PetscCall(VecScale(initialVelocity, offset));
+
+    VecDestroy(&temp);
 
     return 0;
 }

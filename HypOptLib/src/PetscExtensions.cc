@@ -165,7 +165,7 @@ PetscErrorCode PetscExtensions::VecLeftShift(Vec input, Vec *output)
     Vec sequentialInput;
     Vec sequentialoutput;
 
-    PetscCall(VecDuplicate(input, output));
+    // PetscCall(VecDuplicate(input, &output));
 
     PetscCall(VecSequentialFromParallel(input, &sequentialInput));
     PetscCall(VecSequentialFromParallel(*output, &sequentialoutput));

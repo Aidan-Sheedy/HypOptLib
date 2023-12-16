@@ -91,6 +91,8 @@ PetscErrorCode LinearElasticity::SetUpLoadAndBC(DM da_nodes) {
         xc[3] = ne[1] * dy;
         xc[4] = 0.0;
         xc[5] = ne[2] * dz;
+
+        // VecDestroy(&lcoor);
     }
 
     // Create the nodal mesh
@@ -170,6 +172,7 @@ PetscErrorCode LinearElasticity::SetUpLoadAndBC(DM da_nodes) {
         }
     }
 
+    // VecDestroy(&lcoor);
     VecAssemblyBegin(N);
     VecAssemblyBegin(RHS);
     VecAssemblyEnd(N);

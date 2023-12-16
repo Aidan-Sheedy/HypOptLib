@@ -78,6 +78,8 @@ PDEFilt::PDEFilt(DM da_nodes, PetscScalar rmin) {
         xc[3] = ne[1] * N;
         xc[4] = 0.0;
         xc[5] = ne[2] * P;
+
+        VecDestroy(&lcoor);
     }
 
     // Create the nodal mesh

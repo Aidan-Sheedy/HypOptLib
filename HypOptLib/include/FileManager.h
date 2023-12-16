@@ -57,7 +57,9 @@ class FileManager
                                       PetscInt      numberSteps,
                                       PetscInt      numberSamples,
                                       PetscInt      NoseHooverChainOrder,
-                                      std::string   filePath);
+                                      std::string   filePath,
+                                      bool          randomStartingValues,
+                                      std::string   initialConditionsFile);
 
         /**
          * Saves an iteration of the optimized positions.

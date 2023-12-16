@@ -13,6 +13,7 @@
 
 #include <petsc.h>
 #include <vector>
+#include <limits>
 #include "SensitivitiesWrapper.h"
 #include "FilterWrapper.h"
 #include "LagrangeMultiplier.h"
@@ -45,7 +46,21 @@ class Hyperoptimization
          * 
          * @todo set this up properly.
          */
-        ~Hyperoptimization();
+        ~Hyperoptimization()
+        {
+            VecDestroy(&evenNoseHooverMass);
+            VecDestroy(&oddNoseHooverMass);
+            VecDestroy(&newPosition);
+            VecDestroy(&sensitivities);
+            VecDestroy(&constraintSensitivities);
+
+            VecDestroy(&prevState.evenNoseHooverPosition);
+            VecDestroy(&prevState.evenNoseHooverVelocity);
+            VecDestroy(&prevState.oddNoseHooverPosition);
+            VecDestroy(&prevState.oddNoseHooverVelocity);
+            VecDestroy(&prevState.position);
+            VecDestroy(&prevState.velocity);
+        }
 
         /**
          * Initialization funciton.
@@ -82,7 +97,8 @@ class Hyperoptimization
                             FileManager* fileManager,
                             std::vector<uint32_t> iterationSaveRange,
                             bool saveHamiltonian,
-                            PetscScalar volumeFraction);
+                            PetscScalar volumeFraction,
+                            double maxSimTime = std::numeric_limits<double>::max());
 
         /**
          * Overloaded initialization funciton.
@@ -125,7 +141,8 @@ class Hyperoptimization
                             Vec initialOddNoseHooverPosition,
                             Vec initialOddNoseHooverVelocity,
                             bool saveHamiltonian,
-                            PetscScalar volumeFraction);
+                            PetscScalar volumeFraction,
+                            double maxSimTime = std::numeric_limits<double>::max());
 
         /**
          * Sets up variable timestepping.
@@ -408,9 +425,19 @@ class Hyperoptimization
          */
         PetscErrorCode truncatePositions(Vec *positions);
 
+        /**
+         * Calculates the next timestep for the variable timestep algorithm.
+         * 
+         * Uses the following equation:
+         * 
+         * @f[
+         * \Delta t_i = \alpha \beta^k \Delta t_{i=i}
+         * @f]
+         * 
+         * where:
+         *  - \f$ \Delta t_i \f$ is the timestep at step \f$ i \f$
+         */
         void calculateNextTimeStep();
-
-        PetscErrorCode doesIterationRequireRerun(PetscScalar energyError, bool *requiresRerun);
 
     private:
         FileManager* fileManager;
@@ -448,6 +475,7 @@ class Hyperoptimization
         PetscScalar timestepConstantK = 1;
         PetscScalar diffusionConstant = 0.00000001;
         PetscScalar previousTemperature = 0;
+        double      maxSimTime;
 
         std::vector<PetscScalar> timesteps;
         std::vector<PetscScalar> energyErrors;

@@ -4,40 +4,34 @@ import HypOptLib
 
 solver = HypOptLib.HypOptLib()
 
-solver.setSavePath("test_timestepping.h5")
+solver.setSavePath("test_timestepping_straightime_t1.h5")
 
-timestep = 0.0003
+timestep = 0.000005
 
-solver.setTargetTemperature(0.01)
+solver.setTargetTemperature(1)
 solver.setTimestep(timestep)
-solver.setMaximumIterations(2000)
+solver.setMaximumIterations(200000)
 
 solver.setRandomStartingValues(False)
+solver.setMaxSimulationTime(10)
 
-# solver.enableVariableTimestep(1.04,          # timestepConstantAlpha
-#                               0.98,         # timestepConstantBeta
-#                               0.00000001)   # diffusionConstant
+# alpha = 1.4
+# beta = 0.98
 
-solver.loadInitialConditionsFromFile("../tests/randomInitial32x16x16_T0.01.h5")
+alpha = 1.115
+beta = 0.9
+
+tempDifusionConst = 0.0000000000005
+volfracDiffusionConst = 0.000000001
+
+# solver.enableVariableTimestep(alpha,
+#                               beta,
+#                             #   tempDifusionConst)   # diffusionConstant
+#                               volfracDiffusionConst)   # diffusionConstant -- volfrac version
+
+solver.loadInitialConditionsFromFile("../tests/randomInitial32x16x16_T1.h5")
 
 solver.newRun(  [0,0],              # iterationSaveRange
                 [32,16,16])         # gridDimensions
 
-# solver.generateRandomInitialConditionsFile([32, 16, 16], "../tests/randomInitial32x16x16_T0.01.h5")
-
-# solver.newRun(  False,              # randomStartingValues
-#                 False,              # saveHamiltonian
-#                 0.001,              # initialTemperature
-#                 3.0,                # penalty
-#                 0.08,               # minimumFilterRadius
-#                 0.12,               # volumeFraction
-#                 0.001,              # timestep
-#                 10,                 # noseHooverChainOrder
-#                 30,                 # maximumIterations
-#                 [2,8],              # iterationSaveRange
-#                 [32,16,16])         # gridDimensions
-
-# solver.restartRun("testing.h5",
-#                   10,
-#                   [0,10],
-#                   False)
+# solver.generateRandomInitialConditionsFile([32, 16, 16], "../tests/randomInitial32x16x16_T0.0001.h5")

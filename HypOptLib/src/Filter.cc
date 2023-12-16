@@ -454,6 +454,7 @@ PetscErrorCode Filter::SetUp(DM da_nodes, Vec x) {
         // Clean up
         VecRestoreArray(lcoor, &lcoorp);
         VecDestroy(&dummy);
+        // VecDestroy(&lcoor);
         delete[] Lx;
         delete[] Ly;
         delete[] Lz;

@@ -98,6 +98,9 @@ def hdf5AnalyzeSpecificAttributes(filePath,
         desiredAttributes.append(np.asarray(outputFile[dataGroup + "/" + attributeKeys[i]]))
         # timesteps.append(settings[i].attrs["dt"])
 
+    timesteps = np.asarray(outputFile[dataGroup + "/Timestep"])
+
+    print(timesteps)
 
     print("Plotting", title)
 
@@ -112,6 +115,8 @@ def hdf5AnalyzeSpecificAttributes(filePath,
                                     xlims,
                                     savePlots=saveFig,
                                     markers=[True]*len(desiredAttributes),
+                                    timesteps=timesteps,
+                                    realTimeValue=True,
                                     name=title,
                                     annotation=annotation,
                                     biggerSpace=biggerSpace,
@@ -355,13 +360,13 @@ if(False):
 
 if (True):
     # filePath = "../outputs/finally_good_for_real/0.001 Deg/hypopt_output_small_0.001deg_0.01dt_50000.h5"
-    filePath = '../run/test_timestepping (31).h5'
+    filePath = "../run/test_timestepping_straightime_t1 (1).h5"
 
-    # attributes  = ["Timestep", "Temperature"]
-    # names       = ["Timestep", "Temperature"]
+    # attributes  = ["Temperature", "Volume Fraction", "Iteration Compute Time"]
+    # names       = ["Temperature", "Volume Fraction", "Iteration Compute Time"]
 
-    attributes  = ["Timestep", "Temperature", "Volume Fraction"]#, "Volume Fraction"]
-    names       = ["Timestep", "Temperature", "Volume Fraction"]#, "Volume Fraction"]
+    attributes  = ["Timestep", "Temperature", "Volume Fraction", "Iteration Compute Time"]#, "Volume Fraction"]
+    names       = ["Timestep", "Temperature", "Volume Fraction", "Iteration Compute Time"]#, "Volume Fraction"]
 
 
     hdf5AnalyzeSpecificAttributes(filePath,
@@ -384,6 +389,67 @@ if(False):
     # filePath = "G:/Projects/ENPH455/PETSc_paper_github/Hyperoptimization_using_Petsc/outputs/finally_good_for_real/0.001 Deg/hypopt_output_small_0.001deg_0.01dt_50000.h5"
     analyzeDirectOutput(filePath, realTimeValue=True)
 
+
+################## Compare Temps #######################
+if(False):
+    variableTimestep = "../run/timestep_tests/t0.0001/test_timestepping_temp_vartime_t0.0001.h5"
+    straight = "../run/timestep_tests/t0.0001/test_timestepping_straightime_t0.0001.h5"
+    varTime2 = "../run/timestep_tests/t0.0001/test_timestepping_volfrac_temptime_t0.0001.h5"
+
+    variableOutputFile  = h5py.File(variableTimestep)
+    variableOutputFile2  = h5py.File(varTime2)
+    straightOutputFile  = h5py.File(straight)
+
+    # Get straight times
+    straightTimestep = straightOutputFile["Setting"].attrs["dt"]
+    StraightTemps = np.asarray(straightOutputFile["Dataset" + "/Temperature"])
+    numItr = len(StraightTemps)
+    straightTimes = np.linspace(0, numItr*straightTimestep, numItr)
+
+    print("Timeshape:", len(straightTimes), "Tempshape:", len(StraightTemps))
+
+    # Get variable timestep array
+    timesteps = np.asarray(variableOutputFile["Dataset" + "/Timestep"])
+    time = 0
+    j = -1
+    variableTimes = []
+
+    while time < 50:
+        j+=1
+        time += timesteps[j]
+        variableTimes.append(time)
+
+    variableTemps = np.asarray(variableOutputFile["Dataset" + "/Temperature"])
+    variableTemps = variableTemps[:j+1]
+    variableTimes = variableTimes[:j+1]
+
+    # Var Time 2
+    timesteps = np.asarray(variableOutputFile2["Dataset" + "/Timestep"])
+    variableTemps2 = np.asarray(variableOutputFile2["Dataset" + "/Temperature"])
+    time = 0
+    j = -1
+    variableTimes2 = []
+
+    while time < 50:
+        j+=1
+        time += timesteps[j]
+        variableTimes2.append(time)
+
+    variableTemps2 = variableTemps2[:j+1]
+    variableTimes2 = variableTimes2[:j+1]
+
+
+    figure, subplots = plt.subplots(3, sharex=True)
+
+    subplots[0].plot(straightTimes[1:], StraightTemps[1:], marker='.')
+    subplots[1].plot(variableTimes[1:], variableTemps[1:], marker='.')
+    subplots[2].plot(variableTimes2[1:], variableTemps2[1:], marker='.')
+
+    # plt.show()
+
+    # iterations = np.linspace(1, j+1, j)
+
+    # plt.plot(iterations, variableTemps2[1:])
 
 ################## ./bin ####################
 if(False):
