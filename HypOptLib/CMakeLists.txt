@@ -22,9 +22,10 @@ list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake-modules)
 # find_package(PythonInterp 3.7 REQUIRED)
 # find_package(PythonLibs 3.7 REQUIRED)
 
-set(PETSC_DIR "/mnt/g/Projects/ENPH455/PETSc_paper_github/petsc")
+set(PETSC_DIR "/home/aisheedy/petsc")
 set(PETSC_ARCH "arch-linux-c-debug")
 
+find_package(pybind11 REQUIRED)
 find_package(PETSc REQUIRED)
 
 message (STATUS "PETSC COMPILER ${PETSC_COMPILER}")
@@ -41,7 +42,7 @@ message (STATUS "PETSC_DEFINITIONS ${PETSC_DEFINITIONS}")
 file(GLOB SOURCES "src/*.cc")
 # add_executable(HypOptLib ${SOURCES})
 
-add_subdirectory(pybind11)
+# add_subdirectory(pybind11)
 pybind11_add_module(HypOptLib SHARED ${SOURCES})
 target_include_directories(HypOptLib PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/include ${PETSC_INCLUDES} pybind11/include)
 

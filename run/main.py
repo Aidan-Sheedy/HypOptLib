@@ -10,7 +10,7 @@ timestep = 0.000005
 
 solver.setTargetTemperature(1)
 solver.setTimestep(timestep)
-solver.setMaximumIterations(200000)
+solver.setMaximumIterations(10)
 
 solver.setRandomStartingValues(False)
 solver.setMaxSimulationTime(10)
@@ -29,7 +29,7 @@ volfracDiffusionConst = 0.000000001
 #                             #   tempDifusionConst)   # diffusionConstant
 #                               volfracDiffusionConst)   # diffusionConstant -- volfrac version
 
-solver.loadInitialConditionsFromFile("../tests/randomInitial32x16x16_T1.h5")
+# solver.loadInitialConditionsFromFile("../tests/randomInitial32x16x16_T1.h5")
 
 solver.newRun(  [0,0],              # iterationSaveRange
                 [32,16,16])         # gridDimensions

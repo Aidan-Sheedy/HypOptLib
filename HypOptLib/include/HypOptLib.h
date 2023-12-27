@@ -210,6 +210,7 @@ class HypOptLib
 
         void loadInitialConditionsFromFile(std::string filePath)
         {
+            /** @todo check if this is a real path somewhere down the line */
             this->initialConditionsFile = filePath;
             this->initialConditionsFromFile = true;
         }

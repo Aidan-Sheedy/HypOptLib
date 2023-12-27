@@ -29,6 +29,33 @@ print_help () {
     echo -e 
 }
 
+install_dependencies () {
+    os=ubuntu
+    mpi=mpich
+    petscdir=../
+
+    # Install HypOptLib dependencies
+    sudo apt update
+
+    sudo apt install cmake
+    sudo apt install make
+    sudo apt install mpich
+    sudo apt install python3-pip
+    pip3 install "pybind11[global]"
+    sudo apt install libhdf5-serial-dev
+
+    # Install PetSc Dependencies
+    sudo apt-get install libblas-dev liblapack-dev
+
+    # Install PetSc
+    cd $petscdir
+    git clone -b release https://gitlab.com/petsc/petsc.git petsc
+    cd petsc
+    git pull
+    ./configure --download-hdf5
+    make all check
+}
+
 build_docs () {
     if [ 1 -lt $# ]
     then
@@ -114,6 +141,9 @@ then
 elif [ "build" = "$1" ]
 then
     build "$@"
+elif [ "install" = "$1" ]
+then
+    install_dependencies "$@"
 else
     echo Invalid macro. Run \'./macros.sh \-h\' for more info.
 fi
