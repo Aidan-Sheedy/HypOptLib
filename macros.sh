@@ -40,23 +40,25 @@ install_dependencies () {
         if [ "-mpi=openmpi" =  $var ]
         then
             mpi=openmpi
-            petscCfgArgs+=' --download-openmpi'
         elif [ "-mpi=mpich" =  $var ]
         then
             mpi=mpich
         fi
     done
 
+    if [ "openmpi" =  $mpi ]
+    then
+        petscCfgArgs+=' --download-openmpi'
+    elif [ "mpich" =  $var ]
+    then
+        petscCfgArgs+=' --download-mpich'
+    fi
+
     # Install HypOptLib dependencies
     sudo apt update
 
     sudo apt install cmake
     sudo apt install make
-
-    if [ "mpich" = $mpi ]
-    then
-        sudo apt install mpich
-    fi
 
     sudo apt install python3-pip
     pip3 install "pybind11[global]"
@@ -73,11 +75,10 @@ install_dependencies () {
     ./configure $petscCfgArgs
     make all check
 
-    if [ "openmpi" = $mpi ]
-    then
-        sudo cp arch-linux-c-debug/bin/mpicc /usr/local/bin
-        sudo cp arch-linux-c-debug/bin/mpicxx /usr/local/bin
-    fi
+    sudo cp arch-linux-c-debug/bin/mpicc /usr/local/bin
+    sudo cp arch-linux-c-debug/bin/mpicxx /usr/local/bin
+    sudo cp arch-linux-c-debug/bin/mpiexec /usr/local/bin
+    sudo cp arch-linux-c-debug/bin/mpirun /usr/local/bin
 }
 
 build_docs () {
