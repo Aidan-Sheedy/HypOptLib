@@ -10,6 +10,7 @@ et. al., along with some borrowed elements from the derivative `TopOptLib <https
 
 .. figure:: ../figures/big_result_standin.png
     :align: center
+
 Credit
 ===========================
 | **Hyperoptimization Algorithm** Hazhir Aliahmadi
@@ -61,11 +62,11 @@ much better for a large portion of optimization problems that can benefit from h
 .. autodoxygenindex
 ..    :project: HypOptLib
 
-.. toctree::
-   :caption: Library Reference
-   :maxdepth: 4
+.. .. toctree::
+..    :caption: Library Reference
+..    :maxdepth: 4
       
-   api/library_root.rst
+..    api/library_root.rst
 
 Indices and tables
 ==================

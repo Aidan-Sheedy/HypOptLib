@@ -3,7 +3,7 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-from exhale import utils
+# from exhale import utils
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -30,11 +30,12 @@ master_doc = 'index'
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
-extensions = ['breathe', 'exhale', 'sphinx.ext.todo']
+extensions = ['breathe', 'sphinx.ext.todo']
 breathe_projects = {"HypOptLib": "../doxyxml/xml"}
 breathe_default_project = "HypOptLib"
 numfig = True
 todo_include_tools = True
+todo_include_todos = True
 
 # breathe_projects_source = {
 #     "HypOptLib" : 
@@ -60,26 +61,26 @@ def specificationsForKind(kind):
     else:
         return []
 
-exhale_args = {
-    # These arguments are required
-    "containmentFolder":     "./api",
-    "rootFileName":          "library_root.rst",
-    "doxygenStripFromPath":  "..",
-    # Heavily encouraged optional argument (see docs)
-    "rootFileTitle":         "Library API",
-    # Suggested optional arguments
-    "createTreeView":        True,
-    # TIP: if using the sphinx-bootstrap-theme, you need
-    # "treeViewIsBootstrap": True,
-    "exhaleExecutesDoxygen": False,
-    "fullToctreeMaxDepth": 1,
-    # "exhaleDoxygenStdin":    "INPUT = ../../HypOptLib/include"
-    # "unabridgedOrphanKinds": {"File"},
-    # "listingExclude": ["G:/Projects/ENPH455/PETSc_paper_github/Hyperoptimization_using_Petsc/"],
-    "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
-        specificationsForKind
-    )
-}
+# exhale_args = {
+#     # These arguments are required
+#     "containmentFolder":     "./api",
+#     "rootFileName":          "library_root.rst",
+#     "doxygenStripFromPath":  "..",
+#     # Heavily encouraged optional argument (see docs)
+#     "rootFileTitle":         "Library API",
+#     # Suggested optional arguments
+#     "createTreeView":        True,
+#     # TIP: if using the sphinx-bootstrap-theme, you need
+#     # "treeViewIsBootstrap": True,
+#     "exhaleExecutesDoxygen": False,
+#     "fullToctreeMaxDepth": 1,
+#     # "exhaleDoxygenStdin":    "INPUT = ../../HypOptLib/include"
+#     # "unabridgedOrphanKinds": {"File"},
+#     # "listingExclude": ["G:/Projects/ENPH455/PETSc_paper_github/Hyperoptimization_using_Petsc/"],
+#     "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
+#         specificationsForKind
+#     )
+# }
 # breathe_projects_source = {
 #     "HypOptLibSource": (
 #         "../../HypOptLib/include", [

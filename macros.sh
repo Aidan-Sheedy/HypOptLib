@@ -7,7 +7,7 @@ then
 fi
 
 # Environment Variables (Set these up before using!)
-doxygen_exe=/mnt/g/Program\ Files/doxygen/bin/doxygen.exe
+# doxygen_exe=/mnt/g/Program\ Files/doxygen/bin/doxygen.exe
 
 print_help () {
     echo -e "macros.sh [-h] macro"
@@ -34,12 +34,35 @@ install_dependencies () {
     mpi=mpich
     petscdir=../
 
+    for var in "$@"
+    do
+        if [ "-mpi=openmpi" =  $var ]
+        then
+            mpi=openmpi
+        elif [ "-mpi=mpich" =  $var ]
+        then
+            mpi=mpich
+        fi
+    done
+
+    echo $mpi
+
+    exit 0
+
     # Install HypOptLib dependencies
     sudo apt update
 
     sudo apt install cmake
     sudo apt install make
-    sudo apt install mpich
+
+    if [ "mpich" = $mpi ]
+    then
+        sudo apt install mpich
+    elif [ "openmpi" = $mpi ]
+    then
+        sudo apt install openmpi-bin
+    fi
+
     sudo apt install python3-pip
     pip3 install "pybind11[global]"
     sudo apt install libhdf5-serial-dev
@@ -66,7 +89,7 @@ build_docs () {
     cd ./docs
     rm -r build
     rm -r doxyxml
-    "$doxygen_exe" Doxyfile
+    doxygen Doxyfile
     sphinx-build -M html source build
 }
 
@@ -141,10 +164,9 @@ then
 elif [ "build" = "$1" ]
 then
     build "$@"
-elif [ "install" = "$1" ]
+elif [ "setup" = "$1" ]
 then
     install_dependencies "$@"
 else
     echo Invalid macro. Run \'./macros.sh \-h\' for more info.
 fi
-
