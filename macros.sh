@@ -33,21 +33,19 @@ install_dependencies () {
     os=ubuntu
     mpi=mpich
     petscdir=../
+    petscCfgArgs='--download-hdf5'
 
     for var in "$@"
     do
         if [ "-mpi=openmpi" =  $var ]
         then
             mpi=openmpi
+            petscCfgArgs+=' --download-openmpi'
         elif [ "-mpi=mpich" =  $var ]
         then
             mpi=mpich
         fi
     done
-
-    echo $mpi
-
-    exit 0
 
     # Install HypOptLib dependencies
     sudo apt update
@@ -58,9 +56,6 @@ install_dependencies () {
     if [ "mpich" = $mpi ]
     then
         sudo apt install mpich
-    elif [ "openmpi" = $mpi ]
-    then
-        sudo apt install openmpi-bin
     fi
 
     sudo apt install python3-pip
@@ -75,8 +70,14 @@ install_dependencies () {
     git clone -b release https://gitlab.com/petsc/petsc.git petsc
     cd petsc
     git pull
-    ./configure --download-hdf5
+    ./configure $petscCfgArgs
     make all check
+
+    if [ "openmpi" = $mpi ]
+    then
+        sudo cp arch-linux-c-debug/bin/mpicc /usr/local/bin
+        sudo cp arch-linux-c-debug/bin/mpicxx /usr/local/bin
+    fi
 }
 
 build_docs () {
