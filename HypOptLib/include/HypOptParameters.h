@@ -15,7 +15,7 @@
 
 /**
  * Structure defining all aspects of the design space.
- * 
+ *
  * Mostly a convenience structure, as these parameters are often passed together.
  */
 typedef struct

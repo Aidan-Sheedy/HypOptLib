@@ -24,7 +24,7 @@
  *       GO THROUGH THE WHOLE CODE AND UPDATE THIS.
  *
  * @todo ALL CALLS TO VecGetArrayRead MUST be followed up by "VecRestoreArrayRead()"!!!!!!!!!
- * 
+ *
  * @todo Convert ALL wrappers to use pass by reference using &!!!!!! This will ensure that overwritten functions
  * are actually processed properly.
 */
@@ -126,7 +126,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
     this->maxSimTime            = maxSimTime;
 
     /* Pre-allocate vector memory
-     * 
+     *
      * While C++ does have good dynamic memory alloocation, it is better to pre-allocate and hit memory limits
      * NOW instead of 5 minutes before the end of a simulation. Also -- it is possible that the max number of iterations
      * is higher than the number of iterations actually needed - but again we don't konw that so better to allocate more

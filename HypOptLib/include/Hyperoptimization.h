@@ -26,7 +26,7 @@
  * Main functionality is in initialization and design loop functions. This class assumes
  * position vectors are set up in accordance to the settings used by whatever Petsc solver is
  * being used.
- * 
+ *
  * The class is abstracted from Petsc as much as possible, other than the use of Petsc type variables.
  * Wrappers are provided for all operations that are problem specific, i.e. for filtering, Lagrangian
  * multiplier calculation, and sensitivity calculation. This is so that while the implementation provided
@@ -43,7 +43,7 @@ class Hyperoptimization
 
         /**
          * Destructor.
-         * 
+         *
          * @todo set this up properly.
          */
         ~Hyperoptimization()
@@ -146,9 +146,9 @@ class Hyperoptimization
 
         /**
          * Sets up variable timestepping.
-         * 
+         *
          * @todo fill out info on how the algorithm works.
-         * 
+         *
          * @param timestepConstantAlpha
          * @param timestepConstantBeta
          * @param timestepConstantK
@@ -160,60 +160,60 @@ class Hyperoptimization
 
         /**
          * Main iteration loop which implements the hyperoptimization design algorithm.
-         * 
+         *
          * @todo basic info on the loop here?
          */
         PetscErrorCode runDesignLoop();
 
         /**
          * Accessor for final vector of Hamiltonians after running design loop.
-         * 
+         *
          * @todo throw exception if save Hamiltonian is false?
-         * 
+         *
          * @returns vector of Hamiltonians for each iteration.
          */
         std::vector<PetscScalar> getHamiltonians() {return hamiltonians;}
 
         /**
          * Accessor for final vector of Compliance after running design loop.
-         * 
+         *
          * @todo throw exception if save Hamiltonian is false?
-         * 
+         *
          * @returns vector of Compliance for each iteration.
          */
         std::vector<PetscScalar> getCompliance() {return compliance;}
 
         /**
          * Accessor for final vector of Hamiltonians after running design loop.
-         * 
+         *
          * @returns vector of temperatures for each iteration.
          */
         std::vector<PetscScalar> getTemperatures() {return temperatures;}
 
         /**
          * Accessor for final vector of Hamiltonians after running design loop.
-         * 
+         *
          * @returns vector of Lagrange Multipliers for each iteration.
          */
         std::vector<PetscScalar> getLagrangeMultipliers() {return LagrangeMultipliers;}
 
         /**
          * Accessor for final vector of Hamiltonians after running design loop.
-         * 
+         *
          * @returns vector of iteration times for each iteration.
          */
         std::vector<PetscScalar> getIterationTimes() {return iterationTimes;}
 
         /**
          * Accessor for final vector of Hamiltonians after running design loop.
-         * 
+         *
          * @returns vector of positions for the final iteration.
          */
         HypOptParameters getFinalState() {return prevState;}
 
         /**
          * Accessor for final vector of Hamiltonians after running design loop.
-         * 
+         *
          * @returns save hamiltonian option.
          */
         bool getSaveHamiltonian() {return saveHamiltonian;}
@@ -225,11 +225,11 @@ class Hyperoptimization
     private:
         /**
          * the acceleration of the first Nose Hoover particle. Solves the equation:
-         * 
+         *
          * @f[
          * a_{s_1} = \frac{\sum_i(v_i^2) - (N - N_c)T}{Q_1}
          * @f]
-         * 
+         *
          * where:
          *  - \f$ a_{s1} \f$ is the first Nose Hoover particle's acceleration
          *  - \f$ v_i    \f$ is the i'th design particle's velocity
@@ -263,43 +263,43 @@ class Hyperoptimization
          * @param evenOutput flag to indicate if even or odd acclerations are being calculated.
          * @param result [out] resulting accelerations. They are populated in the correct locations in the array. I.e. for odd output, the positions
          *               populated are \f$ i = 3, 5, 7, ... \f$.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         PetscErrorCode calculateRemainingNoseHooverAccelerations(Vec noseHooverVelocities, bool evenOutput, Vec *result);
 
         /**
          * Calculates particle positions for the provided timestep. Computes the equation:
-         * 
+         *
          * @f[
          * x(t + \Delta t) = x(t_a) + \Delta t  v(t_b),
          * @f]
-         * 
+         *
          * where:
          *  - \f$ x(t + \Delta t) \f$ is the incremented position,
          *  - \f$ x(t_a) \f$ is the position at a previous time \f$ t_a \f$,
          *  - \f$ \Delta t \f$ is the timestep,
          *  - \f$ v(t_b) \f$ is the velocity at a previous time \f$ t_b \f$.
-         * 
+         *
          * where the positions and velocities can be for either design particles or Nose Hoover particles.
          * Note that \f$ t_a \f$ and \f$ t_b \f$ are typically either the same or off by a half timestep.
-         * 
+         *
          * @param previousPosition \f$ x(t_a) \f$
          * @param previousVelocity \f$ v(t_b) \f$
          * @param timeStep \f$ \Delta t \f$
          * @param result [out] array in which to add the return resulting position vector. Must match shape of input vectors.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         PetscErrorCode calculatePositionIncrement(Vec previousPosition, Vec previousVelocity, PetscScalar timeStep, Vec *result);
 
         /**
          * Calculates the next velocity at the given time step. Completes the equation:
-         * 
+         *
          * @f[
          * v_1(t + \Delta t) = v_1(t) e^{-\Delta t  v_2(t_a)} + \Delta t a(t_a) e^{-\frac{\Delta t}{2} v_2(t_a)},
          * @f]
-         * 
+         *
          * where:
          *  - \f$ v_1(t + \Delta t) \f$ is the incremented primary velocity,
          *  - \f$ v_1(t) \f$ is the previous primary velocity,
@@ -307,23 +307,23 @@ class Hyperoptimization
          *  - \f$ v_2(t_a) \f$ is a secondary velocity term (odd Nose Hoover if the primary is even, and vice versa)
          *                     at a time \f$ t_a \f$
          *  - \f$ a(t_a) \f$ is the primary velcities' first derivative at the time \f$ t_a \f$.
-         * 
+         *
          * @param velocityOne \f$ v_1(t) \f$, vector of the velocity to be incremented.
          * @param velocityTwo \f$ v_2(t_a) \f$, vector of the second velocities. Typically even velocities if the incremented are odd, and vice-versa.
          * @param acceleration \f$ a(t_a) \f$, vector of the acceleration of the velocity to be incremented.
          * @param timeStep \f$ \Delta t \f$, the timestep at which to calculate the new velocity.
          * @param result [out] array in which to add the return result. Must match shape of input vectors.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         PetscErrorCode calculateVelocityIncrement(Vec velocityOne, Vec velocityTwo, Vec acceleration, PetscScalar timeStep, Vec *result);
 
         /**
          * Overloaded function to calculates the next velocity at the given time step.
-         * 
-         * The only difference from the base function is that \f$ v_2(t_a) \f$ is allowed to be a scalar value. This is necessary as 
+         *
+         * The only difference from the base function is that \f$ v_2(t_a) \f$ is allowed to be a scalar value. This is necessary as
          * one step requires using the first Nose Hoover velocity for this term for every element in the resulting vector.
-         * 
+         *
          * @see Hyperoptimization::calculateVelocityIncrement(Vec velocityOne, Vec velocityTwo, Vec acceleration, PetscScalar timeStep, Vec *result)
          *
          * @param velocityOne \f$ v_1(t) \f$, vector of the velocity to be incremented.
@@ -331,28 +331,28 @@ class Hyperoptimization
          * @param acceleration \f$ a(t_a) \f$, vector of the acceleration of the velocity to be incremented.
          * @param timeStep \f$ \Delta t \f$, the timestep at which to calculate the new velocity.
          * @param result [out] array in which to add the return result. Must match shape of input vectors.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         PetscErrorCode calculateVelocityIncrement(Vec velocityOne, PetscScalar velocityTwo, Vec acceleration, PetscScalar timeStep, Vec *result);
 
         /**
          * Calcualtes the final incremented position vector. This step is somewhat complicated, but can be broken down as follows:
-         * 
+         *
          * 1. Truncate the positions at \f$ t + \frac{\Delta t}{2} \f$ to be within the range \f$ [0,1] \f$.
          * 2. Scale the constraint sensitivities by a calculated amount.
          * 3. Calculate Lagrangian multiplier.
          * 4. Scale the step 2 result by the Lagrangian multiplier
          * 5. Pointwise add the new position to the result of step 4
          * 6. Truncate the result of step 5 to get a meaningful value to the new positions.
-         * 
+         *
          * The final value for the new positions is saved in the parameter Hyperoptimization#newPosition.
          *
          * @note The full derivation of this step is more complicated, and the hyperoptimization paper should be consulted for more details.
-         * 
+         *
          * @param firstNoseHooverVelocity the first Nose Hoover velocity at time \f$ t + \frac{\Delta t}{2} \f$
          * @param LagrangeMultiplier [out] the Lagrangian multiplier is calculated as a byproduct of this function, and is returned here. Can be NULL if not desired.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         PetscErrorCode assembleNewPositions(PetscScalar firstNoseHooverVelocity, PetscScalar *LagrangeMultiplier);
@@ -361,28 +361,28 @@ class Hyperoptimization
          * Calcualtes the system temperature given the vector of design particle velocities.
          *
          * The temperature is calculated as:
-         * 
-         * @f[ 
+         *
+         * @f[
          * T = \frac{\sum_{i=0}^{N}{v_i^2}}{N}
          * @f]
-         * 
+         *
          * where:
          *  - \f$ T \f$ is the system temperature.
          *  - \f$ N \f$ is the number of design particles.
          *  - \f$ v_i \f$ is the i'th design particle velocity.
-         * 
+         *
          * @param velocities the design particle velocities from which to calculate temperature.
          * @param temperature [out] resulting temperature to populate.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         PetscErrorCode calculateTemperature(Vec velocities, PetscScalar *temperature);
 
         /**
          * Calculates the Hamiltonian and objective function of the system.
-         * 
+         *
          * The Hamiltonian is calculated as:
-         * 
+         *
          * @f[
          * H = O + \frac{v^2}{2},
          * @f]
@@ -391,16 +391,16 @@ class Hyperoptimization
          *  - \f$ H \f$ is the Hamiltonian,
          *  - \f$ O \f$ is the objective function, which is abstracted and calculated by the problem-specific SensitivitiesWrapper,
          *  - \f$ v \f$ is the vector of disgn particle velocities.
-         * 
+         *
          * @param velocities vector of disgn particle velocities.
          * @param positions vector of disgn particle positions (used for calculating the objective function).
          * @param hamiltonian [out] resulting Hamiltonian to populate.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         PetscErrorCode calculateHamiltonian(Vec velocities, Vec positions, PetscScalar *hamiltonian);
 
-        /** 
+        /**
          * Calculates both constraint and objective sensitivities.
          *
          * The provided design particle positions are first filtered, before calculating the sensitivities using the
@@ -427,13 +427,13 @@ class Hyperoptimization
 
         /**
          * Calculates the next timestep for the variable timestep algorithm.
-         * 
+         *
          * Uses the following equation:
-         * 
+         *
          * @f[
          * \Delta t_i = \alpha \beta^k \Delta t_{i=i}
          * @f]
-         * 
+         *
          * where:
          *  - \f$ \Delta t_i \f$ is the timestep at step \f$ i \f$
          */

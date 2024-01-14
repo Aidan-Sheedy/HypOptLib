@@ -18,7 +18,7 @@ PetscScalar LagrangeMultiplier::computeLagrangeMultiplier(Vec positions, Vec C, 
     PetscScalar CSum;
     Vec filteredPosition;
     Vec filteredC;
-    
+   
     PetscCall(VecDuplicate(positions, &filteredPosition));
     PetscCall(VecDuplicate(C, &filteredC));
 

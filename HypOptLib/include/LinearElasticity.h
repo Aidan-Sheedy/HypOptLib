@@ -23,9 +23,9 @@
 
 /**
  * Class used for all linear elasticity functions, and all linear elasticity solving.
- * 
+ *
  * @todo - Correct updated informatino here (if I even updated it)
- * 
+ *
  * @note This is a legacy Topopt class, and as such is left undocumented. Only minor modifications
  * were done from the original source code for hyperoptimization compatibility.
  */

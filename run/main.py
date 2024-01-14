@@ -35,3 +35,8 @@ solver.newRun(  [0,0],              # iterationSaveRange
                 [32,16,16])         # gridDimensions
 
 # solver.generateRandomInitialConditionsFile([32, 16, 16], "../tests/randomInitial32x16x16_T0.0001.h5")
+
+
+def test():
+
+    return

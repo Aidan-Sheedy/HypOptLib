@@ -14,18 +14,18 @@ print_help () {
     echo -e "Supported macros:"
     echo -e '\t'build_docs
     echo -e '\t\t'generates documentation for the library in the \'docs\' folder.
-    echo -e '\t'build [options] [install]
+    echo -e '\t'build [options]
     echo -e '\t\t'auto-builds the HypOptLib library.
     echo -e '\t\t'options:
     echo -e '\t\t' - [none] defaults to all
     echo -e '\t\t' - all: will build cmake files if none present, otherwise just run make file.
     echo -e '\t\t' - clean: deletes all build files and objects and rebuilds fresh.
-    echo -e '\t\t' install: installs the HypOptLib library as a python module. Can then be accessed system-wide by just importing HypoptLib.
-    echo -e '\t'setup -- TODO! Not yet implemented.
+    echo -e '\t'setup [-mpi]
     echo -e '\t\t'Sets up the build environment. This can be done manually if this fails. See HypOptLib documentation for more details.
     echo -e '\t\t\t'1. Installs the latest PETSc version if not present
     echo -e '\t\t\t'2. Installs the latest mpi version if not present
-    echo -e '\t\t\t'3. Installs the latest pybind11 version if not present
+    echo -e '\t\t\t'3. Installs the latest pybind11 version if not present\n
+    echo -e '\t\t'-mpi: specifies which version of mpi to use, either openmpi or mpich. eg -mpi=openmpi.
     echo -e 
 }
 

@@ -63,14 +63,14 @@ class SensitivitiesWrapper
 
         /**
          * Wraps the LinearElasticity::ComputeSensitivities function.
-         * 
+         *
          * This solves the finite element analysis problem required to calcualte the sensitivities
          * and constraint sensitivities.
-         * 
+         *
          * @param filteredPositions filtered design particle position vector.
          * @param sensitivities [out] resulting sensitivities vector.
          * @param constraintSensitivities [out] resulting constraint sensitivities vector.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         virtual PetscErrorCode computeSensitivities(Vec filteredPositions,

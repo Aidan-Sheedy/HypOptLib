@@ -37,7 +37,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /**
  * Class used for a variety of filtering functions, for design variables, objective functions, and more.
- * 
+ *
  * @note This is a legacy Topopt class, and as such is left undocumented. Only minor modifications
  * were done from the original source code for hyperoptimization compatibility.
  */

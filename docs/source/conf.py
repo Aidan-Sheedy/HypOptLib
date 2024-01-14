@@ -37,9 +37,22 @@ numfig = True
 todo_include_tools = True
 todo_include_todos = True
 
-# breathe_projects_source = {
-#     "HypOptLib" : 
-# }
+breathe_projects_source = {
+    "HypOptLib" : (
+        "../../HypOptLib/include", 
+        [
+            "FileManager.h",
+            "FilterWrapper.h",
+            "Hyperoptimization.h",
+            "HypOptException.h",
+            "HypOptLib.h",
+            "HypOptParameters.h",
+            "LagrangeMultiplier.h",
+            "PetscExtensions.h",
+            "SensitivitiesWrapper.h"
+        ]
+    )
+}
 
 def specificationsForKind(kind):
     '''

@@ -22,7 +22,7 @@ class FileManager
     public:
 
         /** Constructor. Saves pointer to provided LinearElasticity object.
-         * 
+         *
          * @param physics pointer to the LinearElasticity object that will be used by the hyperoptimization algorithm.
          */
         FileManager(LinearElasticity *physics) : physics(physics) {}
@@ -30,7 +30,7 @@ class FileManager
         /**
          * Creates an HDF5 file for iteration with the provided parameters. This must be called before
          * starting the iteration loop.
-         * 
+         *
          * @param volfrac volume fraction setting
          * @param timestep timestep setting
          * @param temperature system temperature setting
@@ -43,7 +43,7 @@ class FileManager
          * @param numberSamples number of samples to save @todo figure out step vs sample
          * @param NoseHooverChainOrder number of particles in the Nose Hoover chain
          * @param filePath path to save the HDF5 output file to
-         * 
+         *
          * @return 0 or PetscError.
          */
         PetscErrorCode initializeHDF5(PetscScalar   volfrac,
@@ -63,17 +63,17 @@ class FileManager
 
         /**
          * Saves an iteration of the optimized positions.
-         * 
+         *
          * @param iteration step to save
          * @param positions grid of scalar position values at the given iteration
-         * 
+         *
          * @return 0 or PetscError.
          */
         PetscErrorCode saveIteration(PetscInt iteration, Vec positions);
 
         /**
          * Saves the final state of the system for restarting functionality. Additionally saves metadata from each iteration.
-         * 
+         *
          * @param saveHamiltionan option to save the Hamiltonian and Compliance metadata.
          * @param finalState final state of the system, including all particle and NH particle positions and velocities.
          * @param hamiltonians Hamiltonian at each iteration (if saveHamiltionan option is false this can be NULL).
@@ -81,7 +81,7 @@ class FileManager
          * @param temperatures system temperature at each iteration.
          * @param LagrangeMultipliers Lagrangian Multipliers at each iteration.
          * @param iterationTimes time to solve each iteration.
-         * 
+         *
          * @return 0 or PetscError.
          */
         PetscErrorCode saveFinalState(  bool                     saveHamiltionan,
@@ -97,38 +97,38 @@ class FileManager
 
         /**
          * Save file path accessor.
-         * 
+         *
          * @returns the path to the HDF5 save file.
          */
         std::string getSaveFilePath();
 
-        /** 
+        /**
          * Data group accessor.
-         * 
+         *
          * @returns the the name of the data group.
          */
         std::string getDataGroup();
 
         /**
          * Helper function to determine if a file exists.
-         * 
+         *
          * Uses the std::ifstream::open function and checks if the fail opened succesfully.
          * This method is imperfect if the file fails to open for another reason, but should
          * work for most cases without getting too complicated.
          *
          * @param filePath the path to check.
-         * 
+         *
          * @returns true if the file exists, false otherwise.
          */
         static bool doesFileExist(std::string filePath);
 
         /**
          * Helper function to get the final state from a given restart file.
-         * 
+         *
          * @param filePath the restart file to parse.
          * @param finalState [out] structure to fill with with the state parameters (particle positions and velocities)
          * @param finalStateField [out] final state field vector to pass to the Linear Elasticity class.
-         * 
+         *
          * @returns 0 for success, PetscError otherwise.
          */
         static PetscErrorCode getFinalStateVectors( std::string         filePath,
@@ -138,14 +138,14 @@ class FileManager
         /**
          * Helper function which converts a std::vector object into a Petsc vector before saving it to the
          * provided HDF5 viewer.
-         * 
+         *
          * Currently only needed for PetscScalar objects, though this could easily be overloaded or templated
          * for more support if needed.
-         * 
+         *
          * @param HDF5saveFile Petsc Viewer set up to the desired file and data group.
          * @param vector scalar std::vector object to save.
          * @param vectorName name under which to save the vector in the HDF5 file.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         static PetscErrorCode HDF5SaveStdVector(PetscViewer HDF5saveFile, std::vector<PetscScalar> vector, const char * vectorName);
@@ -155,18 +155,18 @@ class FileManager
          *
          * @todo this function should probably be overloaded to pass a pre-preppared PetscViewer
          * for efficiency (although this is far from the slowest part of the code).
-         * 
+         *
          * @param filePath the file from which to acquire the desired vector.
          * @param location HDF5 group where the vector is saved
          * @param vector   [out] the vector to populate
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         static PetscErrorCode HDF5GetSavedVec(std::string filePath, std::string location, Vec vector);
 
         /**
          * Helper function to retrieve the simulation settings froma  given restart file.
-         * 
+         *
          * @param filePath the restart file to parse.
          * @param noseHooverChainOrder [out]
          * @param volumeFraction [out]
@@ -196,12 +196,12 @@ class FileManager
     private:
         /**
          * Private helper function which finds a unique file name in the given path.
-         * 
-         * If the given file alreaqdy exists, " (1)" is appended to the name. If it still does 
+         *
+         * If the given file alreaqdy exists, " (1)" is appended to the name. If it still does
          * exists, " (1)" is incremented until a file name is found which does not exist.
-         * 
+         *
          * @todo this could probably be simplified to not require sepparating file path and extension.
-         * 
+         *
          * @param fileName the file name to append (with no file extension).
          * @param fileExtension the file extension to be used.
          */

@@ -19,7 +19,7 @@
 
 /**
  * File-related constant attributes
- * 
+ *
  * This can be defined in the header in C++17 using the inline keyword,
  * but there is no guarantee that all the user's compiler suports C++17.
  **/
@@ -419,7 +419,7 @@ PetscErrorCode FileManager::loadInitialConditions(Vec positions, Vec velocities,
 //     PetscCall(VecView(positions, iterationViewer));
 
 //      /* If VecCreate is used to make generate the iterating vector, then this use
-//       * PetscViewerHDF5IncrementTimestep instead. 
+//       * PetscViewerHDF5IncrementTimestep instead.
 //       */
 //     PetscCall(DMSetOutputSequenceNumber(physics->GetDM(), iteration+1, nextTimestep));
 //     return errorStatus;

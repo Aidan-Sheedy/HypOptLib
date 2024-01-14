@@ -42,10 +42,10 @@ Copyright (C) 2013-2019,
 /**
  * Class used for storing parameters related to topology optimization. Mostly unused by HypOptLib,
  * but some initialization is still necessary.
- * 
+ *
  * @todo - Correct updated informatino here (if I even updated it)
  * @todo - finish passing in as many parameters as possible used by Hyperoptimization.
- * 
+ *
  * @note This is a legacy Topopt class, and as such is left undocumented. Only minor modifications
  * were done from the original source code for hyperoptimization compatibility.
  */

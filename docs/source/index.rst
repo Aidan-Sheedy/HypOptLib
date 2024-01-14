@@ -53,19 +53,17 @@ much better for a large portion of optimization problems that can benefit from h
 
 .. toctree::
    :caption: Getting Started
-   :maxdepth: 4
+   :maxdepth: 2
 
    background
    installation
-   apiDocumentation
+   library
+   fullapi
 
-.. autodoxygenindex
-..    :project: HypOptLib
-
-.. .. toctree::
+..  .. toctree::
 ..    :caption: Library Reference
 ..    :maxdepth: 4
-      
+
 ..    api/library_root.rst
 
 Indices and tables

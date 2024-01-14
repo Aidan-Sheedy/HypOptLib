@@ -30,7 +30,7 @@ namespace py = pybind11;
 
 /**
  * Main HypOptLib class.
- * 
+ *
  * This is the equivalent to a "main" function, and
  * provides access to the Python wrapper to the essential functions to run
  * Hyperoptimization.
@@ -49,6 +49,8 @@ class HypOptLib
          * @param iterationSaveRange    Range of iterations to save. Does not need to include the final iteration to support restarting, this is saved regardless.
          * @param gridDimensions        Dimension of cells in the grid. The final mesh will have be one higher in each dimension.
          *
+         * @throws HypOptException
+         *
          * @return 0 on success, or error. Only used to align with Petsc exception handling.
          *
          * @todo Some of these settings might lend themselves better to optional parameters, such as "setSavePath".
@@ -62,6 +64,8 @@ class HypOptLib
          * @param filePath Location of the restart file.
          * @param iterationSaveRange Range of iterations to save. Does not need to include the final iteration to support restarting, this is saved regardless.
          *
+         * @throws HypOptException
+         *
          * @return 0 on success, or error. Only used to align with Petsc exception handling.
          *
          * @todo Some of these settings might lend themselves better to optional parameters, such as "setSavePath".
@@ -69,6 +73,15 @@ class HypOptLib
         uint32_t restartRun(std::string restartPath,
                             std::vector<uint32_t> *iterationSaveRange);
 
+        /**
+         * Generates a file with randomized initial velocities and positions. This file can then be passed
+         * as an optional parameter to ensure the same initial conditions are used accross multiple runs.
+         *
+         * @param gridDimensions Dimensions of the cells in the grid. The final mesh will have be one higher in each dimension. The dimenions should each be divisible by 2 three times.
+         * @param filePath Name and path to save the output to.
+         *
+         * @throws HypOptException
+         */
         void generateRandomInitialConditionsFile(std::vector<uint32_t> *gridDimensions, std::string filePath);
 
         /**
@@ -83,7 +96,7 @@ class HypOptLib
 
         /**
          * Recommended setting. Sets the target system temperature for the simulation on new runs. Must be greater than 0.
-         * 
+         *
          * @note defaults to 0.
          */
         void setTargetTemperature(double targetTemperature)
@@ -97,7 +110,7 @@ class HypOptLib
 
         /**
          * Recommended setting. Sets the timestep between each iteration.
-         * 
+         *
          * @note defaults to 0.001.
          */
         void setTimestep(double timestep)
@@ -111,9 +124,9 @@ class HypOptLib
 
         /**
          * Recommended setting. Sets the number of Nose Hoover particles in the chain.
-         * 
+         *
          * @todo confirm if this has to be even, if yes set a check here
-         * 
+         *
          * @note defaults to 10.
          */
         void setNoseHooverChainOrder(uint32_t noseHooverChainOrder)
@@ -123,9 +136,9 @@ class HypOptLib
 
         /**
          * Recommended setting. Sets the number of Nose Hoover particles in the chain.
-         * 
+         *
          * @todo topopt settings does NOT currently get this (silence it?)
-         * 
+         *
          * @note defaults to 100.
          */
         void setMaximumIterations(uint32_t maximumIterations)
@@ -135,7 +148,7 @@ class HypOptLib
 
         /**
          * Optional setting. Sets optimization penalty power.
-         * 
+         *
          * @note defaults to 3.
          */
         void setPenalty(double penalty)
@@ -145,7 +158,7 @@ class HypOptLib
 
         /**
          * Optional setting. Sets the minimum filter radius. Must be greater than 0.
-         * 
+         *
          * @note defaults to 0.08.
          */
         void setMinimumFilterRadius(double minimumFilterRadius)
@@ -159,9 +172,9 @@ class HypOptLib
 
         /**
          * Optional setting. Sets the volume fraction.
-         * 
+         *
          * @todo topopt settings does NOT currently get this value.
-         * 
+         *
          * @note defaults to 0.12.
          */
         void setVolumeFraction(double volumeFraction)
@@ -175,7 +188,7 @@ class HypOptLib
 
         /**
          * Debugging setting. If false, all positions be initialized to the volume fraction.
-         * 
+         *
          * @note Defaults to true.
          */
         void setRandomStartingValues(bool randomStartingValues)
@@ -185,7 +198,7 @@ class HypOptLib
 
         /**
          * Debugging parameter. Enabling will double run time, but save the compliance and Hamiltonian.
-         * 
+         *
          * @note Defaults to false.
          */
         void setSaveHamiltonian(bool saveHamiltonian)
@@ -193,11 +206,28 @@ class HypOptLib
             this->saveHamiltonian = saveHamiltonian;
         }
 
+        /**
+         * Sets the maximum amount of time the simulation can run for.
+         *
+         * This is calculated as timestep*iteration. Useful for variable timestep runs when the number of iterations might not
+         * be predictable.
+         *
+         * @note If this is set, the lower of simulation time and setMaximumIterations will be used.
+         *
+         * @param simTime Maxmimum allowed simulation time.
+         */
         void setMaxSimulationTime(double simTime)
         {
             this->maxSimTime = simTime;
         }
 
+        /**
+         * Enables variable timestepping with the provided parameters.
+         *
+         * @param timestepConstantAlpha Growth parameter. Should be close to but greater than 1.
+         * @param timestepConstantBeta Decay parameter. Should be close to but less than 1.
+         * @param diffusionConstant Conditional error parameter.
+         */
         void enableVariableTimestep(double timestepConstantAlpha,
                                     double timestepConstantBeta,
                                     double diffusionConstant)
@@ -208,6 +238,11 @@ class HypOptLib
             this->variableTimestep = true;
         }
 
+        /**
+         * Loads the starting positions and velocities from the provided file.
+         *
+         * @param filePath HDF5 file containing a valid initial conditions given the temperature and grid dimensions provided.
+         */
         void loadInitialConditionsFromFile(std::string filePath)
         {
             /** @todo check if this is a real path somewhere down the line */
@@ -218,15 +253,25 @@ class HypOptLib
     private:
         /**
          * Utility function, runs the design loop set up by either newRun or restartRun.
-         * 
+         *
          * @param solver used to run the design loop.
          * @param numItr number of iterations to run.
          * @param output HDF5 file manager.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         PetscErrorCode runLoop(Hyperoptimization solver, PetscInt numItr, FileManager output);
 
+        /**
+         * Randomizes the initial positions and velocities.
+         *
+         * @param initialPosition [out] array of initial positions to populate.
+         * @param initialVelocity [out] array of initial velocities to populate.
+         *
+         * @todo explain how the algorithms work.
+         *
+         * @returns 0 on success, PetscError otherwise.
+         */
         PetscErrorCode randomizeStartingVectors(Vec initialPosition, Vec initialVelocity);
 
         std::string savePath                = "hypopt_output.h5";
@@ -252,13 +297,13 @@ class HypOptLib
 
 /**
  * Python wrapper. Defines functions which are directly accessible to the python library.
- * 
+ *
  * The wrapper exposes the following class and functions:
- * 
+ *
  * **class** *HypOptLib* class responsible for initializing parameters and starting simulations.
- * 
+ *
  * **function** *newRun* Initializes all parameters and starts a run
- * 
+ *
  * **function** *restartRun* Restarts a Design Loop from a given file
  *
  * **function** *setSavePath* Sets save path for all runs.

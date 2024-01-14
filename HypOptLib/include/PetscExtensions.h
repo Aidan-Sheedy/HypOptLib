@@ -26,25 +26,25 @@ class PetscExtensions
 
         /**
          * Creates a parallel vector from a given sequential vector.
-         * 
+         *
          * The parallel vector must already be created using either VecCreate followed by VecSetFromOptions,
          * or from a VecDuplicate call.
-         * 
+         *
          * @param sequential the sequential vector to prallelize.
          * @param parallel [out] the parallel vector to populate.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         static PetscErrorCode VecParallelFromSequential(Vec sequential, Vec *parallel);
 
         /**
          * Creates a sequential vector from a given parallel vector.
-         * 
+         *
          * The sequential vector will be created in the function, so a fresh Vec object can be passed.
-         * 
+         *
          * @param parallel the parallel vector to sequentialize.
          * @param sequential [out] the sequential vector to populate.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         static PetscErrorCode VecSequentialFromParallel(Vec parallel, Vec *sequential);
@@ -62,21 +62,21 @@ class PetscExtensions
          * @param parallelVector the parallel vector to access.
          * @param index the index to retrieve from
          * @param result [out] resulting value from the desired index.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         static PetscErrorCode VecGetOffProcessIndex(Vec parallelVector, PetscInt index, PetscScalar *result);
 
         /**
          * Creates a parallel vector from a given C++ std vector.
-         * 
+         *
          * The parallel vector must already be created using either VecCreate followed by VecSetFromOptions,
          * or from a VecDuplicate call. This function simply populates the parallel vector with the contents of
          * the std vector. This function is parallelized.
-         * 
+         *
          * @param stdVector the std vector to prallelize.
          * @param parallel [out] the parallel vector to populate.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         static PetscErrorCode VecParallelFromStdVector(std::vector<PetscScalar> stdVector, Vec parallel);
@@ -86,10 +86,10 @@ class PetscExtensions
          *
          * Note that this is an explicit shift, not a rotate. The last element in the vector is set to 0.
          * This is a parallelized implementation, and is not optimized for sequential vectors.
-         * 
+         *
          * @param input the vector to shift.
          * @param output [out] the shifted vector.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         static PetscErrorCode VecLeftShift(Vec input, Vec *output);
@@ -99,7 +99,7 @@ class PetscExtensions
          *
          * @param vector the vector to print values of.
          * @param name name of the vector to print to print (for debug purposes).
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         static PetscErrorCode PrintVecMinMaxMean(Vec vector, const char * name);

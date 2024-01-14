@@ -42,25 +42,25 @@ class FilterWrapper
 
         /**
          * Applies the Topopt standard filter to the given design variables.
-         * 
+         *
          * @warning unfiltered and filtered must be different objects (Petsc limitation). ie
          * cannot call FilterWrapper::filterDesignVariable(y, y).
-         * 
+         *
          * @param unfiltered the design variable to filter.
          * @param filtered [out] filtered positions. Must be identical settings to unfiltered Vec.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         virtual PetscErrorCode filterDesignVariable(Vec unfiltered, Vec filtered);
 
         /**
          * Applies the Topopt standard gradient filter to the provided sensitivities.
-         * 
+         *
          * @param position Position vector, should typically be filtered before using.
          * @param sensitivities [in/out] The sensitivities to filter. Function will overwrite this variable with the filtered result.
          * @param constraintSensitivities [in/out] The constraint sensitivities to filter. Function will overwrite this variable with
          * the filtered result. Should just be passed by reference, not an array.
-         * 
+         *
          * @returns 0 on success, PetscError otherwise.
          */
         virtual PetscErrorCode filterSensitivities(Vec position, Vec sensitivities, Vec* constraintSensitivities);
