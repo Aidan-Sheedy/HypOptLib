@@ -189,7 +189,8 @@ PetscErrorCode FileManager::saveFinalState( bool                     saveHamilti
     PetscCall(VecView(finalState.oddNoseHooverVelocity,     saveFileHDF5));
     PetscCall(VecView(physics->GetStateField(),             saveFileHDF5));
 
-    PetscPrintf(PETSC_COMM_WORLD, "# ...saved!\n");
+    PetscPrintf(PETSC_COMM_WORLD, "...saved!\n");
+    PetscPrintf(PETSC_COMM_WORLD, "# Output to file: %s\n", saveFilePath.c_str());
 
     /* Close file */
     PetscCall(PetscViewerHDF5PopGroup(saveFileHDF5));

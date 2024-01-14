@@ -122,8 +122,8 @@ PetscErrorCode TopOpt::SetUp(PetscInt xDimensions, PetscInt yDimensions, PetscIn
     nlvls   = 4;
 
     // SET DEFAULTS for optimization problems
-    volfrac = 0.12;
-    maxItr  = 5000;//10;//25000;
+    // volfrac = volumeFraction;
+    // maxItr  = 5000;//10;//25000;
     rmin    = minimumFilterRadius;
     penal   = penalty;
     Emin    = 1.0e-9;
@@ -329,10 +329,10 @@ PetscErrorCode TopOpt::SetUpOPT() {
     PetscOptionsGetReal(NULL, NULL, "-Emin", &Emin, &flg);
     PetscOptionsGetReal(NULL, NULL, "-Emax", &Emax, &flg);
     PetscOptionsGetReal(NULL, NULL, "-nu", &nu, &flg);
-    PetscOptionsGetReal(NULL, NULL, "-volfrac", &volfrac, &flg);
+    // PetscOptionsGetReal(NULL, NULL, "-volfrac", &volfrac, &flg);
     PetscOptionsGetReal(NULL, NULL, "-penal", &penal, &flg);
     PetscOptionsGetReal(NULL, NULL, "-rmin", &rmin, &flg);
-    PetscOptionsGetInt(NULL, NULL, "-maxItr", &maxItr, &flg);
+    // PetscOptionsGetInt(NULL, NULL, "-maxItr", &maxItr, &flg);
     PetscOptionsGetInt(NULL, NULL, "-filter", &filter, &flg);
     PetscOptionsGetReal(NULL, NULL, "-Xmin", &Xmin, &flg);
     PetscOptionsGetReal(NULL, NULL, "-Xmax", &Xmax, &flg);
@@ -342,7 +342,7 @@ PetscErrorCode TopOpt::SetUpOPT() {
     PetscOptionsGetReal(NULL, NULL, "-betaFinal", &betaFinal, &flg);
     PetscOptionsGetReal(NULL, NULL, "-eta", &eta, &flg);
 
-    PetscPrintf(PETSC_COMM_WORLD, "################### Optimization settings ####################\n");
+    PetscPrintf(PETSC_COMM_WORLD, "######################## Optimization settings #########################\n");
     PetscPrintf(PETSC_COMM_WORLD, "# Problem size: n= %i, m= %i\n", n, m);
     PetscPrintf(PETSC_COMM_WORLD, "# -filter: %i  (0=sens., 1=dens, 2=PDE)\n", filter);
     PetscPrintf(PETSC_COMM_WORLD, "# -rmin: %f\n", rmin);
@@ -350,13 +350,13 @@ PetscErrorCode TopOpt::SetUpOPT() {
     PetscPrintf(PETSC_COMM_WORLD, "# -beta: %f\n", beta);
     PetscPrintf(PETSC_COMM_WORLD, "# -betaFinal: %f\n", betaFinal);
     PetscPrintf(PETSC_COMM_WORLD, "# -eta: %f\n", eta);
-    PetscPrintf(PETSC_COMM_WORLD, "# -volfrac: %f\n", volfrac);
+    // PetscPrintf(PETSC_COMM_WORLD, "# -volfrac: %f\n", volfrac);
     PetscPrintf(PETSC_COMM_WORLD, "# -penal: %f\n", penal);
     PetscPrintf(PETSC_COMM_WORLD, "# -Emin/-Emax: %e - %e \n", Emin, Emax);
     PetscPrintf(PETSC_COMM_WORLD, "# -nu: %f \n", nu);
-    PetscPrintf(PETSC_COMM_WORLD, "# -maxItr: %i\n", maxItr);
-    PetscPrintf(PETSC_COMM_WORLD, "# -movlim: %f\n", movlim);
-    PetscPrintf(PETSC_COMM_WORLD, "##############################################################\n");
+    // PetscPrintf(PETSC_COMM_WORLD, "# -maxItr: %i\n", maxItr);
+    // PetscPrintf(PETSC_COMM_WORLD, "# -movlim: %f\n", movlim);
+    PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
 
     // Allocate after input
     gx = new PetscScalar[m];
@@ -370,9 +370,9 @@ PetscErrorCode TopOpt::SetUpOPT() {
     ierr = VecDuplicate(xPhys, &xTilde);
     CHKERRQ(ierr);
 
-    VecSet(x, volfrac);      // Initialize to volfrac !
-    VecSet(xTilde, volfrac); // Initialize to volfrac !
-    VecSet(xPhys, volfrac);  // Initialize to volfrac !
+    VecSet(x, 0);      // Initialize to 0 !
+    VecSet(xTilde, 0); // Initialize to 0 !
+    VecSet(xPhys, 0);  // Initialize to 0 !
 
     // Sensitivity vectors
     ierr = VecDuplicate(x, &dfdx);
@@ -384,7 +384,7 @@ PetscErrorCode TopOpt::SetUpOPT() {
     VecDuplicate(x, &xmin);
     VecDuplicate(x, &xmax);
     VecDuplicate(x, &xold);
-    VecSet(xold, volfrac);
+    VecSet(xold, 0);
 
     return (ierr);
 }

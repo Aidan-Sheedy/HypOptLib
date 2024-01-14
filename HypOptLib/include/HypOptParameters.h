@@ -27,3 +27,10 @@ typedef struct
     Vec oddNoseHooverPosition;
     Vec oddNoseHooverVelocity;
 } HypOptParameters;
+
+enum verbosity
+{
+    QUIET = 0,
+    INFO,
+    DEBUG,
+};

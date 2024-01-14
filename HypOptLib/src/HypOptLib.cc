@@ -52,7 +52,8 @@ uint32_t HypOptLib::newRun( std::vector<uint32_t>  *iterationSaveRange,
     // STEP 3: THE FILTERING
     Filter* filter = new Filter(opt->da_nodes, opt->xPhys, opt->filter, opt->rmin);
 
-    PetscPrintf(PETSC_COMM_WORLD, "\n\n######################## Hyperoptimization ########################\n");
+    PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
+    PetscPrintf(PETSC_COMM_WORLD, "########################### Hyperoptimization ##########################\n");
 
     /* Clone Petsc settings from topopt (it initializes everything) */
     Vec initialPositions;
@@ -181,7 +182,8 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
     LinearElasticity* physics   = new LinearElasticity(opt->da_nodes);
     Filter* filter              = new Filter(opt->da_nodes, opt->xPhys, opt->filter, opt->rmin);
 
-    PetscPrintf(PETSC_COMM_WORLD, "\n\n######################## Hyperoptimization ########################\n");
+    PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
+    PetscPrintf(PETSC_COMM_WORLD, "########################### Hyperoptimization ##########################\n");
 
     HypOptParameters finalState;
     Vec finalStateField;
@@ -369,9 +371,6 @@ PetscErrorCode HypOptLib::randomizeStartingVectors(Vec initialPosition, Vec init
     PetscCall(VecMean(initialVelocity, &sumV));
     PetscCall(VecMean(temp, &sumV2));
 
-    std::cout << "sumV: " << sumV << std::endl;
-    std::cout << "sumV2: " << sumV2 << std::endl;
-
     PetscScalar offset = sqrt(targetTemperature / sumV2);
 
     PetscCall(VecShift(initialVelocity, -sumV));
@@ -413,9 +412,9 @@ PetscErrorCode HypOptLib::runLoop(Hyperoptimization solver, PetscInt numItr, Fil
                                 solver.getEnergyErrors(),
                                 solver.getVolFracs());
 
-        PetscPrintf(PETSC_COMM_WORLD, "# Done loop!\n#\n# Total Runtime: %f\n# Average Iteration Time: %f\n# ***Note these timings include file saving***", t2 - t1, (t2-t1)/numItr);
-        PetscPrintf(PETSC_COMM_WORLD, "\n# Hyperoptimization complete, cleaning up resources.\n# Call init or restart before using this object again.\n");
-        PetscPrintf(PETSC_COMM_WORLD, "###################################################################\n");
+        PetscPrintf(PETSC_COMM_WORLD, "# Total Runtime: %f\n# Average Iteration Time: %f\n# ***Note these timings include file saving***", t2 - t1, (t2-t1)/numItr);
+        PetscPrintf(PETSC_COMM_WORLD, "\n# Hyperoptimization complete, cleaning up resources.\n");
+        PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
     }
 
    return 0;

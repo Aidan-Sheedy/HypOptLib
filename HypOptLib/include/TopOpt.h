@@ -88,11 +88,11 @@ class TopOpt {
     PetscScalar  Xmax;   // Max. value of design variables
 
     PetscScalar movlim;     // Max. change of design variables
-    PetscScalar volfrac;    // Volume fraction
+    // PetscScalar volfrac;    // Volume fraction
     PetscScalar penal;      // Penalization parameter
     PetscScalar Emin, Emax; // Modified SIMP, max and min E
 
-    PetscInt maxItr; // Max iterations
+    // PetscInt maxItr; // Max iterations
 
     PetscScalar rmin;             // filter radius
     PetscInt    filter;           // Filter type

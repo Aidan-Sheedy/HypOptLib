@@ -20,6 +20,8 @@
 #include "HypOptParameters.h"
 #include "FileManager.h"
 
+
+
 /**
  * Hyperoptimization implementation.
  *
@@ -463,8 +465,7 @@ class Hyperoptimization
         std::vector<PetscScalar> temperatures;
         std::vector<PetscScalar> iterationTimes;
         std::vector<uint32_t> iterationSaveRange;
-        bool temperatureCheck = true; /** @todo make this a pass-in variable/debugging parameter! */
-        bool saveData = true;
+        verbosity printInfo = INFO; /** @todo make this a pass-in variable/debugging parameter! */
         bool doneSolving = false;
         bool saveHamiltonian;
 

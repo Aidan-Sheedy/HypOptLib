@@ -762,8 +762,8 @@ PetscErrorCode LinearElasticity::SetUpSolver() {
     PCGetType(pc, &pctype);
     PetscInt mmax;
     KSPGetTolerances(ksp, NULL, NULL, NULL, &mmax);
-    PetscPrintf(PETSC_COMM_WORLD, "##############################################################\n");
-    PetscPrintf(PETSC_COMM_WORLD, "################# Linear solver settings #####################\n");
+    PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
+    PetscPrintf(PETSC_COMM_WORLD, "###################### Linear solver settings ##########################\n");
     PetscPrintf(PETSC_COMM_WORLD, "# Main solver: %s, prec.: %s, maxiter.: %i \n", ksptype, pctype, mmax);
 
     // Only if pcmg is used
@@ -784,7 +784,7 @@ PetscErrorCode LinearElasticity::SetUpSolver() {
                         mmax);
         }
     }
-    PetscPrintf(PETSC_COMM_WORLD, "##############################################################\n");
+    PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
 
     return (ierr);
 }
