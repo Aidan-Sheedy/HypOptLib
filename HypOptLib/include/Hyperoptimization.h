@@ -83,7 +83,9 @@ class Hyperoptimization
          * @param fileManager
          * @param iterationSaveRange
          * @param saveHamiltonian
-         * @param variableTimestep
+         * @param volumeFraction
+         * @param saveFrequency
+         * @param maxSimTime
          *
          * @returns 0 on success, PetscError otherwise.
          */
@@ -100,6 +102,7 @@ class Hyperoptimization
                             std::vector<uint32_t> iterationSaveRange,
                             bool saveHamiltonian,
                             PetscScalar volumeFraction,
+                            uint32_t saveFrequency,
                             double maxSimTime = std::numeric_limits<double>::max());
 
         /**
@@ -123,7 +126,9 @@ class Hyperoptimization
          * @param initialOddNoseHooverPosition
          * @param initialOddNoseHooverVelocity
          * @param saveHamiltonian
-         * @param variableTimestep
+         * @param volumeFraction
+         * @param saveFrequency
+         * @param maxSimTime
          *
          * @returns 0 on success, PetscError otherwise.
          */
@@ -144,6 +149,7 @@ class Hyperoptimization
                             Vec initialOddNoseHooverVelocity,
                             bool saveHamiltonian,
                             PetscScalar volumeFraction,
+                            uint32_t saveFrequency,
                             double maxSimTime = std::numeric_limits<double>::max());
 
         /**
@@ -464,10 +470,13 @@ class Hyperoptimization
         std::vector<PetscScalar> compliance;
         std::vector<PetscScalar> temperatures;
         std::vector<PetscScalar> iterationTimes;
-        std::vector<uint32_t> iterationSaveRange;
         verbosity printInfo = INFO; /** @todo make this a pass-in variable/debugging parameter! */
         bool doneSolving = false;
         bool saveHamiltonian;
+
+        bool saveRangeUseSimTime = false;
+        uint32_t saveFrequency;
+        std::vector<uint32_t> iterationSaveRange;
 
         bool variableTimestep = false;
         PetscScalar previousTimestep = 0;

@@ -82,7 +82,8 @@ def hdf5AnalyzeSpecificAttributes(filePath,
                                   biggerSpace=False,
                                   poster=False,
                                   scale=1,
-                                  png=False):
+                                  png=False,
+                                  realTimeValue=True):
 
     dataGroup = "/Dataset"
     settingsGroup = "/Setting"
@@ -116,7 +117,7 @@ def hdf5AnalyzeSpecificAttributes(filePath,
                                     savePlots=saveFig,
                                     markers=[True]*len(desiredAttributes),
                                     timesteps=timesteps,
-                                    realTimeValue=True,
+                                    realTimeValue=realTimeValue,
                                     name=title,
                                     annotation=annotation,
                                     biggerSpace=biggerSpace,
@@ -360,7 +361,8 @@ if(False):
 
 if (True):
     # filePath = "../outputs/finally_good_for_real/0.001 Deg/hypopt_output_small_0.001deg_0.01dt_50000.h5"
-    filePath = "../run/test_timestepping_straightime_t1 (1).h5"
+    # filePath = "../run/medium/t0/medium_run_0deg_47000__vartime_cont1.h5"
+    filePath = "../run/medium_run_5deg_restart_1.h5"
 
     # attributes  = ["Temperature", "Volume Fraction", "Iteration Compute Time"]
     # names       = ["Temperature", "Volume Fraction", "Iteration Compute Time"]
@@ -380,7 +382,8 @@ if (True):
                                 # biggerSpace=True,
                                 # poster=True,
                                 # scale=1,
-                                png=True)
+                                png=True,
+                                realTimeValue=True)
 
 ################## Specific File ####################
 if(False):
@@ -392,12 +395,12 @@ if(False):
 
 ################## Compare Temps #######################
 if(False):
-    variableTimestep = "../run/timestep_tests/t0.0001/test_timestepping_temp_vartime_t0.0001.h5"
-    straight = "../run/timestep_tests/t0.0001/test_timestepping_straightime_t0.0001.h5"
-    varTime2 = "../run/timestep_tests/t0.0001/test_timestepping_volfrac_temptime_t0.0001.h5"
+    variableTimestep = "../run/medium_run_1deg_vardt.h5"
+    straight = "../run/medium_run_1deg.h5"
+    # varTime2 = "../run/timestep_tests/t0.0001/test_timestepping_volfrac_temptime_t0.0001.h5"
 
     variableOutputFile  = h5py.File(variableTimestep)
-    variableOutputFile2  = h5py.File(varTime2)
+    # variableOutputFile2  = h5py.File(varTime2)
     straightOutputFile  = h5py.File(straight)
 
     # Get straight times
@@ -414,36 +417,39 @@ if(False):
     j = -1
     variableTimes = []
 
-    while time < 50:
-        j+=1
-        time += timesteps[j]
+    for timestep in timesteps:
+        # j+=1
+        time += timestep
         variableTimes.append(time)
 
     variableTemps = np.asarray(variableOutputFile["Dataset" + "/Temperature"])
-    variableTemps = variableTemps[:j+1]
-    variableTimes = variableTimes[:j+1]
+    # variableTemps = variableTemps[:j+1]
+    # variableTimes = variableTimes[:j+1]
+
+    print("Var Timeshape:", len(variableTimes), "Var Tempshape:", len(variableTemps))
 
     # Var Time 2
-    timesteps = np.asarray(variableOutputFile2["Dataset" + "/Timestep"])
-    variableTemps2 = np.asarray(variableOutputFile2["Dataset" + "/Temperature"])
-    time = 0
-    j = -1
-    variableTimes2 = []
+    # timesteps = np.asarray(variableOutputFile2["Dataset" + "/Timestep"])
+    # variableTemps2 = np.asarray(variableOutputFile2["Dataset" + "/Temperature"])
+    # time = 0
+    # j = -1
+    # variableTimes2 = []
 
-    while time < 50:
-        j+=1
-        time += timesteps[j]
-        variableTimes2.append(time)
+    # while timestep in timesteps:
+    #     time += timestep
+    #     variableTimes2.append(time)
 
-    variableTemps2 = variableTemps2[:j+1]
-    variableTimes2 = variableTimes2[:j+1]
+    # # variableTemps2 = variableTemps2[:j+1]
+    # variableTimes2 = variableTimes2[:j+1]
 
 
     figure, subplots = plt.subplots(3, sharex=True)
 
     subplots[0].plot(straightTimes[1:], StraightTemps[1:], marker='.')
+    subplots[0].set_title('straight')
     subplots[1].plot(variableTimes[1:], variableTemps[1:], marker='.')
-    subplots[2].plot(variableTimes2[1:], variableTemps2[1:], marker='.')
+    subplots[1].set_title('variable')
+    # subplots[2].plot(variableTimes2[1:], variableTemps2[1:], marker='.')
 
     # plt.show()
 

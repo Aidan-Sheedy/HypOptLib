@@ -116,6 +116,7 @@ uint32_t HypOptLib::newRun( std::vector<uint32_t>  *iterationSaveRange,
                                        *iterationSaveRange,
                                         saveHamiltonian,
                                         volumeFraction,
+                                        saveFrequency,
                                         maxSimTime);
 
     if (0 != status)
@@ -184,6 +185,7 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
 
     PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
     PetscPrintf(PETSC_COMM_WORLD, "########################### Hyperoptimization ##########################\n");
+    PetscPrintf(PETSC_COMM_WORLD, "# Restarting with file: %s\n", restartPath.c_str());
 
     HypOptParameters finalState;
     Vec finalStateField;
@@ -245,6 +247,7 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
                                         finalState.oddNoseHooverVelocity,
                                         saveHamiltonian,
                                         volumeFraction,
+                                        saveFrequency,
                                         maxSimTime);
 
     if (0 != status)
@@ -298,6 +301,12 @@ void HypOptLib::generateRandomInitialConditionsFile(std::vector<uint32_t> *gridD
     VecDuplicate(opt->x, &initialPositions);
     VecDuplicate(opt->x, &initialVelocities);
 
+    PetscPrintf(PETSC_COMM_WORLD, "########################### Hyperoptimization ##########################\n");
+
+    PetscPrintf(PETSC_COMM_WORLD, "# Generating Random Starting Vectors given:\n");
+    PetscPrintf(PETSC_COMM_WORLD, "# - Temperature: %f\n", targetTemperature);
+    PetscPrintf(PETSC_COMM_WORLD, "# - Dimensions: (%d, %d, %d)\n", gridDimensions->at(0), gridDimensions->at(1), gridDimensions->at(2));
+
     status = randomizeStartingVectors(initialPositions, initialVelocities);
 
     if (0 != status)
@@ -305,7 +314,13 @@ void HypOptLib::generateRandomInitialConditionsFile(std::vector<uint32_t> *gridD
         throw HypOptException((std::string("Error randomizing starting values: ") + std::to_string(status)).c_str());
     }
 
+    PetscPrintf(PETSC_COMM_WORLD, "# Generated!\n");
+    PetscPrintf(PETSC_COMM_WORLD, "# Saving to file: %s\n", filePath.c_str());
+
     FileManager::saveInitialConditions(initialPositions, initialVelocities, filePath);
+
+    PetscPrintf(PETSC_COMM_WORLD, "# Done!\n");
+    PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
 
     VecDestroy(&initialPositions);
     VecDestroy(&initialVelocities);

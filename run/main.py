@@ -4,18 +4,21 @@ import HypOptLib
 
 solver = HypOptLib.HypOptLib()
 
-solver.setSavePath("test_timestepping_straightime_t1.h5")
+solver.setSavePath("medium_run_5deg_restart_2.h5")
 
-timestep = 0.000005
+temperature = 5
+timestep    = 0.00004
+numItr      = 3600
 
-solver.setTargetTemperature(1)
+solver.setTargetTemperature(temperature)
 solver.setTimestep(timestep)
-solver.setMaximumIterations(2)
+solver.setMaximumIterations(numItr)
+solver.setVolumeFraction(0.12)
+solver.setSaveFrequency(10)
 
-solver.setVolumeFraction(0.13)
-
-solver.setRandomStartingValues(True)
-solver.setMaxSimulationTime(2)
+# solver.setRandomStartingValues(False)
+# solver.setMaxSimulationTime(2350)
+# solver.setMaxSimulationTime(0.8)
 
 # alpha = 1.4
 # beta = 0.98
@@ -23,8 +26,9 @@ solver.setMaxSimulationTime(2)
 alpha = 1.115
 beta = 0.9
 
-tempDifusionConst = 0.0000000000005
-volfracDiffusionConst = 0.000000001
+# tempDifusionConst = 0.0000000000005
+# volfracDiffusionConst = 0.0000001
+volfracDiffusionConst   = 0.00000004
 
 # solver.enableVariableTimestep(alpha,
 #                               beta,
@@ -33,9 +37,11 @@ volfracDiffusionConst = 0.000000001
 
 # solver.setSaveHamiltonian(True)
 
-# solver.loadInitialConditionsFromFile("../tests/randomInitial32x16x16_T1.h5")
+# solver.loadInitialConditionsFromFile("../tests/randomInitial64x32x32_T5.h5")
 
-solver.newRun(  [0,0],              # iterationSaveRange
-                [32,16,16])         # gridDimensions
+# solver.newRun(  [0,10000],          # iterationSaveRange
+#                 [64,32,32])         # gridDimensions
 
-# solver.generateRandomInitialConditionsFile([32, 16, 16], "../tests/randomInitial32x16x16_T0.0001.h5")
+solver.restartRun("medium/t5/medium_run_5deg_restart_1.h5", [0,3600])
+
+# solver.generateRandomInitialConditionsFile([64, 32, 32], "../tests/randomInitial64x32x32_T5.h5")

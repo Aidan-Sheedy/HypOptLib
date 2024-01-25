@@ -222,6 +222,20 @@ class HypOptLib
         }
 
         /**
+         * Sets the frequency that iterations are saved. Still only saved within the iteration save range.
+         * 
+         * For example, if set to 3 then the system state is only saved every three iterations.
+         *
+         * @note Defaults to 1, meaning every iteration is saved.
+         *
+         * @param frequency Frequency at which to save system states.
+         */
+        void setSaveFrequency(double frequency)
+        {
+            this->saveFrequency = frequency;
+        }
+
+        /**
          * Enables variable timestepping with the provided parameters.
          *
          * @param timestepConstantAlpha Growth parameter. Should be close to but greater than 1.
@@ -248,6 +262,7 @@ class HypOptLib
             /** @todo check if this is a real path somewhere down the line */
             this->initialConditionsFile = filePath;
             this->initialConditionsFromFile = true;
+            this->randomStartingValues = false;
         }
 
     private:
@@ -282,6 +297,7 @@ class HypOptLib
         double      timestep                = 0.001;
         uint32_t    noseHooverChainOrder    = 10;
         uint32_t    maximumIterations       = 100;
+        uint32_t    saveFrequency           = 1;
         bool        randomStartingValues    = true;
         bool        saveHamiltonian         = false;
 
@@ -346,6 +362,7 @@ PYBIND11_MODULE(HypOptLib, m)
         .def("enableVariableTimestep",  &HypOptLib::enableVariableTimestep, "Enables variable timestepping with the provided parameters.")
         .def("generateRandomInitialConditionsFile",  &HypOptLib::generateRandomInitialConditionsFile, "Generates an HDF5 file with randomized initial position and velocity vectors.")
         .def("loadInitialConditionsFromFile",  &HypOptLib::loadInitialConditionsFromFile, "Optional setting to load initial conditions from a file.")
+        .def("setSaveFrequency",        &HypOptLib::setSaveFrequency, "Optional setting to change the frequency at which system states are saved within the iteration save range.")
         .def("setMaxSimulationTime",    &HypOptLib::setMaxSimulationTime,   "Optional setting to finish simulation at a given time.");
 
     py::register_exception<HypOptException>(m, "HypOptError");

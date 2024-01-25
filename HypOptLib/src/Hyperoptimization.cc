@@ -41,6 +41,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
                                         std::vector<uint32_t>   iterationSaveRange,
                                         bool                    saveHamiltonian,
                                         PetscScalar             volumeFraction,
+                                        uint32_t                saveFrequency,
                                         double                  maxSimTime)
 {
     PetscCall(VecCreate(PETSC_COMM_WORLD, &(prevState.evenNoseHooverPosition)));
@@ -74,6 +75,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
                 prevState.oddNoseHooverVelocity,
                 saveHamiltonian,
                 volumeFraction,
+                saveFrequency,
                 maxSimTime);
 }
 
@@ -94,6 +96,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
                                         Vec                     initialOddNoseHooverVelocity,
                                         bool                    saveHamiltonian,
                                         PetscScalar             volumeFraction,
+                                        uint32_t                saveFrequency,
                                         double                  maxSimTime)
 {
     PetscErrorCode errorStatus = 0;
@@ -124,6 +127,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
     this->saveHamiltonian       = saveHamiltonian;
     this->volumeFraction        = volumeFraction;
     this->maxSimTime            = maxSimTime;
+    this->saveFrequency         = saveFrequency;
 
     /* Pre-allocate vector memory
      *
@@ -202,6 +206,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
     PetscPrintf(PETSC_COMM_WORLD, "# -variableTimestep: %s\n", variableTimestep ? "true" : "false");
     PetscPrintf(PETSC_COMM_WORLD, "# -timestep: %f\n", timestep);
     PetscPrintf(PETSC_COMM_WORLD, "# -iterationSaveRange: (%i, %i)\n", iterationSaveRange[0], iterationSaveRange[1]);
+    PetscPrintf(PETSC_COMM_WORLD, "# -saveFrequency: %i\n", saveFrequency);
     PetscPrintf(PETSC_COMM_WORLD, "# ----------------------------------------------------\n");
 
     return errorStatus;
@@ -787,8 +792,9 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
             double t2 = MPI_Wtime();
 
             /* Save iteration */
-            if ( (this->numIterations - iteration) <= iterationSaveRange[1] &&
-                (this->numIterations - iteration) >= iterationSaveRange[0]  )
+            if ( ( (iteration <= iterationSaveRange[1]) && (iteration >= iterationSaveRange[0])  ) &&
+                 ( 0 == ((iteration - iterationSaveRange[0]) % saveFrequency) ) )
+
             {
                 fileManager->saveIteration(iteration, this->newPosition);
             }
