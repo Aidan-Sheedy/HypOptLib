@@ -62,6 +62,18 @@ class SensitivitiesWrapper
         }
 
         /**
+         * Accessor for the Petsc solver iteration count.
+         *
+         * This is updated every time computeSensitivities or computeObjectiveFunction is called.
+         *
+         * @returns the number of iterations needed for the last finite element analysis calculation.
+         */
+        PetscInt getSolverIterationCount()
+        {
+            return petscSolverIterationCount;
+        }
+
+        /**
          * Wraps the LinearElasticity::ComputeSensitivities function.
          *
          * This solves the finite element analysis problem required to calcualte the sensitivities
@@ -95,4 +107,5 @@ class SensitivitiesWrapper
         PetscScalar Emax;
         PetscScalar penal;
         PetscScalar volfrac;
+        PetscInt    petscSolverIterationCount = 0;
 };

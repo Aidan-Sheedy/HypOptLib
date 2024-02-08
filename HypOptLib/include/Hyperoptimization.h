@@ -215,6 +215,20 @@ class Hyperoptimization
         /**
          * Accessor for final vector of Hamiltonians after running design loop.
          *
+         * @returns vector of iteration times for each iteration.
+         */
+        std::vector<PetscInt> getSolverIterationsHamiltonian() {return hamiltonianSolverIterations;}
+
+        /**
+         * Accessor for final vector of Hamiltonians after running design loop.
+         *
+         * @returns vector of iteration times for each iteration.
+         */
+        std::vector<PetscInt> getSolverIterationsSensitivity() {return sensitivitySolverIterations;}
+
+        /**
+         * Accessor for final vector of Hamiltonians after running design loop.
+         *
          * @returns vector of positions for the final iteration.
          */
         HypOptParameters getFinalState() {return prevState;}
@@ -470,6 +484,8 @@ class Hyperoptimization
         std::vector<PetscScalar> compliance;
         std::vector<PetscScalar> temperatures;
         std::vector<PetscScalar> iterationTimes;
+        std::vector<PetscInt> sensitivitySolverIterations;
+        std::vector<PetscInt> hamiltonianSolverIterations;
         verbosity printInfo = INFO; /** @todo make this a pass-in variable/debugging parameter! */
         bool doneSolving = false;
         bool saveHamiltonian;

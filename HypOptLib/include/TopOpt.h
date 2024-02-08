@@ -12,6 +12,8 @@
 #include <petsc/private/dmdaimpl.h>
 #include <sstream>
 
+#include "HypOptParameters.h"
+
 /*
  Authors: Niels Aage, Erik Andreassen, Boyan Lazarov, August 2013
  Updated: June 2019, Niels Aage
@@ -53,7 +55,7 @@ class TopOpt {
 
   public:
     // Constructor/Destructor
-    TopOpt(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscScalar penalty, PetscScalar minimumFilterRadius);
+    TopOpt(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscScalar penalty, PetscScalar minimumFilterRadius, DomainCoordinates domainCoordinates);
     TopOpt(PetscInt nconstraint);
     TopOpt();
     ~TopOpt();
@@ -116,8 +118,18 @@ class TopOpt {
 
   private:
     // Allocate and set default values
-    void           Init(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscScalar penalty, PetscScalar minimumFilterRadius);
-    PetscErrorCode SetUp(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscScalar penalty, PetscScalar minimumFilterRadius);
+    void           Init(PetscInt xDimensions,
+                        PetscInt yDimensions,
+                        PetscInt zDimensions,
+                        PetscScalar penalty,
+                        PetscScalar minimumFilterRadius,
+                        DomainCoordinates domainCoordinates);
+    PetscErrorCode SetUp(PetscInt xDimensions,
+                         PetscInt yDimensions,
+                         PetscInt zDimensions,
+                         PetscScalar penalty,
+                         PetscScalar minimumFilterRadius,
+                         DomainCoordinates domainCoordinates);
 
     PetscErrorCode SetUpMESH();
     PetscErrorCode SetUpOPT();

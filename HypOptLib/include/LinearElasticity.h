@@ -7,6 +7,9 @@
 #include <petsc.h>
 #include <petsc/private/dmdaimpl.h>
 
+#include <vector>
+#include "HypOptParameters.h"
+
 /*
  Authors: Niels Aage, Erik Andreassen, Boyan Lazarov, August 2013
  Updated: June 2019, Niels Aage
@@ -33,8 +36,7 @@ class LinearElasticity {
 
   public:
     // Constructor
-    LinearElasticity(DM da_nodes, Vec U);
-    LinearElasticity(DM da_nodes);
+    LinearElasticity(DM da_nodes, std::vector<BoundaryCondition> boundaryConditions);
 
     // Destructor
     ~LinearElasticity();
@@ -43,16 +45,16 @@ class LinearElasticity {
     //  SELF_ADJOINT PROBLEMS
     PetscErrorCode ComputeObjectiveConstraintsSensitivities(PetscScalar* fx, PetscScalar* gx, Vec dfdx, Vec dgdx,
                                                             Vec xPhys, PetscScalar Emin, PetscScalar Emax,
-                                                            PetscScalar penal, PetscScalar volfrac);
+                                                            PetscScalar penal, PetscScalar volfrac, PetscInt *numItr);
 
     // Compute objective and constraints for the optimiation
     PetscErrorCode ComputeObjectiveConstraints(PetscScalar* fx, PetscScalar* gx, Vec xPhys, PetscScalar Emin,
-                                               PetscScalar Emax, PetscScalar penal, PetscScalar volfrac);
+                                               PetscScalar Emax, PetscScalar penal, PetscScalar volfrac, PetscInt *numItr);
 
     // Compute sensitivities
     PetscErrorCode ComputeSensitivities(Vec dfdx, Vec dgdx, Vec xPhys, PetscScalar Emin, PetscScalar Emax,
                                         PetscScalar penal,
-                                        PetscScalar volfrac); // needs ....
+                                        PetscScalar volfrac, PetscInt *numItr); // needs ....
 
     // Restart writer
     PetscErrorCode WriteRestartFiles();
@@ -96,10 +98,10 @@ class LinearElasticity {
     PetscScalar nu; // Possions ratio
 
     // Set up the FE mesh and data structures
-    PetscErrorCode SetUpLoadAndBC(DM da_nodes);
+    PetscErrorCode SetUpLoadAndBC(DM da_nodes, std::vector<BoundaryCondition> boundaryConditions);
 
     // Solve the FE problem
-    PetscErrorCode SolveState(Vec xPhys, PetscScalar Emin, PetscScalar Emax, PetscScalar penal);
+    PetscErrorCode SolveState(Vec xPhys, PetscScalar Emin, PetscScalar Emax, PetscScalar penal, PetscInt *numitrOut);
 
     // Assemble the stiffness matrix
     PetscErrorCode AssembleStiffnessMatrix(Vec xPhys, PetscScalar Emin, PetscScalar Emax, PetscScalar penal);

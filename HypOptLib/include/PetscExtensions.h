@@ -73,6 +73,32 @@ class PetscExtensions
          * The parallel vector must already be created using either VecCreate followed by VecSetFromOptions,
          * or from a VecDuplicate call. This function simply populates the parallel vector with the contents of
          * the std vector. This function is parallelized.
+         * 
+         * @note This version of the overloaded function uses a templated vector type which is cast to PetscScalar.
+         * It should only be used if the vector type can safely be cast to PetscScalar.
+         *
+         * @param stdVector the std vector to prallelize.
+         * @param parallel [out] the parallel vector to populate.
+         *
+         * @returns 0 on success, PetscError otherwise.
+         */
+        template<typename T> 
+            static PetscErrorCode VecParallelFromStdVector(std::vector<T> stdVector, Vec parallel)
+            {
+                std::vector<PetscScalar> copy;
+                for (auto value : stdVector)
+                {
+                    copy.push_back((PetscScalar)value);
+                }
+                return VecParallelFromStdVector(copy, parallel);
+            }
+
+        /**
+         * Creates a parallel vector from a given C++ std vector.
+         *
+         * The parallel vector must already be created using either VecCreate followed by VecSetFromOptions,
+         * or from a VecDuplicate call. This function simply populates the parallel vector with the contents of
+         * the std vector. This function is parallelized.
          *
          * @param stdVector the std vector to prallelize.
          * @param parallel [out] the parallel vector to populate.
@@ -80,6 +106,7 @@ class PetscExtensions
          * @returns 0 on success, PetscError otherwise.
          */
         static PetscErrorCode VecParallelFromStdVector(std::vector<PetscScalar> stdVector, Vec parallel);
+
 
         /**
          * Shifts all elements in the input vector down one index.

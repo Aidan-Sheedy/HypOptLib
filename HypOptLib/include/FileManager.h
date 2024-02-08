@@ -43,23 +43,29 @@ class FileManager
          * @param numberSamples number of samples to save @todo figure out step vs sample
          * @param NoseHooverChainOrder number of particles in the Nose Hoover chain
          * @param filePath path to save the HDF5 output file to
+         * @param randomStartingValues indicates if the positions were set uniformly or not
+         * @param initialConditionsFile path to pre-set initial conditions if provided
+         * @param domain domain coordinates of the problem
+         * @param boundaryConditions groups of boundary conditions for the problem
          *
          * @return 0 or PetscError.
          */
-        PetscErrorCode initializeHDF5(PetscScalar   volfrac,
-                                      PetscScalar   timestep,
-                                      PetscScalar   temperature,
-                                      PetscInt      numberElementsX,
-                                      PetscInt      numberElementsY,
-                                      PetscInt      numberElementsZ,
-                                      PetscScalar   penalty,
-                                      PetscScalar   filterRadius,
-                                      PetscInt      numberSteps,
-                                      PetscInt      numberSamples,
-                                      PetscInt      NoseHooverChainOrder,
-                                      std::string   filePath,
-                                      bool          randomStartingValues,
-                                      std::string   initialConditionsFile);
+        PetscErrorCode initializeHDF5(PetscScalar volfrac,
+                                      PetscScalar timestep,
+                                      PetscScalar temperature,
+                                      PetscInt numberElementsX,
+                                      PetscInt numberElementsY,
+                                      PetscInt numberElementsZ,
+                                      PetscScalar penalty,
+                                      PetscScalar filterRadius,
+                                      PetscInt numberSteps,
+                                      PetscInt numberSamples,
+                                      PetscInt NoseHooverChainOrder,
+                                      std::string filePath,
+                                      bool randomStartingValues,
+                                      std::string initialConditionsFile,
+                                      DomainCoordinates domain,
+                                      std::vector<BoundaryCondition> boundaryConditions);
 
         /**
          * Saves an iteration of the optimized positions.
@@ -81,6 +87,11 @@ class FileManager
          * @param temperatures system temperature at each iteration.
          * @param LagrangeMultipliers Lagrangian Multipliers at each iteration.
          * @param iterationTimes time to solve each iteration.
+         * @param timesteps timestep at each iteration. Useful for variable timestep runs.
+         * @param energyErrors energy error at each iteration.
+         * @param volFracs volume fraction at each iteration.
+         * @param solverIterationsSensitivity number of iterations the FEA solver for the sensitivity calculation.
+         * @param solverIterationsHamiltonian number of iterations the FEA solver for the Hamiltonian calculation.
          *
          * @return 0 or PetscError.
          */
@@ -93,7 +104,9 @@ class FileManager
                                         std::vector<PetscScalar> iterationTimes,
                                         std::vector<PetscScalar> timesteps,
                                         std::vector<PetscScalar> energyErrors,
-                                        std::vector<PetscScalar> volFracs);
+                                        std::vector<PetscScalar> volFracs,
+                                        std::vector<PetscInt>    solverIterationsSensitivity,
+                                        std::vector<PetscInt>    solverIterationsHamiltonian);
 
         /**
          * Save file path accessor.
@@ -148,7 +161,7 @@ class FileManager
          *
          * @returns 0 on success, PetscError otherwise.
          */
-        static PetscErrorCode HDF5SaveStdVector(PetscViewer HDF5saveFile, std::vector<PetscScalar> vector, const char * vectorName);
+        template<typename T> static PetscErrorCode HDF5SaveStdVector(PetscViewer HDF5saveFile, std::vector<T> vector, const char * vectorName);
 
         /**
          * Helper function to retrieve a vector from a given HDF5 file.
@@ -168,13 +181,17 @@ class FileManager
          * Helper function to retrieve the simulation settings froma  given restart file.
          *
          * @param filePath the restart file to parse.
-         * @param noseHooverChainOrder [out]
-         * @param volumeFraction [out]
-         * @param timestep [out]
-         * @param targetTemperature [out]
-         * @param penalty [out]
-         * @param minimumFilterRadius [out]
-         * @param gridDimensions [out]
+         * @param noseHooverChainOrder [out] setting to populate
+         * @param volumeFraction [out] setting to populate
+         * @param timestep [out] setting to populate
+         * @param targetTemperature [out] setting to populate
+         * @param penalty [out] setting to populate
+         * @param minimumFilterRadius [out] setting to populate
+         * @param gridDimensions [out] setting to populate
+         * @param domain [out] setting to populate
+         * @param boundaryConditions [out] setting to populate
+         *
+         * @returns 0 on success, PetscError otherwise.
          */
         static PetscErrorCode getHDF5Settings(  std::string             filePath,
                                                 PetscInt               *noseHooverChainOrder,
@@ -183,15 +200,71 @@ class FileManager
                                                 PetscScalar            *targetTemperature,
                                                 PetscScalar            *penalty,
                                                 PetscScalar            *minimumFilterRadius,
-                                                std::vector<uint32_t>  *gridDimensions);
+                                                std::vector<uint32_t>  *gridDimensions,
+                                                DomainCoordinates      *domain,
+                                                std::vector<BoundaryCondition> *boundaryConditions);
 
+        /**
+         * Saves provided initial conditions to an hdf5 file at the path provided.
+         *
+         * @param positions initial positions
+         * @param velocities initial velocities
+         * @param filePath path to hdf5 file to create/append
+         *
+         * @returns 0 on success, PetscError otherwise.
+         */
         static PetscErrorCode saveInitialConditions(Vec positions, Vec velocities, std::string filePath);
 
+        /**
+         * Loads initial conditions from an hdf5 file at the path provided.
+         *
+         * @param positions [out] initial positions
+         * @param velocities [out] initial velocities
+         * @param filePath [out] path to hdf5 file to create/append
+         *
+         * @returns 0 on success, PetscError otherwise.
+         */
         static PetscErrorCode loadInitialConditions(Vec positions, Vec velocities, std::string filePath);
 
-        PetscErrorCode saveIteration(PetscInt iteration, Vec positions, PetscInt timestep);
-        PetscErrorCode finishIterating();
-        PetscErrorCode preparetoIterate(Vec *positions, PetscInt firstTimestep);
+        /**
+         * Saves provided boundary conditions to an hdf5 file at the path provided.
+         *
+         * @param saveFileHDF5 viewer already initialized to hdf5 file to save
+         * @param boundaryConditions settings to save
+         *
+         * @returns 0 on success, PetscError otherwise.
+         */
+        static PetscErrorCode saveBoundaryConditions(PetscViewer saveFileHDF5, std::vector<BoundaryCondition> boundaryConditions);
+
+        /**
+         * Gets boundary conditions from the provided viewer.
+         *
+         * @param saveFileHDF5 viewer already initialized to hdf5 file to save
+         * @param boundaryConditions [out] settings to populate
+         *
+         * @returns 0 on success, PetscError otherwise.
+         */
+        static PetscErrorCode getBoundaryConditions(PetscViewer saveFileHDF5, std::vector<BoundaryCondition> *boundaryConditions);
+
+        /**
+         * Saves provided domain coordinates to an hdf5 file at the path provided.
+         *
+         * @param saveFileHDF5 viewer already initialized to hdf5 file to save
+         * @param boundaryConditions settings to save
+         *
+         * @returns 0 on success, PetscError otherwise.
+         */
+        static PetscErrorCode saveDomainInformation(PetscViewer saveFileHDF5, DomainCoordinates domain);
+
+        /**
+         * Gets domain coordinates from the provided viewer.
+         *
+         * @param saveFileHDF5 viewer already initialized to hdf5 file to save
+         * @param boundaryConditions [out] settings to populate
+         *
+         * @returns 0 on success, PetscError otherwise.
+         */
+        static PetscErrorCode getDomainInformation(PetscViewer saveFileHDF5, DomainCoordinates *domain);
 
     private:
         /**

@@ -170,7 +170,7 @@ def plotAttributesOnTop(attributes,
         colours = ['#e74d4a', '#b13b39', '#740F0E', 'r'] # RED
         # colours = ['#92b9f5', '#567ebb', '#2c3d55', 'r'] # BLUE
     else:
-        colours = ['b', 'g', 'r', 'tab:orange']
+        colours = ['b', 'g', 'r', 'tab:orange', 'tab:purple', 'tab:brown', 'tab:pink']
 
     for i in range(0,numPlots):
         if ("" != annotation and i == 0):

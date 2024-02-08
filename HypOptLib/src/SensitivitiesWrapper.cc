@@ -2,7 +2,6 @@
 
 #include "PetscExtensions.h"
 
-/** @todo figure out the opt-> issue (probably just pass these in?)*/
 PetscErrorCode SensitivitiesWrapper::computeSensitivities(Vec filteredPositions,
                                                           Vec sensitivities,
                                                           Vec constraintSensitivities)
@@ -14,7 +13,8 @@ PetscErrorCode SensitivitiesWrapper::computeSensitivities(Vec filteredPositions,
                                       Emin,
                                       Emax,
                                       penal,
-                                      volfrac);
+                                      volfrac,
+                                      &petscSolverIterationCount);
     );
 
     return 0;
@@ -30,7 +30,8 @@ PetscErrorCode SensitivitiesWrapper::computeObjectiveFunction(Vec filteredPositi
                                             Emin,
                                             Emax,
                                             penal,
-                                            volfrac);
+                                            volfrac,
+                                            &petscSolverIterationCount);
     );
 
     return 0;

@@ -100,8 +100,9 @@ def hdf5AnalyzeSpecificAttributes(filePath,
         # timesteps.append(settings[i].attrs["dt"])
 
     timesteps = np.asarray(outputFile[dataGroup + "/Timestep"])
+    iterationTimes = np.asarray(outputFile[dataGroup + "/Iteration Compute Time"])
 
-    print(timesteps)
+    print("compute Time: ", sum(iterationTimes))
 
     print("Plotting", title)
 
@@ -361,20 +362,26 @@ if(False):
 
 if (True):
     # filePath = "../outputs/finally_good_for_real/0.001 Deg/hypopt_output_small_0.001deg_0.01dt_50000.h5"
-    # filePath = "../run/medium/t0/medium_run_0deg_47000__vartime_cont1.h5"
-    filePath = "../run/medium_run_5deg_restart_1.h5"
+    # filePath = "../run/medium/t1/medium_run_1deg.h5"
+    filePath = "../run/medium_cantilever_1deg.h5"
 
     # attributes  = ["Temperature", "Volume Fraction", "Iteration Compute Time"]
     # names       = ["Temperature", "Volume Fraction", "Iteration Compute Time"]
 
-    attributes  = ["Timestep", "Temperature", "Volume Fraction", "Iteration Compute Time"]#, "Volume Fraction"]
-    names       = ["Timestep", "Temperature", "Volume Fraction", "Iteration Compute Time"]#, "Volume Fraction"]
+    # attributes  = ["Timestep", "Temperature", "Volume Fraction", "Iteration Compute Time"]#, "Compliance"]#, "Volume Fraction"]
+    # names       = ["Timestep", "Temperature", "Volume Fraction", "Iteration Compute Time"]#, "Compliance"]#, "Volume Fraction"]
+
+    attributes  = ["Timestep", "Temperature", "Volume Fraction", "Iteration Compute Time", "Compliance", "FEA Solver Itr Sensitivity", "FEA Solver Itr Hamiltonian"]#, "Volume Fraction"]
+    names       = ["dt", "Temp", "volfrac", "cmptTm", "Comp", "SensItr", "HamItr"]#, "Volume Fraction"]
+
+    # attributes  = ["Iteration Compute Time", "Compliance", "FEA Solver Itr Sensitivity"]#, "Volume Fraction"]
+    # names       = ["Iteration Compute Time", "Compliance", "FEA Iterations"]#, "Volume Fraction"]
 
 
     hdf5AnalyzeSpecificAttributes(filePath,
                                 attributes,
                                 names,
-                                "Test",
+                                "T=0.1 Cantilever Timing Comparison",
                                 # ylims=[[0,2.5]],
                                 # xlims=[-50, 30000],
                                 # saveFig=True,

@@ -75,7 +75,9 @@ PetscErrorCode FileManager::initializeHDF5(PetscScalar  volfrac,
                                            PetscInt     NoseHooverChainOrder,
                                            std::string  filePath,
                                            bool         randomStartingValues,
-                                           std::string  initialConditionsFile)
+                                           std::string  initialConditionsFile,
+                                           DomainCoordinates domain,
+                                           std::vector<BoundaryCondition> boundaryConditions)
 {
     PetscErrorCode errorStatus = 0;
 
@@ -109,6 +111,10 @@ PetscErrorCode FileManager::initializeHDF5(PetscScalar  volfrac,
     PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, settingsGroup.c_str(), chainOrdName.c_str(),     PETSC_INT,      &NoseHooverChainOrder));
     PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, settingsGroup.c_str(), "Random Init Conditions", PETSC_BOOL,     &randomStartingValues));
     PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, settingsGroup.c_str(), "Init Conditions File",   PETSC_STRING,   initialConditionsFile.c_str()));
+
+    /* Mesh and Boundary Conditions */
+    saveBoundaryConditions(saveFileHDF5, boundaryConditions);
+    saveDomainInformation(saveFileHDF5, domain);
 
     PetscCall(PetscViewerDestroy(&(saveFileHDF5)));
 
@@ -148,7 +154,9 @@ PetscErrorCode FileManager::saveFinalState( bool                     saveHamilti
                                             std::vector<PetscScalar> iterationTimes,
                                             std::vector<PetscScalar> timesteps,
                                             std::vector<PetscScalar> energyErrors,
-                                            std::vector<PetscScalar> volFracs)
+                                            std::vector<PetscScalar> volFracs,
+                                            std::vector<PetscInt>    solverIterationsSensitivity,
+                                            std::vector<PetscInt>    solverIterationsHamiltonian)
 {
     PetscErrorCode errorStatus = 0;
 
@@ -171,6 +179,8 @@ PetscErrorCode FileManager::saveFinalState( bool                     saveHamilti
     PetscCall(HDF5SaveStdVector(saveFileHDF5, timesteps,             timestepsName.c_str()));
     PetscCall(HDF5SaveStdVector(saveFileHDF5, energyErrors,          energyErrorsName.c_str()));
     PetscCall(HDF5SaveStdVector(saveFileHDF5, volFracs,          "Volume Fraction"));
+    PetscCall(HDF5SaveStdVector(saveFileHDF5, solverIterationsSensitivity, "FEA Solver Itr Sensitivity"));
+    PetscCall(HDF5SaveStdVector(saveFileHDF5, solverIterationsHamiltonian, "FEA Solver Itr Hamiltonian"));
 
     /* save Petsc type vectors */
     PetscCall(PetscObjectSetName((PetscObject)(finalState.position),                finalPositionName.c_str()));
@@ -252,7 +262,7 @@ PetscErrorCode FileManager::getFinalStateVectors(   std::string         filePath
     return 0;
 }
 
-PetscErrorCode FileManager::HDF5SaveStdVector(PetscViewer HDF5saveFile, std::vector<PetscScalar> vector, const char * vectorName)
+template<typename T> PetscErrorCode FileManager::HDF5SaveStdVector(PetscViewer HDF5saveFile, std::vector<T> vector, const char * vectorName)
 {
     PetscErrorCode errorStatus = 0;
 
@@ -299,7 +309,9 @@ PetscErrorCode FileManager::getHDF5Settings(std::string             filePath,
                                             PetscScalar            *targetTemperature,
                                             PetscScalar            *penalty,
                                             PetscScalar            *minimumFilterRadius,
-                                            std::vector<uint32_t>  *gridDimensions)
+                                            std::vector<uint32_t>  *gridDimensions,
+                                            DomainCoordinates      *domain,
+                                            std::vector<BoundaryCondition> *boundaryConditions)
 {
     PetscInt    numberElementsX;
     PetscInt    numberElementsY;
@@ -323,6 +335,10 @@ PetscErrorCode FileManager::getHDF5Settings(std::string             filePath,
     gridDimensions->push_back(numberElementsX);
     gridDimensions->push_back(numberElementsY);
     gridDimensions->push_back(numberElementsZ);
+
+    /* Get mesh and boundary condition info */
+    getBoundaryConditions(saveFile, boundaryConditions);
+    getDomainInformation(saveFile, domain);
 
     /* Cleanup */
     PetscCall(PetscViewerDestroy(&(saveFile)));
@@ -393,35 +409,118 @@ PetscErrorCode FileManager::loadInitialConditions(Vec positions, Vec velocities,
     return 0;
 }
 
-// PetscErrorCode FileManager::preparetoIterate(Vec *positions, PetscInt firstTimestep)
-// {
-//     PetscCall(PetscViewerHDF5Open(PETSC_COMM_WORLD, this->saveFilePath.c_str(), FILE_MODE_APPEND, &(iterationViewer)));
-//     PetscCall(PetscViewerHDF5PushTimestepping(iterationViewer));
-//     PetscCall(PetscViewerHDF5PushGroup(iterationViewer, stateGroup.c_str()));
-//     PetscCall(PetscObjectSetName((PetscObject)*positions, "Positions"));
+PetscErrorCode FileManager::saveBoundaryConditions(PetscViewer saveFileHDF5, std::vector<BoundaryCondition> boundaryConditions)
+{
+    PetscBool saveTrue = PETSC_TRUE;
+    PetscBool saveFalse = PETSC_FALSE;
 
-//     /* If VecCreate is used to make generate the iterating vector, then this is not necessary. */
-//     PetscCall(DMSetOutputSequenceNumber(physics->GetDM(), 0, firstTimestep));
-//     return 0;
-// }
+    uint32_t boundaryCondtionNumber = 0;
+    for (auto boundaryCondition : boundaryConditions)
+    {
+        std::string parent = settingsGroup + "/boundaryConditions/boundaryCondition_" + std::to_string(boundaryCondtionNumber);
+        PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "type",       PETSC_INT,      &boundaryCondition.type));
+        PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "xRangeMin",  PETSC_SCALAR,   &boundaryCondition.xRange[0]));
+        PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "xRangeMax",  PETSC_SCALAR,   &boundaryCondition.xRange[1]));
+        PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "yRangeMin",  PETSC_SCALAR,   &boundaryCondition.yRange[0]));
+        PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "yRangeMax",  PETSC_SCALAR,   &boundaryCondition.yRange[1]));
+        PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "zRangeMin",  PETSC_SCALAR,   &boundaryCondition.zRange[0]));
+        PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "zRangeMax",  PETSC_SCALAR,   &boundaryCondition.zRange[1]));
+        PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "zRangeMax",  PETSC_SCALAR,   &boundaryCondition.zRange[1]));
+        PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "value",      PETSC_SCALAR,   &boundaryCondition.value));
 
-// PetscErrorCode FileManager::finishIterating()
-// {
-//     PetscCall(PetscViewerHDF5PopGroup(iterationViewer));
-//     PetscCall(PetscViewerHDF5PopTimestepping(iterationViewer));
-//     PetscCall(PetscViewerDestroy(&iterationViewer));
-//     return 0;
-// }
+        if (boundaryCondition.degreesOfFreedom.find(0) != boundaryCondition.degreesOfFreedom.end())
+            PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "dofX",  PETSC_BOOL, &saveTrue));
+        else
+            PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "dofX",  PETSC_BOOL, &saveFalse));
 
-// PetscErrorCode FileManager::saveIteration(PetscInt iteration, Vec positions, PetscInt nextTimestep)
-// {
-//     PetscErrorCode errorStatus = 0;
-//     PetscCall(PetscViewerHDF5SetTimestep(iterationViewer, nextTimestep));
-//     PetscCall(VecView(positions, iterationViewer));
+        if (boundaryCondition.degreesOfFreedom.find(1) != boundaryCondition.degreesOfFreedom.end())
+            PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "dofY",  PETSC_BOOL, &saveTrue));
+        else
+            PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "dofY",  PETSC_BOOL, &saveFalse));
 
-//      /* If VecCreate is used to make generate the iterating vector, then this use
-//       * PetscViewerHDF5IncrementTimestep instead.
-//       */
-//     PetscCall(DMSetOutputSequenceNumber(physics->GetDM(), iteration+1, nextTimestep));
-//     return errorStatus;
-// }
+        if (boundaryCondition.degreesOfFreedom.find(2) != boundaryCondition.degreesOfFreedom.end())
+            PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "dofZ",  PETSC_BOOL, &saveTrue));
+        else
+            PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "dofZ",  PETSC_BOOL, &saveFalse));
+
+        boundaryCondtionNumber++;
+    }
+
+    return 0;
+}
+
+PetscErrorCode FileManager::getBoundaryConditions(PetscViewer saveFileHDF5, std::vector<BoundaryCondition> *boundaryConditions)
+{
+    PetscBool dofX;
+    PetscBool dofY;
+    PetscBool dofZ;
+    uint32_t boundaryCondtionNumber = 0;
+    PetscBool hasDataset = PETSC_FALSE;
+    std::string parent = settingsGroup + "/boundaryConditions/boundaryCondition_" + std::to_string(boundaryCondtionNumber);
+
+    PetscCall(PetscViewerHDF5HasGroup(saveFileHDF5, parent.c_str(), &hasDataset));
+    while (hasDataset)
+    {
+        boundaryConditions->push_back(BoundaryCondition());
+        boundaryConditions->at(boundaryCondtionNumber).xRange = {0,0};
+        boundaryConditions->at(boundaryCondtionNumber).yRange = {0,0};
+        boundaryConditions->at(boundaryCondtionNumber).zRange = {0,0};
+
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "type",       PETSC_INT,    NULL, &boundaryConditions->at(boundaryCondtionNumber).type));
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "xRangeMin",  PETSC_SCALAR, NULL, &(boundaryConditions->at(boundaryCondtionNumber).xRange[0]) ));
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "xRangeMax",  PETSC_SCALAR, NULL, &(boundaryConditions->at(boundaryCondtionNumber).xRange[1]) ));
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "yRangeMin",  PETSC_SCALAR, NULL, &(boundaryConditions->at(boundaryCondtionNumber).yRange[0]) ));
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "yRangeMax",  PETSC_SCALAR, NULL, &(boundaryConditions->at(boundaryCondtionNumber).yRange[1]) ));
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "zRangeMin",  PETSC_SCALAR, NULL, &(boundaryConditions->at(boundaryCondtionNumber).zRange[0]) ));
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "zRangeMax",  PETSC_SCALAR, NULL, &(boundaryConditions->at(boundaryCondtionNumber).zRange[1]) ));
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "value",      PETSC_SCALAR, NULL, &boundaryConditions->at(boundaryCondtionNumber).value));
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "dofX",       PETSC_BOOL,   NULL, &dofX));
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "dofY",       PETSC_BOOL,   NULL, &dofY));
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "dofZ",       PETSC_BOOL,   NULL, &dofZ));
+
+        if (dofX)
+            boundaryConditions->at(boundaryCondtionNumber).degreesOfFreedom.insert(0);
+        if (dofY)
+            boundaryConditions->at(boundaryCondtionNumber).degreesOfFreedom.insert(1);
+        if (dofZ)
+            boundaryConditions->at(boundaryCondtionNumber).degreesOfFreedom.insert(2);
+
+        boundaryCondtionNumber++;
+        parent = settingsGroup + "/boundaryConditions/boundaryCondition_" + std::to_string(boundaryCondtionNumber);
+        PetscCall(PetscViewerHDF5HasGroup(saveFileHDF5, parent.c_str(), &hasDataset));
+    }
+
+    return 0;
+}
+
+PetscErrorCode FileManager::saveDomainInformation(PetscViewer saveFileHDF5, DomainCoordinates domain)
+{
+    std::string parent = settingsGroup + "/domain";
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "xMinimum", PETSC_SCALAR, &domain.xMinimum));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "xMaximum", PETSC_SCALAR, &domain.xMaximum));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "yMinimum", PETSC_SCALAR, &domain.yMinimum));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "yMaximum", PETSC_SCALAR, &domain.yMaximum));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "zMinimum", PETSC_SCALAR, &domain.zMinimum));
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, parent.c_str(), "zMaximum", PETSC_SCALAR, &domain.zMaximum));
+
+    return 0;
+}
+
+PetscErrorCode FileManager::getDomainInformation(PetscViewer saveFileHDF5, DomainCoordinates *domain)
+{
+    std::string parent = settingsGroup + "/domain";
+    PetscBool hasDataset = PETSC_FALSE;
+    PetscCall(PetscViewerHDF5HasGroup(saveFileHDF5, parent.c_str(), &hasDataset));
+
+    if (hasDataset)
+    {
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "xMinimum", PETSC_SCALAR, NULL, &(domain->xMinimum)));
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "xMaximum", PETSC_SCALAR, NULL, &(domain->xMaximum)));
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "yMinimum", PETSC_SCALAR, NULL, &(domain->yMinimum)));
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "yMaximum", PETSC_SCALAR, NULL, &(domain->yMaximum)));
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "zMinimum", PETSC_SCALAR, NULL, &(domain->zMinimum)));
+        PetscCall(PetscViewerHDF5ReadAttribute(saveFileHDF5, parent.c_str(), "zMaximum", PETSC_SCALAR, NULL, &(domain->zMaximum)));
+    }
+
+    return 0;
+}

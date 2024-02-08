@@ -14,25 +14,33 @@
 #include "FilterWrapper.h"
 #include "LagrangeMultiplier.h"
 #include "FileManager.h"
-#include "HypOptParameters.h"
 
 #include <petscsystypes.h>
 #include <random>
 #include <fstream>
 #include <iostream>
 
-uint32_t HypOptLib::newRun( std::vector<uint32_t>  *iterationSaveRange,
-                            std::vector<uint32_t>  *gridDimensions)
+uint32_t HypOptLib::newRun(std::vector<uint32_t>  *iterationSaveRange)
 {
     /* Check for valid input parameters */
-    if (3 != gridDimensions->size())
-    {
-        throw HypOptException("Invalid grid dimensions. Must provide a list of exactly three dimensions; x, y, and z.");
-    }
-
     if (2 != iterationSaveRange->size())
     {
         throw HypOptException("Invalid iteration save range. Must be a list of two values, first smaller than the last.");
+    }
+
+    if ( (0 == domain.xMinimum) &&
+         (0 == domain.xMaximum) &&
+         (0 == domain.yMinimum) &&
+         (0 == domain.yMaximum) &&
+         (0 == domain.zMinimum) &&
+         (0 == domain.zMaximum) )
+    {
+        throw HypOptException("Grid topology not set. Call HypOptLib::setGridProperties with valid properties.");
+    }
+
+    if (0 == boundaryConditions.size() || 3 != gridDimensions.size())
+    {
+        throw HypOptException("Boundary conditions not set. Please call HypOptLib::setBoundaryConditions with valid boundary conditions.");
     }
 
     // Initialize PETSc / MPI and pass input arguments to PETSc
@@ -40,20 +48,33 @@ uint32_t HypOptLib::newRun( std::vector<uint32_t>  *iterationSaveRange,
 
     // STEP 1: THE OPTIMIZATION PARAMETERS, DATA AND MESH (!!! THE DMDA !!!)
 
-    PetscInt xMeshDimension = gridDimensions->at(0)+1;
-    PetscInt yMeshDimension = gridDimensions->at(1)+1;
-    PetscInt zMeshDimension = gridDimensions->at(2)+1;
+    PetscInt xMeshDimension = gridDimensions.at(0)+1;
+    PetscInt yMeshDimension = gridDimensions.at(1)+1;
+    PetscInt zMeshDimension = gridDimensions.at(2)+1;
 
-    TopOpt* opt = new TopOpt(xMeshDimension, yMeshDimension, zMeshDimension, penalty, minimumFilterRadius);
+    TopOpt* opt = new TopOpt(xMeshDimension, yMeshDimension, zMeshDimension, penalty, minimumFilterRadius, domain);
 
     // STEP 2: THE PHYSICS
-    LinearElasticity* physics = new LinearElasticity(opt->da_nodes);
+    LinearElasticity* physics = new LinearElasticity(opt->da_nodes, boundaryConditions);
 
     // STEP 3: THE FILTERING
     Filter* filter = new Filter(opt->da_nodes, opt->xPhys, opt->filter, opt->rmin);
 
     PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
     PetscPrintf(PETSC_COMM_WORLD, "########################### Hyperoptimization ##########################\n");
+    PetscPrintf(PETSC_COMM_WORLD, "# - Boundary Conditions:\n");
+
+    for (auto boundaryCondition : boundaryConditions)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "#       type:    %i\n", boundaryCondition.type);
+        PetscPrintf(PETSC_COMM_WORLD, "#       xRange:  (%f,%f)\n", boundaryCondition.xRange[0], boundaryCondition.xRange[1]);
+        PetscPrintf(PETSC_COMM_WORLD, "#       yRange:  (%f,%f)\n", boundaryCondition.yRange[0], boundaryCondition.yRange[1]);
+        PetscPrintf(PETSC_COMM_WORLD, "#       zRange:  (%f,%f)\n", boundaryCondition.zRange[0], boundaryCondition.zRange[1]);
+        PetscPrintf(PETSC_COMM_WORLD, "#       DOF:     (");
+        for (PetscInt dof : boundaryCondition.degreesOfFreedom)
+            PetscPrintf(PETSC_COMM_WORLD, "%i,", dof);
+        PetscPrintf(PETSC_COMM_WORLD, ")\n#       value:    %f\n", boundaryCondition.value);
+    }
 
     /* Clone Petsc settings from topopt (it initializes everything) */
     Vec initialPositions;
@@ -88,9 +109,9 @@ uint32_t HypOptLib::newRun( std::vector<uint32_t>  *iterationSaveRange,
     output.initializeHDF5(volumeFraction,
                           timestep,
                           targetTemperature,
-                          gridDimensions->at(0),
-                          gridDimensions->at(1),
-                          gridDimensions->at(2),
+                          gridDimensions.at(0),
+                          gridDimensions.at(1),
+                          gridDimensions.at(2),
                           opt->penal,
                           opt->rmin,
                           maximumIterations,
@@ -98,7 +119,9 @@ uint32_t HypOptLib::newRun( std::vector<uint32_t>  *iterationSaveRange,
                           noseHooverChainOrder,
                           this->savePath,
                           randomStartingValues,
-                          initialConditionsFile);
+                          initialConditionsFile,
+                          domain,
+                          boundaryConditions);
 
     PetscPrintf(PETSC_COMM_WORLD, "# Initialing Solver\n");
 
@@ -163,6 +186,8 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
     PetscScalar penalty;
     PetscScalar minimumFilterRadius;
     std::vector<uint32_t>   gridDimensions;
+    DomainCoordinates previousDomain;
+    std::vector<BoundaryCondition> prevBoundaryConditions;
 
     FileManager::getHDF5Settings(restartPath,
                                 &noseHooverChainOrder,
@@ -171,7 +196,9 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
                                 &targetTemperature,
                                 &penalty,
                                 &minimumFilterRadius,
-                                &gridDimensions);
+                                &gridDimensions,
+                                &previousDomain,
+                                &prevBoundaryConditions);
 
     // STEP 1: THE OPTIMIZATION PARAMETERS, DATA AND MESH (!!! THE DMDA !!!)
 
@@ -179,13 +206,40 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
     PetscInt yMeshDimension = gridDimensions.at(1)+1;
     PetscInt zMeshDimension = gridDimensions.at(2)+1;
 
-    TopOpt* opt                 = new TopOpt(xMeshDimension, yMeshDimension, zMeshDimension, penalty, minimumFilterRadius);
-    LinearElasticity* physics   = new LinearElasticity(opt->da_nodes);
+    DomainCoordinates               newDomain;
+    std::vector<BoundaryCondition>  newBCs;
+
+    if (restartUseNewMeshes)
+    {
+        newDomain = this->domain;
+        newBCs = this->boundaryConditions;
+    }
+    else
+    {
+        newDomain = previousDomain;
+        newBCs = prevBoundaryConditions;
+    }
+
+    TopOpt* opt                 = new TopOpt(xMeshDimension, yMeshDimension, zMeshDimension, penalty, minimumFilterRadius, newDomain);
+    LinearElasticity* physics   = new LinearElasticity(opt->da_nodes, newBCs);
     Filter* filter              = new Filter(opt->da_nodes, opt->xPhys, opt->filter, opt->rmin);
 
     PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
     PetscPrintf(PETSC_COMM_WORLD, "########################### Hyperoptimization ##########################\n");
     PetscPrintf(PETSC_COMM_WORLD, "# Restarting with file: %s\n", restartPath.c_str());
+    PetscPrintf(PETSC_COMM_WORLD, "# - Boundary Conditions:\n");
+
+    for (auto boundaryCondition : newBCs)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "#       type:    %i\n", boundaryCondition.type);
+        PetscPrintf(PETSC_COMM_WORLD, "#       xRange:  (%f,%f)\n", boundaryCondition.xRange[0], boundaryCondition.xRange[1]);
+        PetscPrintf(PETSC_COMM_WORLD, "#       yRange:  (%f,%f)\n", boundaryCondition.yRange[0], boundaryCondition.yRange[1]);
+        PetscPrintf(PETSC_COMM_WORLD, "#       zRange:  (%f,%f)\n", boundaryCondition.zRange[0], boundaryCondition.zRange[1]);
+        PetscPrintf(PETSC_COMM_WORLD, "#       DOF:     (");
+        for (PetscInt dof : boundaryCondition.degreesOfFreedom)
+            PetscPrintf(PETSC_COMM_WORLD, "%i,", dof);
+        PetscPrintf(PETSC_COMM_WORLD, ")\n#       value:    %f\n", boundaryCondition.value);
+    }
 
     HypOptParameters finalState;
     Vec finalStateField;
@@ -225,7 +279,9 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
                           noseHooverChainOrder,
                           this->savePath,
                           randomStartingValues,
-                          initialConditionsFile);
+                          initialConditionsFile,
+                          newDomain,
+                          newBCs);
 
     PetscPrintf(PETSC_COMM_WORLD, "# Initialing Solver\n");
 
@@ -293,7 +349,14 @@ void HypOptLib::generateRandomInitialConditionsFile(std::vector<uint32_t> *gridD
     PetscInt xMeshDimension = gridDimensions->at(0)+1;
     PetscInt yMeshDimension = gridDimensions->at(1)+1;
     PetscInt zMeshDimension = gridDimensions->at(2)+1;
-    TopOpt* opt = new TopOpt(xMeshDimension, yMeshDimension, zMeshDimension, penalty, minimumFilterRadius);
+    DomainCoordinates domain;
+    domain.xMinimum = 0;
+    domain.xMaximum = 0;
+    domain.yMinimum = 0;
+    domain.yMaximum = 0;
+    domain.zMinimum = 0;
+    domain.zMaximum = 0;
+    TopOpt* opt = new TopOpt(xMeshDimension, yMeshDimension, zMeshDimension, penalty, minimumFilterRadius, domain);
 
     /* Clone Petsc vectors from topopt */
     Vec initialPositions;
@@ -425,7 +488,9 @@ PetscErrorCode HypOptLib::runLoop(Hyperoptimization solver, PetscInt numItr, Fil
                                 solver.getIterationTimes(),
                                 solver.getTimesteps(),
                                 solver.getEnergyErrors(),
-                                solver.getVolFracs());
+                                solver.getVolFracs(),
+                                solver.getSolverIterationsSensitivity(),
+                                solver.getSolverIterationsHamiltonian());
 
         PetscPrintf(PETSC_COMM_WORLD, "# Total Runtime: %f\n# Average Iteration Time: %f\n# ***Note these timings include file saving***", t2 - t1, (t2-t1)/numItr);
         PetscPrintf(PETSC_COMM_WORLD, "\n# Hyperoptimization complete, cleaning up resources.\n");
@@ -434,3 +499,95 @@ PetscErrorCode HypOptLib::runLoop(Hyperoptimization solver, PetscInt numItr, Fil
 
    return 0;
 }
+
+void HypOptLib::setGridProperties(std::vector<uint32_t> *gridDimensions, DomainCoordinates domain)
+{
+    /* Check for valid input parameters */
+    if (3 != gridDimensions->size())
+    {
+        throw HypOptException("Invalid grid dimensions. Must provide a list of exactly three dimensions; x, y, and z.");
+    }
+
+    if (domain.xMinimum > domain.xMaximum)
+    {
+        throw HypOptException("Invalid domain x coordinates.");
+    }
+
+    if (domain.yMinimum > domain.yMaximum)
+    {
+        throw HypOptException("Invalid domain y coordinates.");
+    }
+
+    if (domain.zMinimum > domain.zMaximum)
+    {
+        throw HypOptException("Invalid domain z coordinates.");
+    }
+
+    /* Make deep copy to avoid Python cleaning up the variable */
+    for (auto gridDimension : *gridDimensions)
+        this->gridDimensions.push_back(gridDimension);
+
+    this->domain.xMinimum = domain.xMinimum;
+    this->domain.xMaximum = domain.xMaximum;
+    this->domain.yMinimum = domain.yMinimum;
+    this->domain.yMaximum = domain.yMaximum;
+    this->domain.zMinimum = domain.zMinimum;
+    this->domain.zMaximum = domain.zMaximum;
+
+    return;
+}
+
+void HypOptLib::setBoundaryConditions(std::vector<BoundaryCondition> *boundaryConditions)
+{
+    /* Sanitize boundary conditions */
+    if (0 == boundaryConditions->size())
+    {
+        throw HypOptException("ERROR! No boundary conditions supplied.");
+    }
+
+    for (auto boundaryCondition : *boundaryConditions)
+    {
+        if (boundaryCondition.xRange.size() > 0 && boundaryCondition.xRange.size() != 2)
+        {
+            throw HypOptException("ERROR! Bad boundary conditions supplied.");
+        }
+        else if (boundaryCondition.xRange[0] > boundaryCondition.xRange[1])
+        {
+            throw HypOptException("ERROR! Bad boundary conditions supplied, range minimum must be smaller or equal to the max.");
+        }
+
+        if (boundaryCondition.yRange.size() > 0 && boundaryCondition.yRange.size() != 2)
+        {
+            throw HypOptException("ERROR! Bad boundary conditions supplied.");
+        }
+        else if (boundaryCondition.yRange[0] > boundaryCondition.yRange[1])
+        {
+            throw HypOptException("ERROR! Bad boundary conditions supplied, range minimum must be smaller or equal to the max.");
+        }
+
+        if (boundaryCondition.zRange.size() > 0 && boundaryCondition.zRange.size() != 2)
+        {
+            throw HypOptException("ERROR! Bad boundary conditions supplied.");
+        }
+        else if (boundaryCondition.zRange[0] > boundaryCondition.zRange[1])
+        {
+            throw HypOptException("ERROR! Bad boundary conditions supplied, range minimum must be smaller or equal to the max.");
+        }
+
+        if ( (0 == boundaryCondition.xRange.size()) && 
+             (0 == boundaryCondition.yRange.size()) &&
+             (0 == boundaryCondition.zRange.size()) )
+        {
+            throw HypOptException("ERROR! Empty boundary condition supplied.");
+        }
+
+        if ( (boundaryCondition.degreesOfFreedom.end() != boundaryCondition.degreesOfFreedom.upper_bound(3)) ||
+             (boundaryCondition.degreesOfFreedom.empty())                                                    )
+        {
+            throw HypOptException("ERROR! Degrees of freedom is not valid.");
+        }
+
+        this->boundaryConditions.push_back(boundaryCondition);
+    }
+}
+

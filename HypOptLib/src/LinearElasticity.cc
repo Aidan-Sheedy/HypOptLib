@@ -9,7 +9,7 @@
  caused by the use of the program.
 */
 
-LinearElasticity::LinearElasticity(DM da_nodes) {
+LinearElasticity::LinearElasticity(DM da_nodes, std::vector<BoundaryCondition> boundaryConditions) {
     // Set pointers to null
     K   = NULL;
     U   = NULL;
@@ -27,7 +27,7 @@ LinearElasticity::LinearElasticity(DM da_nodes) {
 
     // Setup sitffness matrix, load vector and bcs (Dirichlet) for the design
     // problem
-    SetUpLoadAndBC(da_nodes);
+    SetUpLoadAndBC(da_nodes, boundaryConditions);
 }
 
 LinearElasticity::~LinearElasticity() {
@@ -43,7 +43,7 @@ LinearElasticity::~LinearElasticity() {
     }
 }
 
-PetscErrorCode LinearElasticity::SetUpLoadAndBC(DM da_nodes) {
+PetscErrorCode LinearElasticity::SetUpLoadAndBC(DM da_nodes, std::vector<BoundaryCondition> boundaryConditions) {
 
     PetscErrorCode ierr;
     // Extract information from input DM and create one for the linear elasticity
@@ -52,6 +52,10 @@ PetscErrorCode LinearElasticity::SetUpLoadAndBC(DM da_nodes) {
 
     // Stencil width: each node connects to a box around it - linear elements
     PetscInt stencilwidth = 1;
+
+    PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
+    PetscPrintf(PETSC_COMM_WORLD, "##################### Setting Boundary Conditions ######################\n");
+    PetscPrintf(PETSC_COMM_WORLD, "# Getting Nodal information\n");
 
     PetscScalar     dx, dy, dz;
     DMBoundaryType  bx, by, bz;
@@ -95,9 +99,14 @@ PetscErrorCode LinearElasticity::SetUpLoadAndBC(DM da_nodes) {
         // VecDestroy(&lcoor);
     }
 
+    PetscPrintf(PETSC_COMM_WORLD, "# Generate nodal mesh\n");
+
     // Create the nodal mesh
     DMDACreate3d(PETSC_COMM_WORLD, bx, by, bz, stype, nn[0], nn[1], nn[2], PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
                  numnodaldof, stencilwidth, 0, 0, 0, &(da_nodal));
+
+    PetscPrintf(PETSC_COMM_WORLD, "# Initialize\n");
+
     // Initialize
     DMSetFromOptions(da_nodal);
     DMSetUp(da_nodal);
@@ -145,32 +154,68 @@ PetscErrorCode LinearElasticity::SetUpLoadAndBC(DM da_nodes) {
     PetscScalar epsi = PetscMin(dx * 0.05, PetscMin(dy * 0.05, dz * 0.05));
 
     // Set the values:
-    // In this case: N = the wall at x=xmin is fully clamped
-    //               RHS(z) = sin(pi*y/Ly) at x=xmax,z=zmin;
-    // OR
-    //               RHS(z) = -0.1 at x=xmax,z=zmin;
-    PetscScalar LoadIntensity = -0.001;
-    for (PetscInt i = 0; i < nn; i++) {
-        // Make a wall with all dofs clamped
-        if (i % 3 == 0 && PetscAbsScalar(lcoorp[i] - xc[0]) < epsi) {
-            VecSetValueLocal(N, i, 0.0, INSERT_VALUES);
-            VecSetValueLocal(N, ++i, 0.0, INSERT_VALUES);
-            VecSetValueLocal(N, ++i, 0.0, INSERT_VALUES);
-        }
-        // Line load
-        if (i % 3 == 0 && PetscAbsScalar(lcoorp[i] - xc[1]) < epsi && PetscAbsScalar(lcoorp[i + 2] - xc[4]) < epsi) {
-            VecSetValueLocal(RHS, i + 2, LoadIntensity, INSERT_VALUES);
-        }
-        // Adjust the corners
-        if (i % 3 == 0 && PetscAbsScalar(lcoorp[i] - xc[1]) < epsi && PetscAbsScalar(lcoorp[i + 1] - xc[2]) < epsi &&
-            PetscAbsScalar(lcoorp[i + 2] - xc[4]) < epsi) {
-            VecSetValueLocal(RHS, i + 2, LoadIntensity / 2.0, INSERT_VALUES);
-        }
-        if (i % 3 == 0 && PetscAbsScalar(lcoorp[i] - xc[1]) < epsi && PetscAbsScalar(lcoorp[i + 1] - xc[3]) < epsi &&
-            PetscAbsScalar(lcoorp[i + 2] - xc[4]) < epsi) {
-            VecSetValueLocal(RHS, i + 2, LoadIntensity / 2.0, INSERT_VALUES);
+    PetscPrintf(PETSC_COMM_WORLD, "# Apply Boundary Conditions\n");
+
+    /* Loop over all elements in the grid */
+    for (PetscInt i = 0; i < nn; i+=3) {
+
+        /* Loop over all boundary conditions in case they affect this point */
+        for (auto boundaryCondition : boundaryConditions)
+        {
+            /* Check if coordinate is within BC range */
+            if ( (  (lcoorp[i] > boundaryCondition.xRange[0] && lcoorp[i] < boundaryCondition.xRange[1])    ||
+                    (PetscAbsScalar(lcoorp[i] - boundaryCondition.xRange[0]) < epsi)                        ||
+                    (PetscAbsScalar(lcoorp[i] - boundaryCondition.xRange[1]) < epsi) )                      &&
+                 (  (lcoorp[i+1] > boundaryCondition.yRange[0] && lcoorp[i+1] < boundaryCondition.yRange[1])  ||
+                    (PetscAbsScalar(lcoorp[i+1] - boundaryCondition.yRange[0]) < epsi)                      ||
+                    (PetscAbsScalar(lcoorp[i+1] - boundaryCondition.yRange[1]) < epsi) )                    &&
+                 (  (lcoorp[i+2] > boundaryCondition.zRange[0] && lcoorp[i+2] < boundaryCondition.zRange[1])  ||
+                    (PetscAbsScalar(lcoorp[i+2] - boundaryCondition.zRange[0]) < epsi)                      ||
+                    (PetscAbsScalar(lcoorp[i+2] - boundaryCondition.zRange[1]) < epsi) ) )
+            {
+                /* Check if X degree of freedom is included */
+                if (boundaryCondition.degreesOfFreedom.find(0) != boundaryCondition.degreesOfFreedom.end())
+                {
+                    if (FIXED_POINT == boundaryCondition.type)
+                    {
+                        VecSetValueLocal(N, i, 0.0, INSERT_VALUES);
+                    }
+                    else if (LOAD == boundaryCondition.type)
+                    {
+                        VecSetValueLocal(RHS, i, boundaryCondition.value, INSERT_VALUES);
+                    }
+                }
+
+                /* Check if Y degree of freedom is included */
+                if (boundaryCondition.degreesOfFreedom.find(1) != boundaryCondition.degreesOfFreedom.end())
+                {
+                    if (FIXED_POINT == boundaryCondition.type)
+                    {
+                        VecSetValueLocal(N, i+1, 0.0, INSERT_VALUES);
+                    }
+                    else if (LOAD == boundaryCondition.type)
+                    {
+                        VecSetValueLocal(RHS, i+1, boundaryCondition.value, INSERT_VALUES);
+                    }
+                }
+
+                /* Check if Z degree of freedom is included */
+                if (boundaryCondition.degreesOfFreedom.find(2) != boundaryCondition.degreesOfFreedom.end())
+                {
+                    if (FIXED_POINT == boundaryCondition.type)
+                    {
+                        VecSetValueLocal(N, i+2, 0.0, INSERT_VALUES);
+                    }
+                    else if (LOAD == boundaryCondition.type)
+                    {
+                        VecSetValueLocal(RHS, i+2, boundaryCondition.value, INSERT_VALUES);
+                    }
+                }
+            }
         }
     }
+
+    PetscPrintf(PETSC_COMM_WORLD, "# Done!\n");
 
     // VecDestroy(&lcoor);
     VecAssemblyBegin(N);
@@ -182,7 +227,7 @@ PetscErrorCode LinearElasticity::SetUpLoadAndBC(DM da_nodes) {
     return ierr;
 }
 
-PetscErrorCode LinearElasticity::SolveState(Vec xPhys, PetscScalar Emin, PetscScalar Emax, PetscScalar penal) {
+PetscErrorCode LinearElasticity::SolveState(Vec xPhys, PetscScalar Emin, PetscScalar Emax, PetscScalar penal, PetscInt *niterOut) {
 
     PetscErrorCode ierr;
 
@@ -222,18 +267,20 @@ PetscErrorCode LinearElasticity::SolveState(Vec xPhys, PetscScalar Emin, PetscSc
     t2 = MPI_Wtime();
     // PetscPrintf(PETSC_COMM_WORLD, "State solver:  iter: %i, rerr.: %e, time: %f\n", niter, rnorm, t2 - t1);
 
+    *niterOut = niter;
+
     return ierr;
 }
 
 PetscErrorCode LinearElasticity::ComputeObjectiveConstraints(PetscScalar* fx, PetscScalar* gx, Vec xPhys,
                                                              PetscScalar Emin, PetscScalar Emax, PetscScalar penal,
-                                                             PetscScalar volfrac) {
+                                                             PetscScalar volfrac, PetscInt *numItr) {
 
     // Error code
     PetscErrorCode ierr;
 
     // Solve state eqs
-    ierr = SolveState(xPhys, Emin, Emax, penal);
+    ierr = SolveState(xPhys, Emin, Emax, penal, numItr);
     CHKERRQ(ierr);
 
     // Get the FE mesh structure (from the nodal mesh)
@@ -300,12 +347,12 @@ PetscErrorCode LinearElasticity::ComputeObjectiveConstraints(PetscScalar* fx, Pe
 }
 
 PetscErrorCode LinearElasticity::ComputeSensitivities(Vec dfdx, Vec dgdx, Vec xPhys, PetscScalar Emin, PetscScalar Emax,
-                                                      PetscScalar penal, PetscScalar volfrac) {
+                                                      PetscScalar penal, PetscScalar volfrac, PetscInt *numItr) {
 
     PetscErrorCode ierr;
 
     // Solve state eqs
-    ierr = SolveState(xPhys, Emin, Emax, penal);
+    ierr = SolveState(xPhys, Emin, Emax, penal, numItr);
     CHKERRQ(ierr);
 
     // Get the FE mesh structure (from the nodal mesh)
@@ -370,12 +417,12 @@ PetscErrorCode LinearElasticity::ComputeSensitivities(Vec dfdx, Vec dgdx, Vec xP
 PetscErrorCode LinearElasticity::ComputeObjectiveConstraintsSensitivities(PetscScalar* fx, PetscScalar* gx, Vec dfdx,
                                                                           Vec dgdx, Vec xPhys, PetscScalar Emin,
                                                                           PetscScalar Emax, PetscScalar penal,
-                                                                          PetscScalar volfrac) {
+                                                                          PetscScalar volfrac, PetscInt *numItr) {
     // Errorcode
     PetscErrorCode ierr;
 
     // Solve state eqs
-    ierr = SolveState(xPhys, Emin, Emax, penal);
+    ierr = SolveState(xPhys, Emin, Emax, penal, numItr);
     CHKERRQ(ierr);
 
     // Get the FE mesh structure (from the nodal mesh)

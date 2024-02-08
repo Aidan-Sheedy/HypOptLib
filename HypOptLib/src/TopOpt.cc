@@ -15,22 +15,44 @@
 TopOpt::TopOpt(PetscInt nconstraints) {
 
     m = nconstraints;
-    Init(65, 33, 33, 3.0, 0.08);
+
+    DomainCoordinates domain;
+    domain.xMinimum = 0;
+    domain.xMaximum = 2;
+    domain.yMinimum = 0;
+    domain.yMaximum = 1;
+    domain.zMinimum = 0;
+    domain.zMaximum = 1;
+
+    Init(65, 33, 33, 3.0, 0.08, domain);
 }
 
 TopOpt::TopOpt() {
 
     m = 1;
-    Init(65, 33, 33, 3.0, 0.08);
+
+    DomainCoordinates domain;
+    domain.xMinimum = 0;
+    domain.xMaximum = 2;
+    domain.yMinimum = 0;
+    domain.yMaximum = 1;
+    domain.zMinimum = 0;
+    domain.zMaximum = 1;
+    Init(65, 33, 33, 3.0, 0.08, domain);
 }
 
-TopOpt::TopOpt(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscScalar penalty, PetscScalar minimumFilterRadius) {
+TopOpt::TopOpt(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscScalar penalty, PetscScalar minimumFilterRadius, DomainCoordinates domainCoordinates) {
 
     m = 1;
-    Init(xDimensions, yDimensions, zDimensions, penalty, minimumFilterRadius);
+    Init(xDimensions, yDimensions, zDimensions, penalty, minimumFilterRadius, domainCoordinates);
 }
 
-void TopOpt::Init(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscScalar penalty, PetscScalar minimumFilterRadius) { // Dummy constructor
+void TopOpt::Init(PetscInt xDimensions,
+                  PetscInt yDimensions,
+                  PetscInt zDimensions,
+                  PetscScalar penalty,
+                  PetscScalar minimumFilterRadius,
+                  DomainCoordinates domainCoordinates) { // Dummy constructor
 
     x        = NULL;
     xPhys    = NULL;
@@ -45,7 +67,7 @@ void TopOpt::Init(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensio
     U   = NULL;
     L   = NULL;
 
-    SetUp(xDimensions, yDimensions, zDimensions, penalty, minimumFilterRadius);
+    SetUp(xDimensions, yDimensions, zDimensions, penalty, minimumFilterRadius, domainCoordinates);
 }
 
 TopOpt::~TopOpt() {
@@ -105,19 +127,24 @@ TopOpt::~TopOpt() {
 
 // NO METHODS !
 // PetscErrorCode TopOpt::SetUp(Vec CRAPPY_VEC){
-PetscErrorCode TopOpt::SetUp(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscScalar penalty, PetscScalar minimumFilterRadius) {
+PetscErrorCode TopOpt::SetUp(PetscInt xDimensions,
+                             PetscInt yDimensions,
+                             PetscInt zDimensions,
+                             PetscScalar penalty,
+                             PetscScalar minimumFilterRadius,
+                             DomainCoordinates domainCoordinates) {
     PetscErrorCode ierr;
 
     // SET DEFAULTS for FE mesh and levels for MG solver
     nxyz[0] = xDimensions;  //33; //65; //
     nxyz[1] = yDimensions;  //17; //33; //
     nxyz[2] = zDimensions;  //17; //33; //
-    xc[0]   = 0.0; 
-    xc[1]   = 2.0;
-    xc[2]   = 0.0;
-    xc[3]   = 1.0;
-    xc[4]   = 0.0;
-    xc[5]   = 1.0;
+    xc[0]   = domainCoordinates.xMinimum; // 0.0; 
+    xc[1]   = domainCoordinates.xMaximum; // 2.0;
+    xc[2]   = domainCoordinates.yMinimum; // 0.0;
+    xc[3]   = domainCoordinates.yMaximum; // 1.0;
+    xc[4]   = domainCoordinates.zMinimum; // 0.0;
+    xc[5]   = domainCoordinates.zMaximum; // 1.0;
     nu      = 0.3;
     nlvls   = 4;
 

@@ -580,7 +580,11 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
     PetscCall(filter.filterSensitivities(positions, this->sensitivities, &constraintSensitivities));
     PetscCall(VecScale(this->sensitivities, -1));
 
+    /* Cleanup */
     PetscCall(VecDestroy(&filteredPositions));
+
+    /* Save for debugging and analysis */
+    this->sensitivitySolverIterations.push_back(sensitivitiesWrapper.getSolverIterationCount());
 
     return errorStatus;
 }
@@ -619,6 +623,9 @@ PetscErrorCode Hyperoptimization::calculateHamiltonian(Vec velocities, Vec posit
     this->compliance.push_back(currentCompliance);
 
     PetscCall(VecDestroy(&filteredPositions));
+
+    /* Save for debugging and analysis */
+    this->hamiltonianSolverIterations.push_back(sensitivitiesWrapper.getSolverIterationCount());
 
     return errorStatus;
 }

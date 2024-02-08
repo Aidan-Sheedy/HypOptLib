@@ -22,6 +22,7 @@
 #include "HypOptException.h"
 #include "Hyperoptimization.h"
 #include "FileManager.h"
+#include "HypOptParameters.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -47,7 +48,6 @@ class HypOptLib
          * Starts a fresh run with the provided parameters.
          *
          * @param iterationSaveRange    Range of iterations to save. Does not need to include the final iteration to support restarting, this is saved regardless.
-         * @param gridDimensions        Dimension of cells in the grid. The final mesh will have be one higher in each dimension.
          *
          * @throws HypOptException
          *
@@ -55,8 +55,7 @@ class HypOptLib
          *
          * @todo Some of these settings might lend themselves better to optional parameters, such as "setSavePath".
          */
-        uint32_t newRun(std::vector<uint32_t>  *iterationSaveRange,
-                        std::vector<uint32_t>  *gridDimensions);
+        uint32_t newRun(std::vector<uint32_t>  *iterationSaveRange);
 
         /**
          * Restarts a simualtion from the provided file path. All options are parsed from the metadata in the restart file.
@@ -265,6 +264,41 @@ class HypOptLib
             this->randomStartingValues = false;
         }
 
+        /**
+         * Sets the provided dimensions for any future simulations.
+         *
+         * @param gridDimensions x, y, and z coordinate dimensions for the grid. The mesh will be 1 larger in each direction.
+         * @param domain domain coordinates for the grid. This defines the actual unit lengths of each dimension. For example, a
+         * mesh with grid dimensions [32, 32, 32] and domain [(0, 1), (0, 1), (-1, 1)] means that each cell in the grid will be a
+         * rectangle, with the z axis twice the width of other two dimensions.
+         */
+        void setGridProperties(std::vector<uint32_t> *gridDimensions, DomainCoordinates domain);
+
+        /**
+         * Sets the provided list of boundary conditions.
+         *
+         * Each boundary condition is defined by its:
+         *  - Type: FIXED_POINT or LOAD.
+         *  - <x,y,z>Range: range in each dimension over which the condition applies. This can either be a range, ie 
+         *      x coordinates from [0, 4] or a single value, ie [4, 4]. Only points with x coordinate 4 will apply this BC.
+         *  - degreesOfFreedom: a set of either 0, 1, or 2, where 0 is the x axis, 1 is the y axis, and 2 is the z axis.
+         *  - value: for LOAD types, the scalar value for the load.
+         *
+         * @param boundaryConditions list of boundary conditions to apply. If an empty or invalid list is supplied, this will throw an error.
+         */
+        void setBoundaryConditions(std::vector<BoundaryCondition> *boundaryConditions);
+
+        /**
+         * Compatibility flag. Call this function if the restart file provided was generated before the custom mesh and boundary
+         * conditions were implemented.
+         *
+         * @warning if this flag is set, the grid properties and boundary conditions supplied *must* match the restart file.
+         */
+        void restartDoesntSupportCustomMesh()
+        {
+            this->restartUseNewMeshes = true;
+        }
+
     private:
         /**
          * Utility function, runs the design loop set up by either newRun or restartRun.
@@ -300,6 +334,11 @@ class HypOptLib
         uint32_t    saveFrequency           = 1;
         bool        randomStartingValues    = true;
         bool        saveHamiltonian         = false;
+        bool        restartUseNewMeshes     = false;
+
+        std::vector<uint32_t> gridDimensions;
+        DomainCoordinates domain = {0};
+        std::vector<BoundaryCondition> boundaryConditions;
 
         bool   variableTimestep = false;
         double timestepConstantAlpha = 1.1;
@@ -362,8 +401,34 @@ PYBIND11_MODULE(HypOptLib, m)
         .def("enableVariableTimestep",  &HypOptLib::enableVariableTimestep, "Enables variable timestepping with the provided parameters.")
         .def("generateRandomInitialConditionsFile",  &HypOptLib::generateRandomInitialConditionsFile, "Generates an HDF5 file with randomized initial position and velocity vectors.")
         .def("loadInitialConditionsFromFile",  &HypOptLib::loadInitialConditionsFromFile, "Optional setting to load initial conditions from a file.")
-        .def("setSaveFrequency",        &HypOptLib::setSaveFrequency, "Optional setting to change the frequency at which system states are saved within the iteration save range.")
-        .def("setMaxSimulationTime",    &HypOptLib::setMaxSimulationTime,   "Optional setting to finish simulation at a given time.");
+        .def("setSaveFrequency",        &HypOptLib::setSaveFrequency,       "Optional setting to change the frequency at which system states are saved within the iteration save range.")
+        .def("setMaxSimulationTime",    &HypOptLib::setMaxSimulationTime,   "Optional setting to finish simulation at a given time.")
+        .def("setGridProperties",       &HypOptLib::setGridProperties,      "Required settings for grid dimensions and domain.")
+        .def("setBoundaryConditions",   &HypOptLib::setBoundaryConditions,  "Required setting for problem boundary conditions.")
+        .def("restartDoesntSupportCustomMesh",   &HypOptLib::restartDoesntSupportCustomMesh,  "Optional setting for cross compatibility.");
+
+    py::enum_<BoundaryConditionType>(m, "BoundaryConditionType")
+        .value("FIXED_POINT",   FIXED_POINT)
+        .value("LOAD",          LOAD)
+        .export_values();
+
+    py::class_<BoundaryCondition>(m, "BoundaryCondition")
+        .def(py::init<>())
+        .def_readwrite("type",      &BoundaryCondition::type)
+        .def_readwrite("xRange",    &BoundaryCondition::xRange)
+        .def_readwrite("yRange",    &BoundaryCondition::yRange)
+        .def_readwrite("zRange",    &BoundaryCondition::zRange)
+        .def_readwrite("degreesOfFreedom", &BoundaryCondition::degreesOfFreedom)
+        .def_readwrite("value",     &BoundaryCondition::value);
+
+    py::class_<DomainCoordinates>(m, "DomainCoordinates")
+        .def(py::init<>())
+        .def_readwrite("xMinimum", &DomainCoordinates::xMinimum)
+        .def_readwrite("xMaximum", &DomainCoordinates::xMaximum)
+        .def_readwrite("yMinimum", &DomainCoordinates::yMinimum)
+        .def_readwrite("yMaximum", &DomainCoordinates::yMaximum)
+        .def_readwrite("zMinimum", &DomainCoordinates::zMinimum)
+        .def_readwrite("zMaximum", &DomainCoordinates::zMaximum);
 
     py::register_exception<HypOptException>(m, "HypOptError");
 }
