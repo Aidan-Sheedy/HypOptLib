@@ -45,7 +45,7 @@ of the following requirements. First, you may have to run
 
 +-------------+--------------------------------------------------+
 | Dependency  | Command (Ubuntu)                                 |
-+=============-+==================================================+
++=============-+=================================================+
 | cmake       | sudo apt install cmake                           |
 +-------------+--------------------------------------------------+
 | make        | sudo apt install make                            |
@@ -196,3 +196,31 @@ but a basic script works as follows:
 
 This basic script can then ammended with all the specific settings applicable to
 the desired simulation. Full documentation is provided :doc:`here </apidocs/pybind11>`.
+
+========================
+Building Documentation
+========================
+
+If for some reason you need to build the documentation locally, follow these steps.
+
+First, install these dependencies:
+
++-------------+--------------------------------------------------+
+| Dependency  | Command (Ubuntu)                                 |
++=============-+=================================================+
+| doxygen     | sudo apt install doxygen                         |
++-------------+--------------------------------------------------+
+| sphinx      | sudo apt install sphinx                          |
++-------------+--------------------------------------------------+
+| breathe     | pip3 install breathe                             |
++-------------+--------------------------------------------------+
+| rtd_theme   | pip3 install sphinx_rtd_theme                    |
++-------------+--------------------------------------------------+
+
+Then, run
+
+.. code-block:: bash
+
+    ./macros.sh build_docs
+
+to compile the documentation. The output will be available in `docs/build/html/index.html`.
