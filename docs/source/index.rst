@@ -1,56 +1,15 @@
-<!-- TopOpt_in_PETSc
-===============
-A 3D large-scale topology optimization code using PETSc
-===============
-
-The code (or framework) presented on this page is a fully parallel framework for conducting very large scale topology optimziation on structured grids. For more
-details see www.topopt.dtu.dk/PETSc.
-
-Updated and refactored to remove dependence of TopOpt.cc/h in all other classe,
-June, 2019, Niels Aage
-
-To clone repository:
->> git clone https://github.com/topopt/TopOpt_in_PETSc.git
-
-NOTE: The code requires PETSc version 3.11.0 or newer ! Also note that the code is not tested against the development branch on git.
-
-This code has been tested on:
-- Linux systems including: Ubuntu 18.04, Red hat enterprise linux 8
-
-This code requires the following external software to work:
-- PETSc version 3.11.4 or earlier (though never than 3.8.x)
-- Requires LAPACK/BLAS
-- Requires MPI
-
-Compile following rules in makefile_ref
-
-Normal compilation time of framework, e.g. 4s: "make topopt -j"
-
-Run the base example by typing e.g.: "mpirun -np 4 ./topopt"
-
-Postprocess results using Python 2.6: "bin2vtu #" where # refers to the iteration number
-
-Visualize using ParaView (version 5.7 or earlier)
-
-The expected result of the base code is the (but on a coarse mesh!) cantilever beam from:
-Aage, N., Andreassen, E., & Lazarov, B. S. (2015). Topology optimization using PETSc: An easy-to-use, fully parallel, open source topology optimization framework. Structural and Multidisciplinary Optimization, 51(3), 565–572. https://doi.org/10.1007/s00158-014-1157-0
-
-Extensions: 
-===============
-An extension of the code including manufacturing filters/constraints can be found here:
-https://github.com/edofersan/MaximumSize_on_TopOpt_in_PETSc
-
-
-_______________________________________________________________________________________________________________________________________________ -->
 
 =====================================
-HypOptLib
+HypOptLib documentation
 =====================================
 
 HypOptLib is a Petsc based semi-parallel implementation of hyperoptimization with a Python wrapper. The package is a
 fork of the topology optimization framework
 `TopOpt <https://www.topopt.mek.dtu.dk/apps-and-software/large-scale-topology-optimization-code-using-petsc>`_ by Aage
 et. al., along with some borrowed elements from the derivative `TopOptLib <https://doi.org/10.1007/s00158-021-03018-7>`_ by Smit et. al.
+
+.. figure:: ../figures/big_result_standin.png
+    :align: center
 
 Credit
 ===========================
@@ -62,6 +21,9 @@ Borrowed Material
 ===========================
 | **TopOpt** `Niels Aage, Erik Andreassen, Boyan Stefanov Lazarov <https://www.topopt.mek.dtu.dk/apps-and-software/large-scale-topology-optimization-code-using-petsc>`_
 | **TopOptLib** `Thijs Smit, Niels Aage, Stephen J. Ferguson, Benedikt Halgason <https://doi.org/10.1007/s00158-021-03018-7>`_
+
+.. note::
+   This documentation will *not* cover the physics, derivation, or overview of the hyperoptimization algorithm.
 
 Is HypOptLib right for you?
 ===========================
@@ -88,3 +50,19 @@ Any optimization problem that does not fall into the above two categories is pro
 large, parallelized workloads written explicitly for Petsc. While the classes are abstracted, the underlying data structures are all Petsc data structures. The
 hyperoptimization algorithm is, however, very lightweight. This means that generalized hyperoptimization codes in Python, C++, or really any language would serve
 much better for a large portion of optimization problems that can benefit from hyperoptimization.
+
+.. toctree::
+   :caption: Getting Started
+   :maxdepth: 2
+
+   background
+   installation
+   library
+   additions
+   fullapi
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`search`
