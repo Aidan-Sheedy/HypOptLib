@@ -40,7 +40,7 @@ class FileManager
          * @param penalty optimization penalty power setting
          * @param filterRadius minimum filter radius setting
          * @param numberSteps number of iterations to save
-         * @param numberSamples number of samples to save @todo figure out step vs sample
+         * @param saveFrequency number of iterations for each sample
          * @param NoseHooverChainOrder number of particles in the Nose Hoover chain
          * @param filePath path to save the HDF5 output file to
          * @param randomStartingValues indicates if the positions were set uniformly or not
@@ -59,7 +59,7 @@ class FileManager
                                       PetscScalar penalty,
                                       PetscScalar filterRadius,
                                       PetscInt numberSteps,
-                                      PetscInt numberSamples,
+                                      PetscInt saveFrequency,
                                       PetscInt NoseHooverChainOrder,
                                       std::string filePath,
                                       bool randomStartingValues,
@@ -250,7 +250,7 @@ class FileManager
          * Saves provided domain coordinates to an hdf5 file at the path provided.
          *
          * @param saveFileHDF5 viewer already initialized to hdf5 file to save
-         * @param boundaryConditions settings to save
+         * @param domain settings to save
          *
          * @returns 0 on success, PetscError otherwise.
          */
@@ -260,7 +260,7 @@ class FileManager
          * Gets domain coordinates from the provided viewer.
          *
          * @param saveFileHDF5 viewer already initialized to hdf5 file to save
-         * @param boundaryConditions [out] settings to populate
+         * @param domain [out] settings to populate
          *
          * @returns 0 on success, PetscError otherwise.
          */
@@ -284,7 +284,7 @@ class FileManager
         std::string saveFilePath;
         LinearElasticity *physics;
 
-        /** File-related constant attributes defined in FileManager.cc **/
+        /*- File-related constant attributes defined in FileManager.cc -*/
 
         /* HDF5 groups */
         static const std::string stateGroup;
@@ -301,7 +301,7 @@ class FileManager
         static const std::string penaltyName;
         static const std::string minRadiusName;
         static const std::string numStepName;
-        static const std::string numSampleName;
+        static const std::string saveFreqName;
         static const std::string chainOrdName;
 
         /* Simulation Data */

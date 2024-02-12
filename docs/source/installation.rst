@@ -9,12 +9,8 @@ appropriate requirements.
 HypOptLib can be setup in two main ways. A conveniance script `macros.sh` is
 provided which can automatically install any prerequisites along with other
 functionality. Alternatively, the prerequisites and their recommended method of
-installation are also provided here. For full documentation of the macros script
-see this link 
-
-.. todo::
-
-    include link.
+installation are also provided here. The full documentation of suported macros is
+provided :doc:`here </apidocs/macros>`.
 
 Automatic Install
 ========================
@@ -66,6 +62,9 @@ When configuring PETSc, you must add the `--download-hdf5` tag:
 .. code-block:: bash
 
     ./configure --download-hdf5
+
+Some operating systems or environments may also need additional configure flags. If the compilation
+fails, check the `PETSc install reference <https://petsc.org/release/install/install/>` for help.
 
 .. note::
 
@@ -123,6 +122,52 @@ A few examples are provided in `run/main.py`, but a basic script works as follow
 
     import HypOptLib
     solver = HypOptLib.HypOptLib()
+    domain = HypOptLib.DomainCoordinates()
+    fixedPoints = HypOptLib.BoundaryCondition()
+    forceCentre = HypOptLib.BoundaryCondition()
+    forceCorner1  = HypOptLib.BoundaryCondition()
+    forceCorner2  = HypOptLib.BoundaryCondition()
+
+    ######################################################################
+    # Setup domain. This describes a rectangular prism of dimensions 2x1x1, with cubic voxels.
+    domain.xMinimum = 0
+    domain.xMaximum = 2
+    domain.yMinimum = 0
+    domain.yMaximum = 1
+    domain.zMinimum = 0
+    domain.zMaximum = 1
+
+    gridDeimensions = [32, 16, 16]
+    solver.setGridProperties(gridDeimensions, domain)
+
+    ######################################################################
+    # Set up boundary conditions
+    #
+    # First boundary condition fixes the x=0 plane
+    fixedPoints.type    = HypOptLib.BoundaryConditionType.FIXED_POINT
+    fixedPoints.xRange  = [0, 0]
+    fixedPoints.yRange  = [0, 1]
+    fixedPoints.zRange  = [0, 1]
+    fixedPoints.degreesOfFreedom = {0, 1, 2}
+    fixedPoints.value   = 0
+
+    # Second boundary condition sets a line force at X=1, Z=0.5, in the Z DOF
+    forceCentre.type    = HypOptLib.BoundaryConditionType.LOAD
+    forceCentre.xRange  = [2, 2]
+    forceCentre.yRange  = [0, 1]
+    forceCentre.zRange  = [0.5, 0.5]
+    forceCentre.degreesOfFreedom = {2}
+    forceCentre.value   = -0.001
+
+    # Third boundary condition sets the (1,0,0.5) corner to be half the line force
+    forceCorner1.type    = HypOptLib.BoundaryConditionType.LOAD
+    forceCorner1.degreesOfFreedom = {2}
+    forceCorner1.xRange  = [2, 2]
+    forceCorner1.yRange  = [0, 0]
+    forceCorner1.zRange  = [0.5, 0.5]
+    forceCorner1.value   = -0.0005
+
+    solver.setBoundaryConditions([fixedPoints, forceCentre, forceCorner1, forceCorner2])
 
     # Set up solver settings
     solver.setTargetTemperature(0.1)
@@ -130,20 +175,10 @@ A few examples are provided in `run/main.py`, but a basic script works as follow
     solver.setMaximumIterations(1000)
 
     saveRange = [900, 1000]
-    gridDeimensions = [32, 16, 16]
 
     # Start Simulation
-    solver.newRun( saveRange, gridDeimensions )
+    solver.newRun(saveRange)
 
 This basic script can then ammended with all the specific settings applicable to
-the desired simulation. Full documentation is provided here. 
-
-.. todo::
-
-    Link this to the full documentation.
-
-
-
-
-
-
+the desired simulation. Examples are provided in the *examples* folder, and full
+documentation is provided :doc:`here </apidocs/pybind11>`.

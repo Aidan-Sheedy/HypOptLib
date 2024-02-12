@@ -8,17 +8,27 @@ Class Structure
 
 HypOptLib is built around the original TopOpt code, replacing the MMA algorithm with a new Hyperoptimization class.
 The Hyperoptimization class uses all Petsc types and functions, and has full parallelization support. The call
-structure is shown in :numref:`Fig1`, with the Pyhon library itself shown in blue. The library takes in parameters
-defined in Python, and instantiates all the classes required to run the design loop. The loop itself is then written
-and run in the Hyperoptimization class itself. Wrappers are provided for the Lagrange multipliers, filtering, and
-sensitivity calculations, shown in green. These define the functions specific to whatever problem is being solved. In
-the package provided, they define a compliance-optimized cantilivered beam. Some of this functionality is provided by
-the original TopOpt classes, shown highlighted in red in :numref:`Fig1`.
+structure is shown in :numref:`Fig1`, and follows these steps:
 
-There are three supporting classes unrelated to the solver itself. TopOpt is mostly used to initialize the finite
-element analysis solver and vectors, while the original use for storing all parameters is no longer used. The
-FileManager class provides all HDF5 file operations, and reads or writes the final outputs as required. Finally, a
-utility class PetscExtensions is provided to manage some parallelization functions not present in Petsc itself.
+    1. The problem is defined in a Python script. This includes boundary conditions and the mesh, the temperature,
+       timestep, iteration count, and a variety of other optional settings.
+
+    2. The Python file is interpreted by a Pybind11 wrapper, which wraps the HypOptLib class. This class contains basic
+       settings functions, such as options for meshes and boundary conditions, temperature, timestep, number of iterations, etc.
+
+    3. HypOptLib instantiates the hyperoptimization problem based on the settings provided by the problem file, and when indicated
+       starts the hyperoptimization simulation.
+
+    4. Each iteration, Hyperoptimization calls a number of wrappers for Lagrange Multiplier, Filter, and Sensitivity calculations.
+       These then either call implementation classes (provided by TopOpt by default), or implement the calculation directly.
+
+    5. At the end of each iteration, and at the end of the simulation, data is saved by the FileManager class. Files are saved in the
+       HDF5 format.
+
+    6. Finally, all classes from Hyperoptimization and down utilize calls to PETSc. Some small utility functions are also provided
+       by an extension class.
+
+It should be noted that three classes are used from the original TopOpt library: TopOpt, Filter, and Linear Elasticity.
 
 .. _Fig1:
 
@@ -26,9 +36,9 @@ utility class PetscExtensions is provided to manage some parallelization functio
     :width: 800
 
     Diagram indicating the class structure in HypOptLib. Classes at the top call classes below them.
-    Smaller classes on the right indicate supporting classes. HypOptLib is the library exposed via Pybind11, and
-    instantiates all classes. Hyperoptimization then calls the green wrapper classes, which provide lower level
-    functionality.
+    HypOptLib is the library exposed via Pybind11, and instantiates all classes. Hyperoptimization then
+    calls the green wrapper classes, which provide lower level functionality. All classes below and including
+    Hyperoptimization make calls to the PETSc library for computations and solvers.
 
 How to Modify HypOptLib
 =======================================
@@ -41,70 +51,49 @@ Topology optimization
 
 For topology optimization, some properties are exposed to the Python wrapper, such as:
 
- * Volume Fraction,
+ * Volume fraction,
  * Filter radius,
  * Penalty,
- * Grid dimensions.
+ * Grid dimensions,
+ * Boundary conditions,
+ * Temperature,
+ * Nose Hoover chain order.
 
-However, the rest of the problem definition is still written in C++. For an arbitrary new Topology optimization
-problem, the following classes may need to be modified:
+This should cover most generic topology optimization problems, but a few small features are not yet implemented:
 
- 1. **LinearElasticity** must be modified for all boundary conditions.
- 2. **LagrangeMultiplier** must be used as a base class for any new overwritten Lagrange Multiplier calculations.
- 3. **FilterWrapper** must be used as a base class for any new filters. The filter *must* be linear. **Hazhir is this true?**
- 4. **SensitivityWrapper** must be used as a base class for sensitivity and objective function calculations. 
+ * Void points or arbitrary-density fixed points,
+ * Non-rectilinear boundary conditions,
+    * This can be done manually in Python by generating arrays of single-point boundary conditions or something similar.
+      However, this might not be ideal and users may want to expand on the exisitng boundary condition options.
+ * Advanced initial condition files,
+    * This can be done by generating an HDF5 initial conditions file that matches the data format used by the library.
+      However, there is no support for standard 3D modelling data formats as initial condition inputs, such as stl.
+ * non-rectilinear meshes.
 
-The way the last three classes are written, any new implementation can create a new derived class which implements all
-the virtual functions provided in the base wrapper classes. This allows for simpler code that does not need to go and
-re-write old functions. For example, if all the original classes can be reused for a given problem, but the
-LagrangeMultiplier needs to be redone, then a new **ExampleLagrangeMultiplier** class can be created which uses the
-original **LagrangeMultiplier** class as a base, but overwrites the LagrangeMultiplier::computeLagrangeMultiplier
-function. This can then be passed to the Hyperoptimization when initializing, and the new
-ExampleLagrangeMultiplier::computeLagrangeMultiplier function will be used without having to change the original
-Hyperoptimization code.
+Additionally, changes to the filtering, Lagrange Multipliers, or Linear Elasticity calculations must be done in C++,
+as the have not been exposed to Python.
 
 Generic optimization problems
 ---------------------------------------
 
-For any other optimization problem, the above section still holds true. However, it is possible (if not likely) that
-the HypOptLib class will need to be rewritten. For ease of use, it is recommended that as many parameters be exposed to
-the Python wrapper if possible if changes are being made to the HypOptLib class, to avoid having to re-compile the
-library whenver changes are needed.
+For any other optimization problem, the above section still holds true. However, new sensitivity, filter, and Lagrange Multiplier
+calcualtions will probably be necessary. However, there is no need to overwrite the existing classes. Instead, derived classes of
+each type can be created which inherit the original wrapper functions. So long as the derived classes have new implementations of
+the virtual functions provided in the wrapper, the Hyperoptimization class will call the derived implementations instead of the
+wrapper.
 
+For example, if all the original classes can be reused for a given problem but the LagrangeMultiplier needs to be redone, then a
+new **ExampleLagrangeMultiplier** class can be created. This will inherit the original **LagrangeMultiplier** class, but will
+overwrite **LagrangeMultiplier::computeLagrangeMultiplier**. **ExampleLagrangeMultiplier** can then be passed to **Hyperoptimization**
+when initializing, and the new **ExampleLagrangeMultiplier::computeLagrangeMultiplier** function will be used without having to change
+the original Hyperoptimization code.
 
-Additional Information
-=======================================
+The following files can be changed based on the requirements for the new optimization problem:
 
-There are two main additional features included with HypOptLib: the macros script and analysis scripts. These are both
-provided as optional tools to make running and using HypOptLib easier, but are not required in the slightest.
+ 1. **LinearElasticity** must be modified for all boundary conditions.
+ 2. **LagrangeMultiplier** must be used as a base class for any new overwritten Lagrange Multiplier calculations.
+ 3. **FilterWrapper** must be used as a base class for any new filters. The filter *must* be linear. **Hazhir is this true?**
+ 4. **SensitivityWrapper** must be used as a base class for sensitivity and objective function calculations.
 
-Analysis Scripts
----------------------------------------
-
-Several Python scripts are provided for basic data analysis. They are as follows:
-
-.. warning::
-    **TODO** Fill out the rest of this section
-
-macros.sh
----------------------------------------
-
-The macros script is intended to take all the command line operations usually necessary for building, compiling,
-installing, etc. and reduce them to one script. For example, with cmake a fresh build will require making a build
-folder, running cmake, and finally running make:
-
-.. code-block:: bash
-
-    mkdir build
-    cd build
-    cmake ..
-    make
-
-While this might not seem difficult, when actively working on a project this can get tiresome - especially when adding
-lots of files, or debugging makefile or cmake issues. As such, actions such as this have been reduced to a single
-command line option in the build.sh script.
-
-The full capabilities of the script are as follows:
-
-.. warning::
-    **TODO** Layout the options for the macros script
+Finally, if for any reason HypOptLib needs to be edited (for example to add additional parameters to save), it is recommended that
+as much is exposed to the Python wrapper as possible to avoid re-compiling the library.

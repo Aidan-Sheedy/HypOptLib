@@ -39,7 +39,7 @@ const std::string FileManager::zDimName      = "nelz";
 const std::string FileManager::penaltyName   = "penal";
 const std::string FileManager::minRadiusName = "rmin";
 const std::string FileManager::numStepName   = "stepN";
-const std::string FileManager::numSampleName = "sampleN";
+const std::string FileManager::saveFreqName = "saveFreq";
 const std::string FileManager::chainOrdName  = "ch_order";
 
 /* Simulation Data */
@@ -71,7 +71,7 @@ PetscErrorCode FileManager::initializeHDF5(PetscScalar  volfrac,
                                            PetscScalar  penalty,
                                            PetscScalar  filterRadius,
                                            PetscInt     numberSteps,
-                                           PetscInt     numberSamples,
+                                           PetscInt     saveFrequency,
                                            PetscInt     NoseHooverChainOrder,
                                            std::string  filePath,
                                            bool         randomStartingValues,
@@ -107,7 +107,7 @@ PetscErrorCode FileManager::initializeHDF5(PetscScalar  volfrac,
     PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, settingsGroup.c_str(), penaltyName.c_str(),      PETSC_SCALAR,   &penalty));
     PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, settingsGroup.c_str(), minRadiusName.c_str(),    PETSC_SCALAR,   &filterRadius));
     PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, settingsGroup.c_str(), numStepName.c_str(),      PETSC_INT,      &numberSteps));
-    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, settingsGroup.c_str(), numSampleName.c_str(),    PETSC_INT,      &numberSamples)); /** @todo IMPLEMENT */
+    PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, settingsGroup.c_str(), saveFreqName.c_str(),     PETSC_INT,      &saveFrequency));
     PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, settingsGroup.c_str(), chainOrdName.c_str(),     PETSC_INT,      &NoseHooverChainOrder));
     PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, settingsGroup.c_str(), "Random Init Conditions", PETSC_BOOL,     &randomStartingValues));
     PetscCall(PetscViewerHDF5WriteAttribute(saveFileHDF5, settingsGroup.c_str(), "Init Conditions File",   PETSC_STRING,   initialConditionsFile.c_str()));

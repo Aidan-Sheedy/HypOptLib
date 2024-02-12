@@ -8,3 +8,6 @@ HypOptParameters
    :protected-members:
    :private-members:
    :undoc-members:
+
+.. doxygenenum:: verbosity
+   :project: HypOptLib

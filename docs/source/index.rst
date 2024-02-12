@@ -36,13 +36,13 @@ is probably not best suited to.
 What is HypOptLib for?
 ---------------------------
 As it was built off the TopOpt Petsc code, there are two main use cases that HypOptLib excels at. The first is any derivative topology optimization code
-from topopt; ie anything TopOpt can do, HypOptLib can apply hyperoptimization to it. It might take some work to expose the mesh settings to the Python
-wrapper, or to add in support for passive elements, but it is certainly doable. In short, with modification HypOptLib will be compatible with any artbitrary
-topology optimization problem that is supported by TopOpt.
+from topopt; ie anything TopOpt can do, HypOptLib can apply hyperoptimization to it. Most problems can be adapted in Python, and some more advanced cases might
+need a little more work in the C++ code. But in general, with few modification HypOptLib will be compatible with any artbitrary topology optimization problem that
+is supported by TopOpt.
 
 The second use case that HypOptLib is suitable for is optimization problems that use Petsc in general. The Hyperoptimization class was abstracted from the
 original TopOpt code, with wrappers provided for filtering, Lagrange Multipliers, and sensitivities. As such, problems that require the high-performance, scalable
-solvers that Petsc provides for their sensitivity calculations can simply implement derived classes for each wrapper and use the Hyperoptimization unchanged.
+solvers that Petsc provides for their sensitivity calculations can simply implement derived classes for each wrapper and use rest of HypOptLib unchanged.
 
 What is it not for?
 ---------------------------
@@ -58,17 +58,11 @@ much better for a large portion of optimization problems that can benefit from h
    background
    installation
    library
+   additions
    fullapi
-
-..  .. toctree::
-..    :caption: Library Reference
-..    :maxdepth: 4
-
-..    api/library_root.rst
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`

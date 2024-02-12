@@ -60,7 +60,7 @@ class HypOptLib
         /**
          * Restarts a simualtion from the provided file path. All options are parsed from the metadata in the restart file.
          *
-         * @param filePath Location of the restart file.
+         * @param restartPath Location of the restart file.
          * @param iterationSaveRange Range of iterations to save. Does not need to include the final iteration to support restarting, this is saved regardless.
          *
          * @throws HypOptException
@@ -278,10 +278,14 @@ class HypOptLib
          * Sets the provided list of boundary conditions.
          *
          * Each boundary condition is defined by its:
+         *
          *  - Type: FIXED_POINT or LOAD.
+         *
          *  - <x,y,z>Range: range in each dimension over which the condition applies. This can either be a range, ie 
          *      x coordinates from [0, 4] or a single value, ie [4, 4]. Only points with x coordinate 4 will apply this BC.
+         *
          *  - degreesOfFreedom: a set of either 0, 1, or 2, where 0 is the x axis, 1 is the y axis, and 2 is the z axis.
+         *
          *  - value: for LOAD types, the scalar value for the load.
          *
          * @param boundaryConditions list of boundary conditions to apply. If an empty or invalid list is supplied, this will throw an error.

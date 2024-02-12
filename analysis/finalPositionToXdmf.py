@@ -1,47 +1,36 @@
 #!/usr/bin/env python3
 
-import h5py
-import numpy as np
+'''
+This file provides a function to generate an xmf file which interfaces the final position of a
+HypOptLib output file with ParaView.
 
-fileName = "hypopt_output_big_0deg_0.01dt_4319"
+Author: Aidan Sheedy
+
+TODO This file needs license information.
+'''
+
+import h5py
+import os
+from utilities import *
 
 # Copy the desired data set 
-filePath = '/mnt/g/Projects/ENPH455/PETSc_paper_github/Hyperoptimization_using_Petsc/outputs/finally_good_for_real/big_0deg/' + fileName + '.h5'
-dataGroup = '/Dataset'
+file = 'SampleFiles/sample_cantilever_restart.h5'
 
+# Get the dimensions of the file
+hdf5File = h5py.File(file)
+mesh_dimensions = [hdf5File["/Setting"].attrs["nelx"]+1, hdf5File["/Setting"].attrs["nely"]+1, hdf5File["/Setting"].attrs["nelz"]+1]
+hdf5File.close()
 
-ogFile = h5py.File(filePath)
-tempFile = h5py.File("../xmfFiles/" + fileName + ".h5", "w")
+# The xdmf file should be in the same directory as the original hdf5 file.
+filePath = os.path.dirname(file)
+file_justname = os.path.splitext(os.path.basename(file))[0]
+xdmfOutputPath = filePath + "/" + file_justname + "_final_position.xmf"
 
-tempFile["Final Position"] = np.asarray(ogFile[dataGroup + "/State/iteration4319"])
-
-ogFile.close()
-tempFile.close
+print("Writing xmf file:", xdmfOutputPath)
 
 # Create the xdmf file
-xdmfOutputPath = "../xmfFiles/" + fileName + ".xmf"
-
-xdmfFile = open(xdmfOutputPath, "w")
-
-# Write the header
-xdmfFile.write("<?xml version=\"1.0\" ?>\n")
-xdmfFile.write("<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n")
-xdmfFile.write("<Xdmf Version=\"2.0\">\n")
-
-# Write the mesh description
-xdmfFile.write("\t<Domain>\n")
-
-xdmfFile.write("\t\t<Grid Name =\"mesh\" GridType=\"Uniform\">\n")
-xdmfFile.write("\t\t\t<Topology TopologyType=\"3DCoRectMesh\" Dimensions=\"65 65 128\"/>\n")
-xdmfFile.write("\t\t\t<Geometry GeometryType=\"ORIGIN_DXDYDZ\">\n")
-xdmfFile.write("\t\t\t\t<DataItem DataType=\"Float\" Dimensions=\"3\" Format=\"XML\">0.0 0.0 0.0</DataItem>\n")
-xdmfFile.write("\t\t\t\t<DataItem DataType=\"Float\" Dimensions=\"3\" Format=\"XML\">1.0 1.0 1.0</DataItem>\n")
-xdmfFile.write("\t\t\t</Geometry>\n")
-xdmfFile.write("\t\t\t<Attribute Name=\"Position\" AttributeType=\"Scalar\" Center=\"Cell\">\n")
-xdmfFile.write("\t\t\t\t<DataItem Dimensions=\"16 16 32\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n")
-xdmfFile.write("\t\t\t\t " + fileName + ".h5:/Final Position\n")
-xdmfFile.write("\t\t\t\t</DataItem>\n")
-xdmfFile.write("\t\t\t</Attribute>\n")
-xdmfFile.write("\t\t</Grid>\n")
-xdmfFile.write("\t</Domain>\n")
-xdmfFile.write("</Xdmf>\n")
+xmfFile = xmf(xdmfOutputPath)
+xmfFile.startGenericFile()
+xmfFile.insertRectilinearMesh(mesh_dimensions)
+xmfFile.insertAttribute(file_justname + ".h5", "Final Position", "Dataset/Final Position")
+xmfFile.closeGenericFile()

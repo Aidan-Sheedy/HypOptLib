@@ -43,7 +43,7 @@ class FilterWrapper
         /**
          * Applies the Topopt standard filter to the given design variables.
          *
-         * @warning unfiltered and filtered must be different objects (Petsc limitation). ie
+         * @warning Unfiltered and filtered must be different objects (Petsc limitation). ie
          * cannot call FilterWrapper::filterDesignVariable(y, y).
          *
          * @param unfiltered the design variable to filter.

@@ -7,5 +7,4 @@ figures
 .vscode
 *.h5
 doxyxml
-analysis
 docs/source/api

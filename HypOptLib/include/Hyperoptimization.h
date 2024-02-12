@@ -71,21 +71,21 @@ class Hyperoptimization
          * for new runs with no restart variables. Chains the initialization by calling the overloaded
          * initialization function.
          *
-         * @param sensitivitiesWrapper
-         * @param filter
-         * @param lagMult
-         * @param temperature
-         * @param initialPositions
-         * @param initialVelocities
-         * @param NHChainOrder
-         * @param numIterations
-         * @param timestep
-         * @param fileManager
-         * @param iterationSaveRange
-         * @param saveHamiltonian
-         * @param volumeFraction
-         * @param saveFrequency
-         * @param maxSimTime
+         * @param sensitivitiesWrapper wrapper called to calculate sensitivities.
+         * @param filter wrapper called to calculate all filtering.
+         * @param lagMult Lagrangian Multiplier wrapper.
+         * @param temperature target temperature for the system.
+         * @param initialPositions position vectors initialized to desired distribution.
+         * @param initialVelocities velocity vectors initialized to desired distribution.
+         * @param NHChainOrder number of Nose Hoover particles.
+         * @param numIterations number of iterations to simulate.
+         * @param timestep timestep between iterations.
+         * @param fileManager contains helper functions for saving states and iterations.
+         * @param iterationSaveRange range between which to save position data.
+         * @param saveHamiltonian optional parameter to save Hamiltonian and Compliance data.
+         * @param volumeFraction target volume fraction.
+         * @param saveFrequency frequency at which to save position state within save range.
+         * @param maxSimTime if set, maxmimum amount of simulation time to iterate for.
          *
          * @returns 0 on success, PetscError otherwise.
          */
@@ -110,25 +110,25 @@ class Hyperoptimization
          *
          * Sets up the design loop. This version takes restarted Nose Hoover chain variables.
          *
-         * @param sensitivitiesWrapper
-         * @param lagMult
-         * @param filter
-         * @param fileManager
-         * @param NHChainOrder
-         * @param timestep
-         * @param temperature
-         * @param numIterations
-         * @param iterationSaveRange
-         * @param initialPositions
-         * @param initialVelocities
-         * @param initialEvenNoseHooverPosition
-         * @param initialEvenNoseHooverVelocity
-         * @param initialOddNoseHooverPosition
-         * @param initialOddNoseHooverVelocity
-         * @param saveHamiltonian
-         * @param volumeFraction
-         * @param saveFrequency
-         * @param maxSimTime
+         * @param sensitivitiesWrapper wrapper called to calculate sensitivities.
+         * @param lagMult Lagrangian Multiplier wrapper.
+         * @param filter wrapper called to calculate all filtering.
+         * @param fileManager contains helper functions for saving states and iterations.
+         * @param NHChainOrder number of Nose Hoover particles.
+         * @param timestep timestep between iterations.
+         * @param temperature target temperature for the system.
+         * @param numIterations number of iterations to simulate.
+         * @param iterationSaveRange range between which to save position data.
+         * @param initialPositions position vectors initialized to desired distribution.
+         * @param initialVelocities velocity vectors initialized to desired distribution.
+         * @param initialEvenNoseHooverPosition initial positions of Nose Hoover particles with even indices
+         * @param initialEvenNoseHooverVelocity initial velocities of Nose Hoover particles with even indices
+         * @param initialOddNoseHooverPosition initial positions of Nose Hoover particles with odd indices
+         * @param initialOddNoseHooverVelocity initial velocities of Nose Hoover particles with odd indices
+         * @param saveHamiltonian optional parameter to save Hamiltonian and Compliance data.
+         * @param volumeFraction target volume fraction.
+         * @param saveFrequency frequency at which to save position state within save range.
+         * @param maxSimTime if set, maxmimum amount of simulation time to iterate for.
          *
          * @returns 0 on success, PetscError otherwise.
          */
@@ -155,7 +155,7 @@ class Hyperoptimization
         /**
          * Sets up variable timestepping.
          *
-         * @todo fill out info on how the algorithm works.
+         * @todo fill out info on how the algorithm works when Hazhir is ready.
          *
          * @param timestepConstantAlpha
          * @param timestepConstantBeta
@@ -240,8 +240,27 @@ class Hyperoptimization
          */
         bool getSaveHamiltonian() {return saveHamiltonian;}
 
+        /**
+         * Accessor for timestep value at each iteration.
+         *
+         * @returns a vector of the timestep used at each iteration.
+         */
         std::vector<PetscScalar> getTimesteps() {return timesteps;}
+
+        /**
+         * Accessor for energy error at each timestep.
+         *
+         * @todo update description when variable timestep is finished.
+         *
+         * @returns a vector of the energy error at each iteration.
+         */
         std::vector<PetscScalar> getEnergyErrors() {return energyErrors;}
+
+        /**
+         * Accessor for volume fraction at each iteration.
+         *
+         * @returns a vector of the systems volume fraction calculated at each iteration
+         */
         std::vector<PetscScalar> getVolFracs() {return volfracs;}
 
     private:
@@ -260,7 +279,7 @@ class Hyperoptimization
          *  - \f$ T      \f$ is target temperature
          *  - \f$ Q_1    \f$ is mass of the first Nose Hoover particle
          *
-         * @param allNoseHooverVelocities vector of particle velocities with which to calculate the accelerations
+         * @param allVelocities vector of particle velocities with which to calculate the accelerations
          * @param accelerations [out] vector of Nose Hoover accelerations (only first index populated)
          *
          * @returns 0 on success, PetscError otherwise.
