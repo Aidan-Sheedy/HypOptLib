@@ -37,15 +37,17 @@ Manual Install
 ========================
 
 For manual install, clone the HypOptLib repository as above, then install each
-of the following requirements. First, you may have to run
+of the following requirements. You may have to run
 
 .. code-block:: bash
 
     sudo apt update
 
+before installing dependencies.
+
 +-------------+--------------------------------------------------+
 | Dependency  | Command (Ubuntu)                                 |
-+=============-+=================================================+
++=============+==================================================+
 | cmake       | sudo apt install cmake                           |
 +-------------+--------------------------------------------------+
 | make        | sudo apt install make                            |
@@ -207,7 +209,7 @@ First, install these dependencies:
 
 +-------------+--------------------------------------------------+
 | Dependency  | Command (Ubuntu)                                 |
-+=============-+=================================================+
++=============+==================================================+
 | doxygen     | sudo apt install doxygen                         |
 +-------------+--------------------------------------------------+
 | sphinx      | sudo apt install sphinx                          |
