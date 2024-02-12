@@ -111,15 +111,15 @@ and follow the manual build instructions.
 
 2. Run the automatic install macro:
 
-    ```
-    ./macros.sh setup
-    ```
+```bash
+./macros.sh setup
+```
         
     You may need to change the executable permissions first:
 
-    ```
-    chmod +rwx ./macros.sh
-    ```
+```bash
+chmod +rwx ./macros.sh
+```
 
 3. Restart the console
 
@@ -128,9 +128,9 @@ and follow the manual build instructions.
 For manual install, clone the HypOptLib repository as above, then install each
 of the following requirements. You may have to run
 
-    ```
-    sudo apt update
-    ```
+```bash
+sudo apt update
+```
 
 before installing dependencies.
 
@@ -148,9 +148,9 @@ Finally install PETSc, following the instructions here: https://petsc.org/releas
 
 When configuring PETSc, you must add the `--download-hdf5` tag:
 
-    ```
-    ./configure --download-hdf5
-    ```
+```bash
+./configure --download-hdf5
+```
 
 Some operating systems or environments may also need additional configure flags. If the compilation
 fails, check the `PETSc install reference <https://petsc.org/release/install/install/>` for help.
