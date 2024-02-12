@@ -109,16 +109,10 @@ and follow the manual build instructions.
 
 1. Clone the HypOptLib repository from https://github.com/Aidan-Sheedy/Hyperoptimization_using_Petsc.git.
 
-2. Run the automatic install macro:
+2. Run the automatic install macro.
 
 ```bash
 ./macros.sh setup
-```
-        
-    You may need to change the executable permissions first:
-
-```bash
-chmod +rwx ./macros.sh
 ```
 
 3. Restart the console
