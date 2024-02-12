@@ -37,23 +37,29 @@ Manual Install
 ========================
 
 For manual install, clone the HypOptLib repository as above, then install each
-of the following requirements:
+of the following requirements. First, you may have to run
 
-+------------+--------------------------------------------------+
-| Dependency | Command (Ubuntu)                                 |
-+============+==================================================+
-| cmake      | sudo apt install cmake                           |
-+------------+--------------------------------------------------+
-| make       | sudo apt install make                            |
-+------------+--------------------------------------------------+
-| mpi        | sudo apt install mpich                           |
-+------------+--------------------------------------------------+
-| Pybind11   | pip3 install "pybind11[global]"                  |
-+------------+--------------------------------------------------+
-| HDF5       | sudo apt install libhdf5-serial-dev              |
-+------------+--------------------------------------------------+
-| BLAS       | sudo apt-get install libblas-dev liblapack-dev   |
-+------------+--------------------------------------------------+
+.. code-block:: bash
+
+    sudo apt update
+
++-------------+--------------------------------------------------+
+| Dependency  | Command (Ubuntu)                                 |
++=============-+==================================================+
+| cmake       | sudo apt install cmake                           |
++-------------+--------------------------------------------------+
+| make        | sudo apt install make                            |
++-------------+--------------------------------------------------+
+| mpi         | sudo apt install mpich                           |
++-------------+--------------------------------------------------+
+| python pip3 | sudo apt install python3-pip                     |
++-------------+--------------------------------------------------+
+| Pybind11    | pip3 install "pybind11[global]"                  |
++-------------+--------------------------------------------------+
+| HDF5        | sudo apt install libhdf5-serial-dev              |
++-------------+--------------------------------------------------+
+| BLAS        | sudo apt-get install libblas-dev liblapack-dev   |
++-------------+--------------------------------------------------+
 
 Finally install PETSc, following the instructions here: https://petsc.org/release/install/download/.
 
@@ -114,7 +120,17 @@ Running HypOptLib
 
 The HypOptLib library can be imported just like any other Python library. The library binary
 can either be added to the PATH, or can simply be in the same directory as the Python script.
-A few examples are provided in `run/main.py`, but a basic script works as follows:
+
+To run a python script with MPI, use the command:
+
+.. code-block:: bash
+
+    mpiexec -n x Python3 ./pythonScript.py
+
+where x is the number of cores to run on. It is recommended to use an even number of cores.
+
+A few example scripts are provided in `examples/`, as well as a barebones script in `run/main.py`,
+but a basic script works as follows:
 
 .. code-block:: python
 
@@ -173,12 +189,10 @@ A few examples are provided in `run/main.py`, but a basic script works as follow
     solver.setTargetTemperature(0.1)
     solver.setTimestep(0.001)
     solver.setMaximumIterations(1000)
-
     saveRange = [900, 1000]
 
     # Start Simulation
     solver.newRun(saveRange)
 
 This basic script can then ammended with all the specific settings applicable to
-the desired simulation. Examples are provided in the *examples* folder, and full
-documentation is provided :doc:`here </apidocs/pybind11>`.
+the desired simulation. Full documentation is provided :doc:`here </apidocs/pybind11>`.
