@@ -47,8 +47,8 @@ ________________________________________________________________________________
 
 HypOptLib is a Petsc based semi-parallel implementation of hyperoptimization with a Python wrapper. The package is a
 fork of the topology optimization framework
-`TopOpt <https://www.topopt.mek.dtu.dk/apps-and-software/large-scale-topology-optimization-code-using-petsc>`_ by Aage
-et. al., along with some borrowed elements from the derivative `TopOptLib <https://doi.org/10.1007/s00158-021-03018-7>`_ by Smit et. al.
+[TopOpt](https://www.topopt.mek.dtu.dk/apps-and-software/large-scale-topology-optimization-code-using-petsc) by Aage
+et. al., along with some borrowed elements from the derivative [TopOptLib](https://doi.org/10.1007/s00158-021-03018-7) by Smit et. al.
 
 ## Credit
 
@@ -60,15 +60,15 @@ et. al., along with some borrowed elements from the derivative `TopOptLib <https
 
 ## Borrowed Material
 
-**TopOpt** `Niels Aage, Erik Andreassen, Boyan Stefanov Lazarov <https://www.topopt.mek.dtu.dk/apps-and-software/large-scale-topology-optimization-code-using-petsc>`_
+**TopOpt** [Niels Aage, Erik Andreassen, Boyan Stefanov Lazarov](https://www.topopt.mek.dtu.dk/apps-and-software/large-scale-topology-optimization-code-using-petsc)
 
-**TopOptLib** `Thijs Smit, Niels Aage, Stephen J. Ferguson, Benedikt Halgason <https://doi.org/10.1007/s00158-021-03018-7>`_
+**TopOptLib** [Thijs Smit, Niels Aage, Stephen J. Ferguson, Benedikt Halgason](https://doi.org/10.1007/s00158-021-03018-7)
 
 ## Is HypOptLib right for you?
 
 HypOptLib is intended to demonstrate the possibilities of hyperoptimization, to show off what it can do. As such, it was primarily
 intended to showcase hyperoptimization on large topology optimization problems. This is why it was built off
-`TopOpt <https://www.topopt.mek.dtu.dk/apps-and-software/large-scale-topology-optimization-code-using-petsc>`_, which is arguably the
+[TopOpt](https://www.topopt.mek.dtu.dk/apps-and-software/large-scale-topology-optimization-code-using-petsc), which is arguably the
 highest performing large-scale topology optimization solver to date. As such, there are use cases HypOptLib is good for, and those it
 is probably not best suited to.
 
@@ -134,23 +134,15 @@ of the following requirements. You may have to run
 
 before installing dependencies.
 
-+-------------+--------------------------------------------------+
 | Dependency  | Command (Ubuntu)                                 |
-+=============+==================================================+
+|:-----------:|:-------------------------------------------------|
 | cmake       | sudo apt install cmake                           |
-+-------------+--------------------------------------------------+
 | make        | sudo apt install make                            |
-+-------------+--------------------------------------------------+
 | mpi         | sudo apt install mpich                           |
-+-------------+--------------------------------------------------+
 | python pip3 | sudo apt install python3-pip                     |
-+-------------+--------------------------------------------------+
 | Pybind11    | pip3 install "pybind11[global]"                  |
-+-------------+--------------------------------------------------+
 | HDF5        | sudo apt install libhdf5-serial-dev              |
-+-------------+--------------------------------------------------+
 | BLAS        | sudo apt-get install libblas-dev liblapack-dev   |
-+-------------+--------------------------------------------------+
 
 Finally install PETSc, following the instructions here: https://petsc.org/release/install/download/.
 
