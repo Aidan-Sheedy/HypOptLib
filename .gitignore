@@ -1,0 +1,10 @@
+build
+bin
+run/HypOptLib*
+pybind11
+outputs
+figures
+.vscode
+*.h5
+doxyxml
+docs/source/api
