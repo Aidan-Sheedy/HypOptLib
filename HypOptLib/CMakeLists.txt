@@ -22,7 +22,8 @@ list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake-modules)
 # find_package(PythonInterp 3.7 REQUIRED)
 # find_package(PythonLibs 3.7 REQUIRED)
 
-set(PETSC_DIR "/mnt/g/Projects/ENPH455/PETSc_paper_github/petsc")
+get_filename_component(PETSC_ABS_DIR "../../petsc" ABSOLUTE)
+set(PETSC_DIR ${PETSC_ABS_DIR})
 set(PETSC_ARCH "arch-linux-c-debug")
 
 find_package(pybind11 REQUIRED)
