@@ -52,8 +52,6 @@ class HypOptLib
          * @throws HypOptException
          *
          * @return 0 on success, or error. Only used to align with Petsc exception handling.
-         *
-         * @todo Some of these settings might lend themselves better to optional parameters, such as "setSavePath".
          */
         uint32_t newRun(std::vector<uint32_t>  *iterationSaveRange);
 
@@ -66,8 +64,6 @@ class HypOptLib
          * @throws HypOptException
          *
          * @return 0 on success, or error. Only used to align with Petsc exception handling.
-         *
-         * @todo Some of these settings might lend themselves better to optional parameters, such as "setSavePath".
          */
         uint32_t restartRun(std::string restartPath,
                             std::vector<uint32_t> *iterationSaveRange);
@@ -124,8 +120,6 @@ class HypOptLib
         /**
          * Recommended setting. Sets the number of Nose Hoover particles in the chain.
          *
-         * @todo confirm if this has to be even, if yes set a check here
-         *
          * @note defaults to 10.
          */
         void setNoseHooverChainOrder(uint32_t noseHooverChainOrder)
@@ -135,8 +129,6 @@ class HypOptLib
 
         /**
          * Recommended setting. Sets the number of Nose Hoover particles in the chain.
-         *
-         * @todo topopt settings does NOT currently get this (silence it?)
          *
          * @note defaults to 100.
          */
@@ -171,8 +163,6 @@ class HypOptLib
 
         /**
          * Optional setting. Sets the volume fraction.
-         *
-         * @todo topopt settings does NOT currently get this value.
          *
          * @note defaults to 0.12.
          */
@@ -258,7 +248,7 @@ class HypOptLib
          */
         void loadInitialConditionsFromFile(std::string filePath)
         {
-            /** @todo check if this is a real path somewhere down the line */
+            /* This will fail in Petsc if this path is invalid, let them deal with it. */
             this->initialConditionsFile = filePath;
             this->initialConditionsFromFile = true;
             this->randomStartingValues = false;

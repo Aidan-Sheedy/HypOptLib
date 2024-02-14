@@ -17,9 +17,7 @@
 /*
  Authors: Niels Aage, Erik Andreassen, Boyan Lazarov, August 2013
  Updated: June 2019, Niels Aage
-
-  TODO - Correct information here.
- Updated: November 2023, Aidan Sheedy
+ Updated: February 2024, Aidan Sheedy
 
 Copyright (C) 2013-2019,
 
@@ -44,9 +42,6 @@ Copyright (C) 2013-2019,
 /**
  * Class used for storing parameters related to topology optimization. Mostly unused by HypOptLib,
  * but some initialization is still necessary.
- *
- * @todo - Correct updated informatino here (if I even updated it)
- * @todo - finish passing in as many parameters as possible used by Hyperoptimization.
  *
  * @note This is a legacy Topopt class, and as such is left undocumented. Only minor modifications
  * were done from the original source code for hyperoptimization compatibility.

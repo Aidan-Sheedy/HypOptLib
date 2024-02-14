@@ -45,8 +45,6 @@ class Hyperoptimization
 
         /**
          * Destructor.
-         *
-         * @todo set this up properly.
          */
         ~Hyperoptimization()
         {
@@ -155,7 +153,7 @@ class Hyperoptimization
         /**
          * Sets up variable timestepping.
          *
-         * @todo fill out info on how the algorithm works when Hazhir is ready.
+         * @todo fill out info on how the algorithm works when fully implemented.
          *
          * @param timestepConstantAlpha
          * @param timestepConstantBeta
@@ -176,16 +174,12 @@ class Hyperoptimization
         /**
          * Accessor for final vector of Hamiltonians after running design loop.
          *
-         * @todo throw exception if save Hamiltonian is false?
-         *
          * @returns vector of Hamiltonians for each iteration.
          */
         std::vector<PetscScalar> getHamiltonians() {return hamiltonians;}
 
         /**
          * Accessor for final vector of Compliance after running design loop.
-         *
-         * @todo throw exception if save Hamiltonian is false?
          *
          * @returns vector of Compliance for each iteration.
          */
@@ -482,7 +476,7 @@ class Hyperoptimization
 
     private:
         FileManager* fileManager;
-        SensitivitiesWrapper sensitivitiesWrapper; /** @todo find a better name than sensitivitiesWrapper */
+        SensitivitiesWrapper sensitivitiesWrapper;
         FilterWrapper filter;
         LagrangeMultiplier lagMult;
         PetscScalar temperature;
@@ -492,7 +486,7 @@ class Hyperoptimization
         PetscInt numConstraints;
         PetscScalar timestep;
         PetscScalar halfTimestep;
-        Vec evenNoseHooverMass; /** Mass of Nose Hoover particles.  @note This is initialized automatically to 1 for now, a better constructor should be made later. */
+        Vec evenNoseHooverMass; /** Mass of Nose Hoover particles.  @note This is initialized automatically to 1 for now, can be exposed to python if necessary. */
         Vec oddNoseHooverMass;
         HypOptParameters prevState;
         Vec newPosition;

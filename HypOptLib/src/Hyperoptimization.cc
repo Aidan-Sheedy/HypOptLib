@@ -19,15 +19,6 @@
 #include <ctime>
 #include <chrono>
 
-/**
- * @todo ALL CALLS TO VecSetValues MUST be followed up by "VecAssemblyBegin()" and "VecAssemblyEnd()"!!!!
- *       GO THROUGH THE WHOLE CODE AND UPDATE THIS.
- *
- * @todo ALL CALLS TO VecGetArrayRead MUST be followed up by "VecRestoreArrayRead()"!!!!!!!!!
- *
- * @todo Convert ALL wrappers to use pass by reference using &!!!!!! This will ensure that overwritten functions
- * are actually processed properly.
-*/
 PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWrapper,
                                         FilterWrapper&          filter,
                                         LagrangeMultiplier&     lagMult,
@@ -103,7 +94,9 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
 
     if (NULL == fileManager)
     {
-        throw HypOptException("Null pointer error.");
+        PetscPrintf(PETSC_COMM_WORLD, "--------------------- Hyperoptimization Error Message --------------------------------------------");
+        PetscPrintf(PETSC_COMM_WORLD, "ERROR!! Null pointer error.");
+        return PETSC_ERR_ARG_NULL;
     }
 
     if (2 != iterationSaveRange.size()          ||
@@ -111,10 +104,53 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
         iterationSaveRange[1] > numIterations   ||
         iterationSaveRange[0] > iterationSaveRange[1])
     {
-        throw HypOptException("Invalid iteration save range. Must be two integers between 0 and the number of iterations, the first lower than the second.");
+        PetscPrintf(PETSC_COMM_WORLD, "--------------------- Hyperoptimization Error Message --------------------------------------------");
+        PetscPrintf(PETSC_COMM_WORLD, "ERROR!! Invalid iteration save range. Must be two integers between 0 and the number of iterations, the first lower than the second.\n");
+        return PETSC_ERR_ARG_OUTOFRANGE;
     }
 
-    /** @todo Make sure all the Vecs are being properly instantiated, this is not correct! */
+    if (0 > temperature)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "--------------------- Hyperoptimization Error Message --------------------------------------------");
+        PetscPrintf(PETSC_COMM_WORLD, "ERROR!! Temperature is less than 0. That doesn't make sense!");
+        return PETSC_ERR_ARG_OUTOFRANGE;
+    }
+
+    if (0 != NHChainOrder % 2)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "--------------------- Hyperoptimization Error Message --------------------------------------------");
+        PetscPrintf(PETSC_COMM_WORLD, "ERROR!! Nose Hoover chain order must be even.");
+        return PETSC_ERR_ARG_OUTOFRANGE;
+    }
+
+    if (0 >= numIterations)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "--------------------- Hyperoptimization Error Message --------------------------------------------");
+        PetscPrintf(PETSC_COMM_WORLD, "ERROR!! Number of iterations is less than or equal to 0. That doesn't make sense!");
+        return PETSC_ERR_ARG_OUTOFRANGE;
+    }
+
+    if (0 >= timestep)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "--------------------- Hyperoptimization Error Message --------------------------------------------");
+        PetscPrintf(PETSC_COMM_WORLD, "ERROR!! Timestep is less than or equal to 0. That doesn't make sense!");
+        return PETSC_ERR_ARG_OUTOFRANGE;
+    }
+
+    if (0 >= volumeFraction)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "--------------------- Hyperoptimization Error Message --------------------------------------------");
+        PetscPrintf(PETSC_COMM_WORLD, "ERROR!! Volume fraction is less than or equal to 0. That doesn't make sense!");
+        return PETSC_ERR_ARG_OUTOFRANGE;
+    }
+
+    if (0 > maxSimTime)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "--------------------- Hyperoptimization Error Message --------------------------------------------");
+        PetscPrintf(PETSC_COMM_WORLD, "ERROR!! maxSimTime is less than 0. That doesn't make sense!");
+        return PETSC_ERR_ARG_OUTOFRANGE;
+    }
+
     this->fileManager           = fileManager;
     this->sensitivitiesWrapper  = sensitivitiesWrapper;
     this->filter                = filter;
@@ -133,7 +169,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
      *
      * While C++ does have good dynamic memory alloocation, it is better to pre-allocate and hit memory limits
      * NOW instead of 5 minutes before the end of a simulation. Also -- it is possible that the max number of iterations
-     * is higher than the number of iterations actually needed - but again we don't konw that so better to allocate more
+     * is higher than the number of iterations actually needed - but again we don't know that so better to allocate more
      * than necessary.
      */
     LagrangeMultipliers.reserve(numIterations);
@@ -146,7 +182,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
     volfracs.reserve(numIterations);
 
     /* Locally set initial values */
-    this->numConstraints    = 1; /** @todo This may need to be passed in */
+    this->numConstraints    = 1; /** @todo This may need to be passed in for more advanced optimization problems. */
     this->halfTimestep      = timestep/2;
 
     /* Initialize vectors */
@@ -163,15 +199,15 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
     PetscCall(VecDuplicate(initialEvenNoseHooverVelocity,   &(this->prevState.evenNoseHooverVelocity)));
     PetscCall(VecDuplicate(initialOddNoseHooverPosition,    &(this->prevState.oddNoseHooverPosition)));
     PetscCall(VecDuplicate(initialOddNoseHooverVelocity,    &(this->prevState.oddNoseHooverVelocity)));
-    PetscCall(VecDuplicate(initialPositions,                &(this->sensitivities))); /** @todo Make sure this is correct! */
-    PetscCall(VecDuplicate(initialPositions,                &(this->constraintSensitivities))); /** @todo Make sure this is correct! */
+    PetscCall(VecDuplicate(initialPositions,                &(this->sensitivities)));
+    PetscCall(VecDuplicate(initialPositions,                &(this->constraintSensitivities)));
 
     /* Set initial values */
     PetscCall(VecSet(this->oddNoseHooverMass,       1.0));
     PetscCall(VecSet(this->evenNoseHooverMass,      1.0));
     PetscCall(VecSet(this->newPosition,             0.0));
-    PetscCall(VecSet(this->sensitivities,           1.0)); /** @todo IMPLEMENT*/
-    PetscCall(VecSet(this->constraintSensitivities, 1.0)); /** @todo IMPLEMENT*/
+    PetscCall(VecSet(this->sensitivities,           1.0));
+    PetscCall(VecSet(this->constraintSensitivities, 1.0));
 
     PetscCall(VecCopy(initialPositions,                 this->prevState.position));
     PetscCall(VecCopy(initialVelocities,                this->prevState.velocity));
@@ -193,8 +229,6 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
         hamiltonians.reserve(numIterations);
         compliance.reserve(numIterations);
     }
-
- /** @todo print out hypopt settings */
 
     PetscPrintf(PETSC_COMM_WORLD, "# ------------ Hyperoptimization Settings ------------\n");
     PetscPrintf(PETSC_COMM_WORLD, "# -targetTemperature: %f\n", temperature);
@@ -222,12 +256,6 @@ void Hyperoptimization::enableVariableTimestep(PetscScalar timestepConstantAlpha
     this->variableTimestep = true;
 }
 
-// /** @todo FIX THIS */
-// Hyperoptimization::~Hyperoptimization()
-// {
-
-// }
-
 PetscErrorCode Hyperoptimization::calculateFirstNoseHooverAcceleration(Vec allVelocities, Vec *accelerations)
 {
     PetscErrorCode errorStatus = 0;
@@ -250,9 +278,7 @@ PetscErrorCode Hyperoptimization::calculateFirstNoseHooverAcceleration(Vec allVe
     PetscScalar vsquared = result;
     result = (result - (this->numParticles - this->numConstraints) * this->temperature) / firstNoseHooverMass;
 
-    /**
-     * @todo This should be a Vec Copy?
-    */
+    /* Set result to only the first acceleration. */
     PetscCall(VecSetValue(*accelerations, 0, result, INSERT_VALUES));
 
     PetscCall(VecAssemblyBegin(*accelerations));

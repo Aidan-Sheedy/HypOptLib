@@ -6,9 +6,7 @@
 /* -----------------------------------------------------------------------------
 Authors: Niels Aage, Erik Andreassen, Boyan Lazarov, August 2013
 Updated: June 2019, Niels Aage
-
-  TODO - Correct information here.
- Updated: November 2023, Aidan Sheedy
+Updated: November 2023, Aidan Sheedy (one comment)
 
 Copyright (C) 2013-2019,
 
@@ -32,8 +30,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 /**
  * Class used for a variety of filtering functions for design variables and sensitivities
- *
- * @todo - Correct updated informatino here (if I even updated it)
  *
  * @note This is a legacy Topopt class, and as such is left undocumented. Only minor modifications
  * were done from the original source code for hyperoptimization compatibility.
