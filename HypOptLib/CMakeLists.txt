@@ -1,5 +1,6 @@
 # Author: Thijs Smit, Dec 2020
-# Copyright (C) 2020 ETH Zurich
+# Updated: Aidan Sheedy, February 2024
+# Copyright (C) 2020-2024 ETH Zurich
 
 # Disclaimer:
 # The authors reserves all rights but does not guaranty that the code is

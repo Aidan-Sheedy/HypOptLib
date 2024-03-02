@@ -9,7 +9,21 @@ by the order of the files provided. The function assumes constant timestepped fi
 
 Author: Aidan Sheedy
 
-TODO This file needs license information.
+Copyright (C) 2024 Aidan Sheedy
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import h5py
@@ -40,7 +54,7 @@ def generateTimestepXmf(files, saveFreq=0):
         # Assume timestep is the same for each file.
         timestep = original_file["/Setting"].attrs["dt"]
 
-        # TODO Earlier files did not save the frequency option. If this is passed in, don't
+        # Earlier files did not save the frequency option. If this is passed in, don't
         # try to parse it from the hdf5 file.
         if 0 == saveFreq:
             saveFreq = timestep = original_file["/Setting"].attrs["saveFreq"]

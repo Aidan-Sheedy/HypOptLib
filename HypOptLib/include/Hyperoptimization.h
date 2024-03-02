@@ -5,7 +5,21 @@
  *
  * @author Aidan Sheedy
  *
- * @todo THIS FILE NEEDS LICENSE INFORMATION
+ * Copyright (C) 2024 Aidan Sheedy
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
 ******************************************************************************/
 
@@ -101,6 +115,7 @@ class Hyperoptimization
                             bool saveHamiltonian,
                             PetscScalar volumeFraction,
                             uint32_t saveFrequency,
+                            verbosity printInfo,
                             double maxSimTime = std::numeric_limits<double>::max());
 
         /**
@@ -148,6 +163,7 @@ class Hyperoptimization
                             bool saveHamiltonian,
                             PetscScalar volumeFraction,
                             uint32_t saveFrequency,
+                            verbosity printInfo,
                             double maxSimTime = std::numeric_limits<double>::max());
 
         /**
@@ -499,7 +515,7 @@ class Hyperoptimization
         std::vector<PetscScalar> iterationTimes;
         std::vector<PetscInt> sensitivitySolverIterations;
         std::vector<PetscInt> hamiltonianSolverIterations;
-        verbosity printInfo = INFO; /** @todo make this a pass-in variable/debugging parameter! */
+        verbosity printInfo = INFO;
         bool doneSolving = false;
         bool saveHamiltonian;
 

@@ -3,7 +3,21 @@
  *
  * This file describes the layout of the Hyperoptimization class.
  *
- * @todo THIS FILE NEEDS LICENSE INFORMATION
+ * Copyright (C) 2024 Aidan Sheedy
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
 ******************************************************************************/
 
@@ -33,6 +47,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
                                         bool                    saveHamiltonian,
                                         PetscScalar             volumeFraction,
                                         uint32_t                saveFrequency,
+                                        verbosity               printInfo,
                                         double                  maxSimTime)
 {
     PetscCall(VecCreate(PETSC_COMM_WORLD, &(prevState.evenNoseHooverPosition)));
@@ -67,6 +82,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
                 saveHamiltonian,
                 volumeFraction,
                 saveFrequency,
+                printInfo,
                 maxSimTime);
 }
 
@@ -88,6 +104,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
                                         bool                    saveHamiltonian,
                                         PetscScalar             volumeFraction,
                                         uint32_t                saveFrequency,
+                                        verbosity               printInfo,
                                         double                  maxSimTime)
 {
     PetscErrorCode errorStatus = 0;
@@ -164,6 +181,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
     this->volumeFraction        = volumeFraction;
     this->maxSimTime            = maxSimTime;
     this->saveFrequency         = saveFrequency;
+    this->printInfo             = printInfo;
 
     /* Pre-allocate vector memory
      *

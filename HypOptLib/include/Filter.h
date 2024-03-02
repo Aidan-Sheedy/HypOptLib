@@ -11,11 +11,9 @@
 /* -----------------------------------------------------------------------------
 Authors: Niels Aage, Erik Andreassen, Boyan Lazarov, August 2013
  Updated: June 2019, Niels Aage
+ Updated: February 2024, Aidan Sheedy
 
- TODO - Correct information here.
- Updated: November 2023, Aidan Sheedy
-
- Copyright (C) 2013-2019,
+ Copyright (C) 2013-2024,
 
 This Filter implementation is licensed under Version 2.1 of the GNU
 Lesser General Public License.

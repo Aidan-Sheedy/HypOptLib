@@ -4,7 +4,8 @@
 /*
  Authors: Niels Aage, Erik Andreassen, Boyan Lazarov, August 2013
  Updated: June 2019, Niels Aage
- Copyright (C) 2013-2019,
+ Updated: Aidan Sheedy, February 2024
+ Copyright (C) 2013-2024,
 
  Disclaimer:
  The authors reserves all rights but does not guaranty that the code is

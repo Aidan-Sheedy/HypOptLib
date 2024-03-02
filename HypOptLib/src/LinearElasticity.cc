@@ -2,6 +2,7 @@
 
 /*
  Authors: Niels Aage, Erik Andreassen, Boyan Lazarov, August 2013
+ Updated: Aidan Sheedy, February 2024
 
  Disclaimer:
  The authors reserves all rights but does not guaranty that the code is
@@ -9,7 +10,7 @@
  caused by the use of the program.
 */
 
-LinearElasticity::LinearElasticity(DM da_nodes, std::vector<BoundaryCondition> boundaryConditions) {
+LinearElasticity::LinearElasticity(DM da_nodes, std::vector<BoundaryCondition> boundaryConditions, PetscInt maxitsGlobal) {
     // Set pointers to null
     K   = NULL;
     U   = NULL;
@@ -17,6 +18,7 @@ LinearElasticity::LinearElasticity(DM da_nodes, std::vector<BoundaryCondition> b
     N   = NULL;
     ksp = NULL;
     da_nodal;
+    this->maxitsGlobal = maxitsGlobal;
 
     // Parameters - to be changed on read of variables
     nu    = 0.3;
@@ -676,7 +678,6 @@ PetscErrorCode LinearElasticity::SetUpSolver() {
     PetscScalar atol         = 1.0e-50;
     PetscScalar dtol         = 1.0e5;
     PetscInt    restart      = 100;
-    PetscInt    maxitsGlobal = 200;
 
     // Coarsegrid solver
     PetscScalar coarse_rtol    = 1.0e-8;

@@ -19,7 +19,7 @@
  Updated: June 2019, Niels Aage
  Updated: February 2024, Aidan Sheedy
 
-Copyright (C) 2013-2019,
+Copyright (C) 2013-2024,
 
  Disclaimer:
  The authors reserves all rights but does not guaranty that the code is

@@ -9,5 +9,3 @@ HypOptParameters
    :private-members:
    :undoc-members:
 
-.. doxygenenum:: verbosity
-   :project: HypOptLib

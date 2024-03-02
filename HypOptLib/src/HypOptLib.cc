@@ -5,7 +5,21 @@
  *
  * @author Aidan Sheedy
  *
- * @todo THIS FILE NEEDS LICENSE INFORMATION
+ * Copyright (C) 2024 Aidan Sheedy
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  ******************************************************************************/
 
@@ -55,7 +69,7 @@ uint32_t HypOptLib::newRun(std::vector<uint32_t>  *iterationSaveRange)
     TopOpt* opt = new TopOpt(xMeshDimension, yMeshDimension, zMeshDimension, penalty, minimumFilterRadius, domain);
 
     // STEP 2: THE PHYSICS
-    LinearElasticity* physics = new LinearElasticity(opt->da_nodes, boundaryConditions);
+    LinearElasticity* physics = new LinearElasticity(opt->da_nodes, boundaryConditions, maxFeaIterations);
 
     // STEP 3: THE FILTERING
     Filter* filter = new Filter(opt->da_nodes, opt->xPhys, opt->filter, opt->rmin);
@@ -140,6 +154,7 @@ uint32_t HypOptLib::newRun(std::vector<uint32_t>  *iterationSaveRange)
                                         saveHamiltonian,
                                         volumeFraction,
                                         saveFrequency,
+                                        printInfo,
                                         maxSimTime);
 
     if (0 != status)
@@ -221,7 +236,7 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
     }
 
     TopOpt* opt                 = new TopOpt(xMeshDimension, yMeshDimension, zMeshDimension, penalty, minimumFilterRadius, newDomain);
-    LinearElasticity* physics   = new LinearElasticity(opt->da_nodes, newBCs);
+    LinearElasticity* physics   = new LinearElasticity(opt->da_nodes, newBCs, maxFeaIterations);
     Filter* filter              = new Filter(opt->da_nodes, opt->xPhys, opt->filter, opt->rmin);
 
     PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
@@ -304,6 +319,7 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
                                         saveHamiltonian,
                                         volumeFraction,
                                         saveFrequency,
+                                        printInfo,
                                         maxSimTime);
 
     if (0 != status)

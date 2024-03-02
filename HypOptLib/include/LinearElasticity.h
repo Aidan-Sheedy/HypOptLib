@@ -15,7 +15,7 @@
  Updated: June 2019, Niels Aage
  Updated: February 2024, Aidan Sheedy
 
- Copyright (C) 2013-2019,
+ Copyright (C) 2013-2024,
 
  Disclaimer:
  The authors reserves all rights but does not guaranty that the code is
@@ -33,7 +33,7 @@ class LinearElasticity {
 
   public:
     // Constructor
-    LinearElasticity(DM da_nodes, std::vector<BoundaryCondition> boundaryConditions);
+    LinearElasticity(DM da_nodes, std::vector<BoundaryCondition> boundaryConditions, PetscInt maxitsGlobal);
 
     // Destructor
     ~LinearElasticity();
@@ -93,6 +93,7 @@ class LinearElasticity {
     KSP         ksp; // Pointer to the KSP object i.e. the linear solver+prec
     PetscInt    nlvls;
     PetscScalar nu; // Possions ratio
+    PetscInt    maxitsGlobal;
 
     // Set up the FE mesh and data structures
     PetscErrorCode SetUpLoadAndBC(DM da_nodes, std::vector<BoundaryCondition> boundaryConditions);
