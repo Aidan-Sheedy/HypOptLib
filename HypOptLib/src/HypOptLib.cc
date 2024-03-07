@@ -215,6 +215,11 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
                                 &previousDomain,
                                 &prevBoundaryConditions);
 
+    if (overrideRestartTimestep)
+    {
+        timestep = this->timestep;
+    }
+
     // STEP 1: THE OPTIMIZATION PARAMETERS, DATA AND MESH (!!! THE DMDA !!!)
 
     PetscInt xMeshDimension = gridDimensions.at(0)+1;

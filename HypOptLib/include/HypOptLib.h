@@ -335,6 +335,14 @@ class HypOptLib
             this->maxFeaIterations = maxIterations;
         }
 
+        /**
+         * Optional setting to use the timestep provided by HypOptLib::setTimestep instead of the value in the restart file.
+         */
+        void overrideRestartFileTimestep()
+        {
+            this->overrideRestartTimestep = true;
+        }
+
     private:
         /**
          * Utility function, runs the design loop set up by either newRun or restartRun.
@@ -372,6 +380,7 @@ class HypOptLib
         bool        randomStartingValues    = true;
         bool        saveHamiltonian         = false;
         bool        restartUseNewMeshes     = false;
+        bool        overrideRestartTimestep = false;
         verbosity   printInfo               = INFO;
         uint32_t    maxFeaIterations        = 200;
 
@@ -447,7 +456,8 @@ PYBIND11_MODULE(HypOptLib, m)
         .def("setBoundaryConditions",   &HypOptLib::setBoundaryConditions,  "Required setting for problem boundary conditions.")
         .def("restartDoesntSupportCustomMesh",   &HypOptLib::restartDoesntSupportCustomMesh,  "Optional setting for cross compatibility.")
         .def("setLoggingVerbosity",     &HypOptLib::setLoggingVerbosity,    "Optional setting for output verbosity.")
-        .def("setMaximumFeaSolverIterations", &HypOptLib::setMaximumFeaSolverIterations, "Optional setting to restrict number of iterations on the Krylov Method iterative solver.");
+        .def("setMaximumFeaSolverIterations", &HypOptLib::setMaximumFeaSolverIterations, "Optional setting to restrict number of iterations on the Krylov Method iterative solver.")
+        .def("overrideRestartFileTimestep", &HypOptLib::overrideRestartFileTimestep, "Optional setting to use the provided timestep instead of the one in the restart file.");
 
     py::enum_<BoundaryConditionType>(m, "BoundaryConditionType")
         .value("FIXED_POINT",   FIXED_POINT)
