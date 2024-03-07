@@ -62,6 +62,22 @@ class Hyperoptimization
          */
         ~Hyperoptimization()
         {
+            if (inSimulation)
+            {
+                fileManager->saveFinalState(saveHamiltonian,
+                                            prevState,
+                                            hamiltonians,
+                                            compliance,
+                                            temperatures,
+                                            LagrangeMultipliers,
+                                            iterationTimes,
+                                            timesteps,
+                                            energyErrors,
+                                            volfracs,
+                                            sensitivitySolverIterations,
+                                            hamiltonianSolverIterations);
+            }
+
             VecDestroy(&evenNoseHooverMass);
             VecDestroy(&oddNoseHooverMass);
             VecDestroy(&newPosition);
@@ -516,7 +532,7 @@ class Hyperoptimization
         std::vector<PetscInt> sensitivitySolverIterations;
         std::vector<PetscInt> hamiltonianSolverIterations;
         verbosity printInfo = INFO;
-        bool doneSolving = false;
+        bool inSimulation = false;
         bool saveHamiltonian;
 
         bool saveRangeUseSimTime = false;

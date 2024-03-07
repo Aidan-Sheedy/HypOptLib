@@ -728,6 +728,8 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
     PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &(newOddNoseHooverVelocity)));
     PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &extendedOddNoseHooverVelocity));
 
+    inSimulation = true;
+
     for (PetscInt iteration = 0; (iteration < this->numIterations) && (maxSimTime > simTime); iteration++)
     {
         if (false == rerun)
@@ -747,9 +749,8 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
         calculateVelocityIncrement(prevState.oddNoseHooverVelocity, prevState.evenNoseHooverVelocity, tempOddNoseHooverAccelerations, this->halfTimestep, &tempOddNoseHooverVelocity);
 
         /* Get objective and constraint sensitivities */
-// vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv maybe here too? vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
         calculateSensitvities(tempPosition);
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ maybe here too? ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
         /* Get first nose hoover velocity */
         PetscScalar firstNoseHooverVelocity = 0;
 
@@ -913,6 +914,19 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                 }
             }
 
+            /* Check if positions contain valid information. If not, exit gracefully. */
+            PetscBool isSimulationInvalid;
+            PetscExtensions::VecContainsNanOrInf(newPosition, &isSimulationInvalid);
+            if (PETSC_TRUE == isSimulationInvalid)
+            {
+                PetscPrintf(PETSC_COMM_WORLD, "\n\nvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n");
+                PetscPrintf(PETSC_COMM_WORLD, "---------------------------------------------------------\n");
+                PetscPrintf(PETSC_COMM_WORLD, "Warning! Simulation has diverged. Terminating gracefully.\n");
+                PetscPrintf(PETSC_COMM_WORLD, "---------------------------------------------------------\n");
+                PetscPrintf(PETSC_COMM_WORLD, "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n");
+                break;
+            }
+
             /* SAVE VARIABLES! */
             PetscCall(VecCopy(newPosition, prevState.position));
             PetscCall(VecCopy(newVelocity, prevState.velocity));
@@ -932,7 +946,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
         }
     }
 
-    doneSolving = true;
+    inSimulation = false;
     PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
     PetscPrintf(PETSC_COMM_WORLD, "# Done solving!\n");
 

@@ -136,6 +136,15 @@ class PetscExtensions
         static PetscErrorCode VecLeftShift(Vec input, Vec *output);
 
         /**
+         * Parses a vector and returns whether or not it contains Not a Number or Infinite values.
+         *
+         * @param input the vector to parse.
+         *
+         * @returns PetscTrue if Nan or Infinite numbers are found, PetscFalse otherwise.
+         */
+        static PetscErrorCode VecContainsNanOrInf(Vec input, PetscBool *out);
+
+        /**
          * Convenience function to print the minimum, maximum, and mean values of a vector.
          *
          * @param vector the vector to print values of.

@@ -179,8 +179,6 @@ PetscErrorCode PetscExtensions::VecLeftShift(Vec input, Vec *output)
     Vec sequentialInput;
     Vec sequentialoutput;
 
-    // PetscCall(VecDuplicate(input, &output));
-
     PetscCall(VecSequentialFromParallel(input, &sequentialInput));
     PetscCall(VecSequentialFromParallel(*output, &sequentialoutput));
 
@@ -206,6 +204,31 @@ PetscErrorCode PetscExtensions::VecLeftShift(Vec input, Vec *output)
 
     PetscCall(VecDestroy(&sequentialInput));
     PetscCall(VecDestroy(&sequentialoutput));
+
+    return errorStatus;
+}
+
+PetscErrorCode PetscExtensions::VecContainsNanOrInf(Vec input, PetscBool *out)
+{
+    PetscErrorCode errorStatus = 0;
+    *out = PETSC_FALSE;
+
+    PetscInt inputSize;
+    const PetscScalar *inputArray;
+
+    PetscCall(VecGetLocalSize(input, &inputSize));
+    PetscCall(VecGetArrayRead(input, &inputArray));
+
+    for (PetscInt i = 0; i < inputSize - 1; i++)
+    {
+        if (PetscIsNanReal(inputArray[i]) || PetscIsInfReal(inputArray[i]))
+        {
+            *out = PETSC_TRUE;
+            break;
+        }
+    }
+
+    PetscCall(VecRestoreArrayRead(input, &inputArray));
 
     return errorStatus;
 }
