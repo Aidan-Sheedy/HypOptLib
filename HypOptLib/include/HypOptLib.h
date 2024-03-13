@@ -343,6 +343,23 @@ class HypOptLib
             this->overrideRestartTimestep = true;
         }
 
+        /**
+         * Optional setting to update emin and emax values for linear elasticity solving.
+         */
+        void setElimits(double Emin, double Emax)
+        {
+            this->Emin = Emin;
+            this->Emax = Emax;
+        }
+
+        /**
+         * Optional setting to update number of multigrid levels.
+         */
+        void setMultigridLevels(uint32_t levels)
+        {
+            this->multigridLevels = levels;
+        }
+
     private:
         /**
          * Utility function, runs the design loop set up by either newRun or restartRun.
@@ -367,36 +384,49 @@ class HypOptLib
          */
         PetscErrorCode randomizeStartingVectors(Vec initialPosition, Vec initialVelocity);
 
+        /**
+         * Prints the simulation settings. Uses logging level to decide on how many to print.
+         *
+         * @param iterationSaveRange range of iterations to save to output file.
+         * @param options [optional] "restart" or empty. Prints additional logs.
+         * @param restartPath [optional] restart setting to print the restarting file path.
+         */
+        void printOptions(std::vector<uint32_t> iterationSaveRange, std::string options = "", std::string restartPath = "");
+
         /* Simulation Settings */
         std::string savePath                = "hypopt_output.h5";
+        std::string initialConditionsFile   = "";
         double      targetTemperature       = 0;
         double      penalty                 = 3;
         double      minimumFilterRadius     = 0.08;
         double      volumeFraction          = 0.12;
         double      timestep                = 0.001;
+        double      Emin                    = 1.0e-9;
+        double      Emax                    = 1.0;
+        double      timestepConstantAlpha   = 1.1;
+        double      timestepConstantBeta    = 0.99;
+        double      diffusionConstant       = 0.00000001;
+        double      maxSimTime              = std::numeric_limits<double>::max();
         uint32_t    noseHooverChainOrder    = 10;
         uint32_t    maximumIterations       = 100;
         uint32_t    saveFrequency           = 1;
+        uint32_t    maxFeaIterations        = 200;
+        uint32_t    multigridLevels         = 4;
         bool        randomStartingValues    = true;
         bool        saveHamiltonian         = false;
         bool        restartUseNewMeshes     = false;
         bool        overrideRestartTimestep = false;
+        bool        variableTimestep        = false;
+        bool        initialConditionsFromFile = false;
         verbosity   printInfo               = INFO;
-        uint32_t    maxFeaIterations        = 200;
+
+        /* This is not exposed to Python. */
+        PetscInt numConstraints = 1;
 
         /* Required Mesh Settings */
         std::vector<uint32_t> gridDimensions;
         DomainCoordinates domain = {0};
         std::vector<BoundaryCondition> boundaryConditions;
-
-        bool   variableTimestep = false;
-        double timestepConstantAlpha = 1.1;
-        double timestepConstantBeta = 0.99;
-        double diffusionConstant = 0.00000001;
-        double maxSimTime = std::numeric_limits<double>::max();
-
-        bool        initialConditionsFromFile = false;
-        std::string initialConditionsFile = "";
 };
 
 /**
@@ -457,7 +487,9 @@ PYBIND11_MODULE(HypOptLib, m)
         .def("restartDoesntSupportCustomMesh",   &HypOptLib::restartDoesntSupportCustomMesh,  "Optional setting for cross compatibility.")
         .def("setLoggingVerbosity",     &HypOptLib::setLoggingVerbosity,    "Optional setting for output verbosity.")
         .def("setMaximumFeaSolverIterations", &HypOptLib::setMaximumFeaSolverIterations, "Optional setting to restrict number of iterations on the Krylov Method iterative solver.")
-        .def("overrideRestartFileTimestep", &HypOptLib::overrideRestartFileTimestep, "Optional setting to use the provided timestep instead of the one in the restart file.");
+        .def("overrideRestartFileTimestep", &HypOptLib::overrideRestartFileTimestep, "Optional setting to use the provided timestep instead of the one in the restart file.")
+        .def("setMultigridLevels",      &HypOptLib::setMultigridLevels,     "Optional setting to update number of multigrid levels.")
+        .def("setElimits",              &HypOptLib::setElimits,             "Optional setting to update linear elasticity E minimum and maximum.");
 
     py::enum_<BoundaryConditionType>(m, "BoundaryConditionType")
         .value("FIXED_POINT",   FIXED_POINT)

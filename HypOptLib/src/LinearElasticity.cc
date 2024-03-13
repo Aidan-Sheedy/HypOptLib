@@ -2,7 +2,7 @@
 
 /*
  Authors: Niels Aage, Erik Andreassen, Boyan Lazarov, August 2013
- Updated: Aidan Sheedy, February 2024
+ Updated: Aidan Sheedy, March 2024
 
  Disclaimer:
  The authors reserves all rights but does not guaranty that the code is
@@ -10,7 +10,7 @@
  caused by the use of the program.
 */
 
-LinearElasticity::LinearElasticity(DM da_nodes, std::vector<BoundaryCondition> boundaryConditions, PetscInt maxitsGlobal) {
+LinearElasticity::LinearElasticity(DM da_nodes, std::vector<BoundaryCondition> boundaryConditions, PetscInt maxitsGlobal, PetscInt multigridLevels) {
     // Set pointers to null
     K   = NULL;
     U   = NULL;
@@ -19,12 +19,13 @@ LinearElasticity::LinearElasticity(DM da_nodes, std::vector<BoundaryCondition> b
     ksp = NULL;
     da_nodal;
     this->maxitsGlobal = maxitsGlobal;
+    this->nlvls = multigridLevels;
 
     // Parameters - to be changed on read of variables
     nu    = 0.3;
-    nlvls = 4;
+    // nlvls = 4;
     PetscBool flg;
-    PetscOptionsGetInt(NULL, NULL, "-nlvls", &nlvls, &flg);
+    // PetscOptionsGetInt(NULL, NULL, "-nlvls", &nlvls, &flg);
     PetscOptionsGetReal(NULL, NULL, "-nu", &nu, &flg);
 
     // Setup sitffness matrix, load vector and bcs (Dirichlet) for the design

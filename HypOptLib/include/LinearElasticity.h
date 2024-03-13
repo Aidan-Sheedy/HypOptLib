@@ -13,7 +13,7 @@
 /*
  Authors: Niels Aage, Erik Andreassen, Boyan Lazarov, August 2013
  Updated: June 2019, Niels Aage
- Updated: February 2024, Aidan Sheedy
+ Updated: March 2024, Aidan Sheedy
 
  Copyright (C) 2013-2024,
 
@@ -33,7 +33,7 @@ class LinearElasticity {
 
   public:
     // Constructor
-    LinearElasticity(DM da_nodes, std::vector<BoundaryCondition> boundaryConditions, PetscInt maxitsGlobal);
+    LinearElasticity(DM da_nodes, std::vector<BoundaryCondition> boundaryConditions, PetscInt maxitsGlobal, PetscInt multigridLevels);
 
     // Destructor
     ~LinearElasticity();

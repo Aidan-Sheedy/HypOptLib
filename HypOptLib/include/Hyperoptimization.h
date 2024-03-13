@@ -507,10 +507,13 @@ class Hyperoptimization
         void calculateNextTimeStep();
 
     private:
+        /* Helper Objects */
         FileManager* fileManager;
         SensitivitiesWrapper sensitivitiesWrapper;
         FilterWrapper filter;
         LagrangeMultiplier lagMult;
+
+        /* Simulation Properties */
         PetscScalar temperature;
         PetscInt NHChainOrder;
         PetscInt numParticles;
@@ -520,10 +523,15 @@ class Hyperoptimization
         PetscScalar halfTimestep;
         Vec evenNoseHooverMass; /** Mass of Nose Hoover particles.  @note This is initialized automatically to 1 for now, can be exposed to python if necessary. */
         Vec oddNoseHooverMass;
+        PetscScalar volumeFraction;
+
+        /* Iteration Variables */
         HypOptParameters prevState;
         Vec newPosition;
         Vec sensitivities;
         Vec constraintSensitivities;
+
+        /* Save file Logs */
         std::vector<PetscScalar> LagrangeMultipliers;
         std::vector<PetscScalar> hamiltonians;
         std::vector<PetscScalar> compliance;
@@ -531,25 +539,24 @@ class Hyperoptimization
         std::vector<PetscScalar> iterationTimes;
         std::vector<PetscInt> sensitivitySolverIterations;
         std::vector<PetscInt> hamiltonianSolverIterations;
-        verbosity printInfo = INFO;
-        bool inSimulation = false;
-        bool saveHamiltonian;
-
-        bool saveRangeUseSimTime = false;
-        uint32_t saveFrequency;
-        std::vector<uint32_t> iterationSaveRange;
-
-        bool variableTimestep = false;
-        PetscScalar previousTimestep = 0;
-        PetscScalar timestepConstantAlpha = 1.1;
-        PetscScalar timestepConstantBeta = 0.99;
-        PetscScalar timestepConstantK = 1;
-        PetscScalar diffusionConstant = 0.00000001;
-        PetscScalar previousTemperature = 0;
-        double      maxSimTime;
-
         std::vector<PetscScalar> timesteps;
         std::vector<PetscScalar> energyErrors;
         std::vector<PetscScalar> volfracs;
-        PetscScalar volumeFraction;
+
+        /* Flags and Options */
+        verbosity               printInfo           = INFO;
+        bool                    inSimulation        = false;
+        bool                    saveHamiltonian     = false;
+        bool                    variableTimestep    = false;
+        double                  maxSimTime;
+        uint32_t                saveFrequency;
+        std::vector<uint32_t>   iterationSaveRange;
+
+        /* Variable Timestep */
+        PetscScalar previousTimestep        = 0;
+        PetscScalar timestepConstantAlpha   = 1.1;
+        PetscScalar timestepConstantBeta    = 0.99;
+        PetscScalar timestepConstantK       = 1;
+        PetscScalar diffusionConstant       = 0.00000001;
+        PetscScalar previousTemperature     = 0;
 };

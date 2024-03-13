@@ -248,19 +248,6 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
         compliance.reserve(numIterations);
     }
 
-    PetscPrintf(PETSC_COMM_WORLD, "# ------------ Hyperoptimization Settings ------------\n");
-    PetscPrintf(PETSC_COMM_WORLD, "# -targetTemperature: %f\n", temperature);
-    PetscPrintf(PETSC_COMM_WORLD, "# -NHChainOrder: %i\n", NHChainOrder);
-    PetscPrintf(PETSC_COMM_WORLD, "# -volumeFraction: %f\n", volumeFraction);
-    PetscPrintf(PETSC_COMM_WORLD, "# -maximumIterations: %i\n", numIterations);
-    if (std::numeric_limits<double>::max() > maxSimTime)
-       PetscPrintf(PETSC_COMM_WORLD, "# -maximumSimTime: %f\n", maxSimTime);
-    PetscPrintf(PETSC_COMM_WORLD, "# -variableTimestep: %s\n", variableTimestep ? "true" : "false");
-    PetscPrintf(PETSC_COMM_WORLD, "# -timestep: %f\n", timestep);
-    PetscPrintf(PETSC_COMM_WORLD, "# -iterationSaveRange: (%i, %i)\n", iterationSaveRange[0], iterationSaveRange[1]);
-    PetscPrintf(PETSC_COMM_WORLD, "# -saveFrequency: %i\n", saveFrequency);
-    PetscPrintf(PETSC_COMM_WORLD, "# ----------------------------------------------------\n");
-
     return errorStatus;
 }
 
@@ -679,7 +666,10 @@ void Hyperoptimization::calculateNextTimeStep()
     this->timestep = timestepConstantAlpha * pow(timestepConstantBeta, timestepConstantK) * previousTimestep;
     this->halfTimestep = timestep / 2;
 
-    PetscPrintf(PETSC_COMM_WORLD, "-newTimestep: %.2e\n", timestep);
+    if(DEBUG <= printInfo)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "-newTimestep: %.2e\n", timestep);
+    }
 }
 
 PetscErrorCode Hyperoptimization::runDesignLoop()
@@ -905,7 +895,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                                             lagMultiplier, t2 - t1,       t3 - t2,    timestep);
                     if (variableTimestep)
                     {
-                        PetscPrintf(PETSC_COMM_WORLD, "numRerun: %i, ", numReruns);
+                        PetscPrintf(PETSC_COMM_WORLD, "numRerun: %i\n", numReruns);
                     }
                 }
                 else

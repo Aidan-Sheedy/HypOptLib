@@ -12,7 +12,7 @@
  free from errors. Furthermore, we shall not be liable in any event
  caused by the use of the program.
 */
-
+#ifdef BUILD_MMA
 TopOpt::TopOpt(PetscInt nconstraints) {
 
     m = nconstraints;
@@ -25,7 +25,7 @@ TopOpt::TopOpt(PetscInt nconstraints) {
     domain.zMinimum = 0;
     domain.zMaximum = 1;
 
-    Init(65, 33, 33, 3.0, 0.08, domain);
+    Init(65, 33, 33, domain);
 }
 
 TopOpt::TopOpt() {
@@ -39,36 +39,37 @@ TopOpt::TopOpt() {
     domain.yMaximum = 1;
     domain.zMinimum = 0;
     domain.zMaximum = 1;
-    Init(65, 33, 33, 3.0, 0.08, domain);
+    Init(65, 33, 33, domain);
 }
+#endif
 
-TopOpt::TopOpt(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscScalar penalty, PetscScalar minimumFilterRadius, DomainCoordinates domainCoordinates) {
-
+TopOpt::TopOpt(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscInt multigridLevels, DomainCoordinates domainCoordinates) {
+#ifdef BUILD_MMA
     m = 1;
-    Init(xDimensions, yDimensions, zDimensions, penalty, minimumFilterRadius, domainCoordinates);
+#endif
+    nlvls = multigridLevels;
+    Init(xDimensions, yDimensions, zDimensions, domainCoordinates);
 }
 
 void TopOpt::Init(PetscInt xDimensions,
                   PetscInt yDimensions,
                   PetscInt zDimensions,
-                  PetscScalar penalty,
-                  PetscScalar minimumFilterRadius,
                   DomainCoordinates domainCoordinates) { // Dummy constructor
 
     x        = NULL;
     xPhys    = NULL;
+    da_nodes = NULL;
+    da_elem  = NULL;
+#ifdef BUILD_MMA
     dfdx     = NULL;
     dgdx     = NULL;
     gx       = NULL;
-    da_nodes = NULL;
-    da_elem  = NULL;
-
     xo1 = NULL;
     xo2 = NULL;
     U   = NULL;
     L   = NULL;
-
-    SetUp(xDimensions, yDimensions, zDimensions, penalty, minimumFilterRadius, domainCoordinates);
+#endif
+    SetUp(xDimensions, yDimensions, zDimensions, domainCoordinates);
 }
 
 TopOpt::~TopOpt() {
@@ -77,11 +78,19 @@ TopOpt::~TopOpt() {
     if (x != NULL) {
         VecDestroy(&x);
     }
-    if (xTilde != NULL) {
-        VecDestroy(&xTilde);
-    }
     if (xPhys != NULL) {
         VecDestroy(&xPhys);
+    }
+    if (da_nodes != NULL) {
+        DMDestroy(&(da_nodes));
+    }
+    if (da_elem != NULL) {
+        DMDestroy(&(da_elem));
+    }
+
+#ifdef BUILD_MMA
+    if (xTilde != NULL) {
+        VecDestroy(&xTilde);
     }
     if (dfdx != NULL) {
         VecDestroy(&dfdx);
@@ -97,13 +106,6 @@ TopOpt::~TopOpt() {
     }
     if (xmax != NULL) {
         VecDestroy(&xmax);
-    }
-
-    if (da_nodes != NULL) {
-        DMDestroy(&(da_nodes));
-    }
-    if (da_elem != NULL) {
-        DMDestroy(&(da_elem));
     }
 
     // Delete constraints
@@ -124,6 +126,7 @@ TopOpt::~TopOpt() {
     if (U != NULL) {
         VecDestroy(&U);
     }
+#endif
 }
 
 // NO METHODS !
@@ -131,8 +134,6 @@ TopOpt::~TopOpt() {
 PetscErrorCode TopOpt::SetUp(PetscInt xDimensions,
                              PetscInt yDimensions,
                              PetscInt zDimensions,
-                             PetscScalar penalty,
-                             PetscScalar minimumFilterRadius,
                              DomainCoordinates domainCoordinates) {
     PetscErrorCode ierr;
 
@@ -146,14 +147,16 @@ PetscErrorCode TopOpt::SetUp(PetscInt xDimensions,
     xc[3]   = domainCoordinates.yMaximum; // 1.0;
     xc[4]   = domainCoordinates.zMinimum; // 0.0;
     xc[5]   = domainCoordinates.zMaximum; // 1.0;
+
+#ifdef BUILD_MMA
     nu      = 0.3;
     nlvls   = 4;
 
     // SET DEFAULTS for optimization problems
-    // volfrac = volumeFraction;
-    // maxItr  = 5000;//10;//25000;
-    rmin    = minimumFilterRadius;
-    penal   = penalty;
+    volfrac = 0.12;
+    maxItr  = 5000;//10;//25000;
+    rmin    = 0.8;
+    penal   = 3;
     Emin    = 1.0e-9;
     Emax    = 1.0;
     filter  = 1; // 0=sens,1=dens,2=PDE - other val == no filtering
@@ -167,7 +170,7 @@ PetscErrorCode TopOpt::SetUp(PetscInt xDimensions,
     beta             = 0.1;
     betaFinal        = 48;
     eta              = 0.0;
-
+#endif
     ierr = SetUpMESH();
     CHKERRQ(ierr);
 
@@ -194,7 +197,7 @@ PetscErrorCode TopOpt::SetUpMESH() {
     PetscOptionsGetReal(NULL, NULL, "-ycmax", &(xc[3]), &flg);
     PetscOptionsGetReal(NULL, NULL, "-zcmin", &(xc[4]), &flg);
     PetscOptionsGetReal(NULL, NULL, "-zcmax", &(xc[5]), &flg);
-    PetscOptionsGetReal(NULL, NULL, "-penal", &penal, &flg);
+    // PetscOptionsGetReal(NULL, NULL, "-penal", &penal, &flg);
     PetscOptionsGetInt(NULL, NULL, "-nlvls", &nlvls,
                        &flg); // NEEDS THIS TO CHECK IF MESH IS OK BEFORE PROCEEDING !!!!
 
@@ -348,6 +351,8 @@ PetscErrorCode TopOpt::SetUpOPT() {
     // ierr = VecDuplicate(CRAPPY_VEC,&xPhys); CHKERRQ(ierr);
     ierr = DMCreateGlobalVector(da_elem, &xPhys);
     CHKERRQ(ierr);
+
+#ifdef BUILD_MMA
     // Total number of design variables
     VecGetSize(xPhys, &n);
 
@@ -357,10 +362,10 @@ PetscErrorCode TopOpt::SetUpOPT() {
     PetscOptionsGetReal(NULL, NULL, "-Emin", &Emin, &flg);
     PetscOptionsGetReal(NULL, NULL, "-Emax", &Emax, &flg);
     PetscOptionsGetReal(NULL, NULL, "-nu", &nu, &flg);
-    // PetscOptionsGetReal(NULL, NULL, "-volfrac", &volfrac, &flg);
+    PetscOptionsGetReal(NULL, NULL, "-volfrac", &volfrac, &flg);
     PetscOptionsGetReal(NULL, NULL, "-penal", &penal, &flg);
     PetscOptionsGetReal(NULL, NULL, "-rmin", &rmin, &flg);
-    // PetscOptionsGetInt(NULL, NULL, "-maxItr", &maxItr, &flg);
+    PetscOptionsGetInt(NULL, NULL, "-maxItr", &maxItr, &flg);
     PetscOptionsGetInt(NULL, NULL, "-filter", &filter, &flg);
     PetscOptionsGetReal(NULL, NULL, "-Xmin", &Xmin, &flg);
     PetscOptionsGetReal(NULL, NULL, "-Xmax", &Xmax, &flg);
@@ -378,12 +383,12 @@ PetscErrorCode TopOpt::SetUpOPT() {
     PetscPrintf(PETSC_COMM_WORLD, "# -beta: %f\n", beta);
     PetscPrintf(PETSC_COMM_WORLD, "# -betaFinal: %f\n", betaFinal);
     PetscPrintf(PETSC_COMM_WORLD, "# -eta: %f\n", eta);
-    // PetscPrintf(PETSC_COMM_WORLD, "# -volfrac: %f\n", volfrac);
+    PetscPrintf(PETSC_COMM_WORLD, "# -volfrac: %f\n", volfrac);
     PetscPrintf(PETSC_COMM_WORLD, "# -penal: %f\n", penal);
     PetscPrintf(PETSC_COMM_WORLD, "# -Emin/-Emax: %e - %e \n", Emin, Emax);
     PetscPrintf(PETSC_COMM_WORLD, "# -nu: %f \n", nu);
-    // PetscPrintf(PETSC_COMM_WORLD, "# -maxItr: %i\n", maxItr);
-    // PetscPrintf(PETSC_COMM_WORLD, "# -movlim: %f\n", movlim);
+    PetscPrintf(PETSC_COMM_WORLD, "# -maxItr: %i\n", maxItr);
+    PetscPrintf(PETSC_COMM_WORLD, "# -movlim: %f\n", movlim);
     PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
 
     // Allocate after input
@@ -391,16 +396,18 @@ PetscErrorCode TopOpt::SetUpOPT() {
     if (filter == 0) {
         Xmin = 0.001; // Prevent division by zero in filter
     }
-
+#endif
     // Allocate the optimization vectors
     ierr = VecDuplicate(xPhys, &x);
     CHKERRQ(ierr);
-    ierr = VecDuplicate(xPhys, &xTilde);
-    CHKERRQ(ierr);
+
 
     VecSet(x, 0);      // Initialize to 0 !
-    VecSet(xTilde, 0); // Initialize to 0 !
     VecSet(xPhys, 0);  // Initialize to 0 !
+#ifdef MMA
+    ierr = VecDuplicate(xPhys, &xTilde);
+    CHKERRQ(ierr);
+    VecSet(xTilde, 0); // Initialize to 0 !
 
     // Sensitivity vectors
     ierr = VecDuplicate(x, &dfdx);
@@ -413,7 +420,7 @@ PetscErrorCode TopOpt::SetUpOPT() {
     VecDuplicate(x, &xmax);
     VecDuplicate(x, &xold);
     VecSet(xold, 0);
-
+#endif
     return (ierr);
 }
 
