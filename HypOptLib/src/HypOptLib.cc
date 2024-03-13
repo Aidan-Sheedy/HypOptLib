@@ -416,7 +416,7 @@ PetscErrorCode HypOptLib::randomizeStartingVectors(Vec initialPosition, Vec init
     /* Assign uniform random distribution as initial values */
     for (PetscInt i = 0; i < localSize; i++)
     {
-        initialValues[i] = distribution(generator); //volumeFraction;
+        initialValues[i] = distribution(generator);
     }
 
     /* Restore Vector */
@@ -430,11 +430,10 @@ PetscErrorCode HypOptLib::randomizeStartingVectors(Vec initialPosition, Vec init
     std::default_random_engine generator2;
     std::uniform_real_distribution<PetscScalar> distribution2;
 
-    // distribution2.reset();
     distribution2 = std::uniform_real_distribution<PetscScalar>(-0.5, 0.5);
     for (PetscInt i = 0; i < localSize; i++)
     {
-        initialValues[i] = distribution2(generator); //volumeFraction;
+        initialValues[i] = distribution2(generator);
     }
 
     PetscCall(VecRestoreArray(initialVelocity, &initialValues));

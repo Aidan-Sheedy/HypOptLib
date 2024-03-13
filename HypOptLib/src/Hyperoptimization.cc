@@ -451,7 +451,7 @@ PetscErrorCode Hyperoptimization::calculatePositionIncrement(Vec previousPositio
 {
     PetscErrorCode errorStatus = 0;
 
-    // Create a temporary vector for inner-results
+    /* Create a temporary vector for inner-results */
     Vec tempVector;
     PetscCall(VecDuplicate(previousVelocity, &(tempVector)));
     PetscCall(VecCopy(previousVelocity, tempVector));
@@ -601,13 +601,13 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
     Vec filteredPositions;
     PetscCall(VecDuplicate(positions, &filteredPositions));
 
-    // Positions used in constraint calculations
+    /* Positions used in constraint calculations */
     PetscCall(this->filter.filterDesignVariable(positions, filteredPositions));
 
-    // Compute sensitivities
+    /* Compute sensitivities */
     PetscCall(sensitivitiesWrapper.computeSensitivities(filteredPositions, sensitivities, constraintSensitivities));
 
-    // Filter sensitivities (Standard Filter)
+    /* Filter sensitivities (Standard Filter) */
     PetscCall(filter.filterSensitivities(positions, this->sensitivities, &constraintSensitivities));
     PetscCall(VecScale(this->sensitivities, -1));
 
@@ -771,25 +771,32 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
 
         if (variableTimestep)
         {
-            // PetscScalar systemTemperature;
-            // calculateTemperature(newVelocity, &systemTemperature);
-
+#ifdef VARTIME_TEMP
+            PetscScalar systemTemperature;
+            calculateTemperature(newVelocity, &systemTemperature);
+#endif
             errorStatus = filter.filterDesignVariable(newPosition, filtered_pos);
             PetscScalar systemVolumeFraction;
             PetscCall(VecMean(filtered_pos, &systemVolumeFraction));
             if (iteration > 1)
             {
+#ifdef VARTIME_TEMP
+                PetscScalar energyError = (previousTemperature - systemTemperature);
+#else
                 PetscScalar energyError = (volumeFraction - systemVolumeFraction);
-                // PetscScalar energyError = (previousTemperature - systemTemperature);
+#endif
                 if (0 > energyError)
                 {
                     energyError *= -1;
                 }
-                // energyError = (energyError * energyError) / energyError;
-                // PetscScalar energyTolerance = sqrt(diffusionConstant * timestep);
+#ifdef VARTIME_TEMP
+                energyError = (energyError * energyError) / energyError;
+                PetscScalar energyTolerance = sqrt(diffusionConstant * timestep);
+                if (energyError * timestep > energyTolerance)
+#else
                 PetscScalar energyTolerance = diffusionConstant;
-                // if (energyError * timestep > energyTolerance)
                 if (energyError > energyTolerance)
+#endif
                 {
                     PetscPrintf(PETSC_COMM_WORLD, "-energyError: %e\t-energyTolerance: %e\t-errErr: %e\t", energyError, energyTolerance, energyError * timestep);
 
@@ -804,8 +811,11 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                     energyErrors.push_back(energyError);
                     rerun = false;
                     previousTimestep = timestep;
-                    // previousTemperature = systemTemperature;
+#ifdef VARTIME_TEMP
+                    previousTemperature = systemTemperature;
+#else
                     previousTemperature = systemVolumeFraction;
+#endif
                     numReruns = 0;
                 }
             }
@@ -813,8 +823,11 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
             {
                 rerun = false;
                 previousTimestep = timestep;
-                // previousTemperature = systemTemperature;
+#ifdef VARTIME_TEMP
+                previousTemperature = systemTemperature;
+#else
                 previousTemperature = systemVolumeFraction;
+#endif
             }
         }
         else
@@ -900,7 +913,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                 }
                 else
                 {
-                    PetscPrintf(PETSC_COMM_WORLD, "itrTime: %f\n", t3 - t1);//, hamiltonian);
+                    PetscPrintf(PETSC_COMM_WORLD, "itrTime: %f\n", t3 - t1);
                 }
             }
 
