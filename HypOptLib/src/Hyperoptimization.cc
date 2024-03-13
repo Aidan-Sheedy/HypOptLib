@@ -3,7 +3,21 @@
  *
  * This file describes the layout of the Hyperoptimization class.
  *
- * @todo THIS FILE NEEDS LICENSE INFORMATION
+ * Copyright (C) 2024 Aidan Sheedy
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
 ******************************************************************************/
 
@@ -33,6 +47,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
                                         bool                    saveHamiltonian,
                                         PetscScalar             volumeFraction,
                                         uint32_t                saveFrequency,
+                                        verbosity               printInfo,
                                         double                  maxSimTime)
 {
     PetscCall(VecCreate(PETSC_COMM_WORLD, &(prevState.evenNoseHooverPosition)));
@@ -67,6 +82,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
                 saveHamiltonian,
                 volumeFraction,
                 saveFrequency,
+                printInfo,
                 maxSimTime);
 }
 
@@ -88,6 +104,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
                                         bool                    saveHamiltonian,
                                         PetscScalar             volumeFraction,
                                         uint32_t                saveFrequency,
+                                        verbosity               printInfo,
                                         double                  maxSimTime)
 {
     PetscErrorCode errorStatus = 0;
@@ -164,6 +181,7 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
     this->volumeFraction        = volumeFraction;
     this->maxSimTime            = maxSimTime;
     this->saveFrequency         = saveFrequency;
+    this->printInfo             = printInfo;
 
     /* Pre-allocate vector memory
      *
@@ -229,19 +247,6 @@ PetscErrorCode Hyperoptimization::init( SensitivitiesWrapper&   sensitivitiesWra
         hamiltonians.reserve(numIterations);
         compliance.reserve(numIterations);
     }
-
-    PetscPrintf(PETSC_COMM_WORLD, "# ------------ Hyperoptimization Settings ------------\n");
-    PetscPrintf(PETSC_COMM_WORLD, "# -targetTemperature: %f\n", temperature);
-    PetscPrintf(PETSC_COMM_WORLD, "# -NHChainOrder: %i\n", NHChainOrder);
-    PetscPrintf(PETSC_COMM_WORLD, "# -volumeFraction: %f\n", volumeFraction);
-    PetscPrintf(PETSC_COMM_WORLD, "# -maximumIterations: %i\n", numIterations);
-    if (std::numeric_limits<double>::max() > maxSimTime)
-       PetscPrintf(PETSC_COMM_WORLD, "# -maximumSimTime: %f\n", maxSimTime);
-    PetscPrintf(PETSC_COMM_WORLD, "# -variableTimestep: %s\n", variableTimestep ? "true" : "false");
-    PetscPrintf(PETSC_COMM_WORLD, "# -timestep: %f\n", timestep);
-    PetscPrintf(PETSC_COMM_WORLD, "# -iterationSaveRange: (%i, %i)\n", iterationSaveRange[0], iterationSaveRange[1]);
-    PetscPrintf(PETSC_COMM_WORLD, "# -saveFrequency: %i\n", saveFrequency);
-    PetscPrintf(PETSC_COMM_WORLD, "# ----------------------------------------------------\n");
 
     return errorStatus;
 }
@@ -446,7 +451,7 @@ PetscErrorCode Hyperoptimization::calculatePositionIncrement(Vec previousPositio
 {
     PetscErrorCode errorStatus = 0;
 
-    // Create a temporary vector for inner-results
+    /* Create a temporary vector for inner-results */
     Vec tempVector;
     PetscCall(VecDuplicate(previousVelocity, &(tempVector)));
     PetscCall(VecCopy(previousVelocity, tempVector));
@@ -596,13 +601,13 @@ PetscErrorCode Hyperoptimization::calculateSensitvities(Vec positions)
     Vec filteredPositions;
     PetscCall(VecDuplicate(positions, &filteredPositions));
 
-    // Positions used in constraint calculations
+    /* Positions used in constraint calculations */
     PetscCall(this->filter.filterDesignVariable(positions, filteredPositions));
 
-    // Compute sensitivities
+    /* Compute sensitivities */
     PetscCall(sensitivitiesWrapper.computeSensitivities(filteredPositions, sensitivities, constraintSensitivities));
 
-    // Filter sensitivities (Standard Filter)
+    /* Filter sensitivities (Standard Filter) */
     PetscCall(filter.filterSensitivities(positions, this->sensitivities, &constraintSensitivities));
     PetscCall(VecScale(this->sensitivities, -1));
 
@@ -661,7 +666,10 @@ void Hyperoptimization::calculateNextTimeStep()
     this->timestep = timestepConstantAlpha * pow(timestepConstantBeta, timestepConstantK) * previousTimestep;
     this->halfTimestep = timestep / 2;
 
-    PetscPrintf(PETSC_COMM_WORLD, "-newTimestep: %.2e\n", timestep);
+    if(DEBUG <= printInfo)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "-newTimestep: %.2e\n", timestep);
+    }
 }
 
 PetscErrorCode Hyperoptimization::runDesignLoop()
@@ -710,6 +718,8 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
     PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &(newOddNoseHooverVelocity)));
     PetscCall(VecDuplicate(tempOddNoseHooverVelocity, &extendedOddNoseHooverVelocity));
 
+    inSimulation = true;
+
     for (PetscInt iteration = 0; (iteration < this->numIterations) && (maxSimTime > simTime); iteration++)
     {
         if (false == rerun)
@@ -729,9 +739,8 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
         calculateVelocityIncrement(prevState.oddNoseHooverVelocity, prevState.evenNoseHooverVelocity, tempOddNoseHooverAccelerations, this->halfTimestep, &tempOddNoseHooverVelocity);
 
         /* Get objective and constraint sensitivities */
-// vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv maybe here too? vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
         calculateSensitvities(tempPosition);
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ maybe here too? ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
         /* Get first nose hoover velocity */
         PetscScalar firstNoseHooverVelocity = 0;
 
@@ -762,25 +771,32 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
 
         if (variableTimestep)
         {
-            // PetscScalar systemTemperature;
-            // calculateTemperature(newVelocity, &systemTemperature);
-
+#ifdef VARTIME_TEMP
+            PetscScalar systemTemperature;
+            calculateTemperature(newVelocity, &systemTemperature);
+#endif
             errorStatus = filter.filterDesignVariable(newPosition, filtered_pos);
             PetscScalar systemVolumeFraction;
             PetscCall(VecMean(filtered_pos, &systemVolumeFraction));
             if (iteration > 1)
             {
+#ifdef VARTIME_TEMP
+                PetscScalar energyError = (previousTemperature - systemTemperature);
+#else
                 PetscScalar energyError = (volumeFraction - systemVolumeFraction);
-                // PetscScalar energyError = (previousTemperature - systemTemperature);
+#endif
                 if (0 > energyError)
                 {
                     energyError *= -1;
                 }
-                // energyError = (energyError * energyError) / energyError;
-                // PetscScalar energyTolerance = sqrt(diffusionConstant * timestep);
+#ifdef VARTIME_TEMP
+                energyError = (energyError * energyError) / energyError;
+                PetscScalar energyTolerance = sqrt(diffusionConstant * timestep);
+                if (energyError * timestep > energyTolerance)
+#else
                 PetscScalar energyTolerance = diffusionConstant;
-                // if (energyError * timestep > energyTolerance)
                 if (energyError > energyTolerance)
+#endif
                 {
                     PetscPrintf(PETSC_COMM_WORLD, "-energyError: %e\t-energyTolerance: %e\t-errErr: %e\t", energyError, energyTolerance, energyError * timestep);
 
@@ -795,8 +811,11 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                     energyErrors.push_back(energyError);
                     rerun = false;
                     previousTimestep = timestep;
-                    // previousTemperature = systemTemperature;
+#ifdef VARTIME_TEMP
+                    previousTemperature = systemTemperature;
+#else
                     previousTemperature = systemVolumeFraction;
+#endif
                     numReruns = 0;
                 }
             }
@@ -804,8 +823,11 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
             {
                 rerun = false;
                 previousTimestep = timestep;
-                // previousTemperature = systemTemperature;
+#ifdef VARTIME_TEMP
+                previousTemperature = systemTemperature;
+#else
                 previousTemperature = systemVolumeFraction;
+#endif
             }
         }
         else
@@ -886,13 +908,26 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
                                             lagMultiplier, t2 - t1,       t3 - t2,    timestep);
                     if (variableTimestep)
                     {
-                        PetscPrintf(PETSC_COMM_WORLD, "numRerun: %i, ", numReruns);
+                        PetscPrintf(PETSC_COMM_WORLD, "numRerun: %i\n", numReruns);
                     }
                 }
                 else
                 {
-                    PetscPrintf(PETSC_COMM_WORLD, "itrTime: %f\n", t3 - t1);//, hamiltonian);
+                    PetscPrintf(PETSC_COMM_WORLD, "itrTime: %f\n", t3 - t1);
                 }
+            }
+
+            /* Check if positions contain valid information. If not, exit gracefully. */
+            PetscBool isSimulationInvalid;
+            PetscExtensions::VecContainsNanOrInf(newPosition, &isSimulationInvalid);
+            if (PETSC_TRUE == isSimulationInvalid)
+            {
+                PetscPrintf(PETSC_COMM_WORLD, "\n\nvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv\n");
+                PetscPrintf(PETSC_COMM_WORLD, "---------------------------------------------------------\n");
+                PetscPrintf(PETSC_COMM_WORLD, "Warning! Simulation has diverged. Terminating gracefully.\n");
+                PetscPrintf(PETSC_COMM_WORLD, "---------------------------------------------------------\n");
+                PetscPrintf(PETSC_COMM_WORLD, "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n");
+                break;
             }
 
             /* SAVE VARIABLES! */
@@ -914,7 +949,7 @@ PetscErrorCode Hyperoptimization::runDesignLoop()
         }
     }
 
-    doneSolving = true;
+    inSimulation = false;
     PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
     PetscPrintf(PETSC_COMM_WORLD, "# Done solving!\n");
 

@@ -5,7 +5,21 @@
  *
  * @author Aidan Sheedy
  *
- * @todo THIS FILE NEEDS LICENSE INFORMATION
+ * Copyright (C) 2024 Aidan Sheedy
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
 ******************************************************************************/
 
@@ -48,6 +62,22 @@ class Hyperoptimization
          */
         ~Hyperoptimization()
         {
+            if (inSimulation)
+            {
+                fileManager->saveFinalState(saveHamiltonian,
+                                            prevState,
+                                            hamiltonians,
+                                            compliance,
+                                            temperatures,
+                                            LagrangeMultipliers,
+                                            iterationTimes,
+                                            timesteps,
+                                            energyErrors,
+                                            volfracs,
+                                            sensitivitySolverIterations,
+                                            hamiltonianSolverIterations);
+            }
+
             VecDestroy(&evenNoseHooverMass);
             VecDestroy(&oddNoseHooverMass);
             VecDestroy(&newPosition);
@@ -101,6 +131,7 @@ class Hyperoptimization
                             bool saveHamiltonian,
                             PetscScalar volumeFraction,
                             uint32_t saveFrequency,
+                            verbosity printInfo,
                             double maxSimTime = std::numeric_limits<double>::max());
 
         /**
@@ -148,6 +179,7 @@ class Hyperoptimization
                             bool saveHamiltonian,
                             PetscScalar volumeFraction,
                             uint32_t saveFrequency,
+                            verbosity printInfo,
                             double maxSimTime = std::numeric_limits<double>::max());
 
         /**
@@ -475,10 +507,13 @@ class Hyperoptimization
         void calculateNextTimeStep();
 
     private:
+        /* Helper Objects */
         FileManager* fileManager;
         SensitivitiesWrapper sensitivitiesWrapper;
         FilterWrapper filter;
         LagrangeMultiplier lagMult;
+
+        /* Simulation Properties */
         PetscScalar temperature;
         PetscInt NHChainOrder;
         PetscInt numParticles;
@@ -488,10 +523,15 @@ class Hyperoptimization
         PetscScalar halfTimestep;
         Vec evenNoseHooverMass; /** Mass of Nose Hoover particles.  @note This is initialized automatically to 1 for now, can be exposed to python if necessary. */
         Vec oddNoseHooverMass;
+        PetscScalar volumeFraction;
+
+        /* Iteration Variables */
         HypOptParameters prevState;
         Vec newPosition;
         Vec sensitivities;
         Vec constraintSensitivities;
+
+        /* Save file Logs */
         std::vector<PetscScalar> LagrangeMultipliers;
         std::vector<PetscScalar> hamiltonians;
         std::vector<PetscScalar> compliance;
@@ -499,25 +539,24 @@ class Hyperoptimization
         std::vector<PetscScalar> iterationTimes;
         std::vector<PetscInt> sensitivitySolverIterations;
         std::vector<PetscInt> hamiltonianSolverIterations;
-        verbosity printInfo = INFO; /** @todo make this a pass-in variable/debugging parameter! */
-        bool doneSolving = false;
-        bool saveHamiltonian;
-
-        bool saveRangeUseSimTime = false;
-        uint32_t saveFrequency;
-        std::vector<uint32_t> iterationSaveRange;
-
-        bool variableTimestep = false;
-        PetscScalar previousTimestep = 0;
-        PetscScalar timestepConstantAlpha = 1.1;
-        PetscScalar timestepConstantBeta = 0.99;
-        PetscScalar timestepConstantK = 1;
-        PetscScalar diffusionConstant = 0.00000001;
-        PetscScalar previousTemperature = 0;
-        double      maxSimTime;
-
         std::vector<PetscScalar> timesteps;
         std::vector<PetscScalar> energyErrors;
         std::vector<PetscScalar> volfracs;
-        PetscScalar volumeFraction;
+
+        /* Flags and Options */
+        verbosity               printInfo           = INFO;
+        bool                    inSimulation        = false;
+        bool                    saveHamiltonian     = false;
+        bool                    variableTimestep    = false;
+        double                  maxSimTime;
+        uint32_t                saveFrequency;
+        std::vector<uint32_t>   iterationSaveRange;
+
+        /* Variable Timestep */
+        PetscScalar previousTimestep        = 0;
+        PetscScalar timestepConstantAlpha   = 1.1;
+        PetscScalar timestepConstantBeta    = 0.99;
+        PetscScalar timestepConstantK       = 1;
+        PetscScalar diffusionConstant       = 0.00000001;
+        PetscScalar previousTemperature     = 0;
 };

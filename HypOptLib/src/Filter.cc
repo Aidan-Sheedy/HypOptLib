@@ -2,7 +2,8 @@
 
 /* -----------------------------------------------------------------------------
 Authors: Niels Aage, Erik Andreassen, Boyan Lazarov, August 2013
-Copyright (C) 2013-2014,
+Updated: Aidan Sheedy, February 2024
+Copyright (C) 2013-2024,
 
 This Filter implementation is licensed under Version 2.1 of the GNU
 Lesser General Public License.

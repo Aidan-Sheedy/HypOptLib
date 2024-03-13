@@ -14,6 +14,7 @@ Contents
 
 * :ref:`Structs and Enums <Structs and Enums>`
     * :ref:`BoundaryConditionType <BoundaryConditionType>`
+    * :ref:`verbosity <verbosity>`
     * :ref:`BoundaryCondition <BoundaryCondition>`
     * :ref:`DomainCoordinates <DomainCoordinates>`
 
@@ -51,9 +52,7 @@ Contents
             * :ref:`enableVariableTimestep <enableVariableTimestep>`
             * :ref:`loadInitialConditionsFromFile <loadInitialConditionsFromFile>`
             * :ref:`restartDoesntSupportCustomMesh <restartDoesntSupportCustomMesh>`
-
-
-
+            * :ref:`setMaximumFeaSolverIterations <setMaximumFeaSolverIterations>`
 
 .. _Structs and Enums:
 
@@ -66,6 +65,11 @@ conditions.
 .. _BoundaryConditionType:
 
 .. doxygenenum:: BoundaryConditionType
+   :project: HypOptLib
+
+.. _verbosity:
+
+.. doxygenenum:: verbosity
    :project: HypOptLib
 
 .. _BoundaryCondition:
@@ -85,7 +89,6 @@ conditions.
    :protected-members:
    :private-members:
    :undoc-members:
-
 
 .. _HypOptLib_header:
 
@@ -233,4 +236,9 @@ each parameter will be set to a default value.
 .. _restartDoesntSupportCustomMesh:
 
 .. doxygenfunction:: restartDoesntSupportCustomMesh
+    :project: HypOptLib
+
+.. _setMaximumFeaSolverIterations:
+
+.. doxygenfunction:: setMaximumFeaSolverIterations
     :project: HypOptLib

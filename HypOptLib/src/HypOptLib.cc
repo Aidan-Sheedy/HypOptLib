@@ -5,7 +5,21 @@
  *
  * @author Aidan Sheedy
  *
- * @todo THIS FILE NEEDS LICENSE INFORMATION
+ * Copyright (C) 2024 Aidan Sheedy
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  ******************************************************************************/
 
@@ -52,29 +66,17 @@ uint32_t HypOptLib::newRun(std::vector<uint32_t>  *iterationSaveRange)
     PetscInt yMeshDimension = gridDimensions.at(1)+1;
     PetscInt zMeshDimension = gridDimensions.at(2)+1;
 
-    TopOpt* opt = new TopOpt(xMeshDimension, yMeshDimension, zMeshDimension, penalty, minimumFilterRadius, domain);
+    TopOpt* opt = new TopOpt(xMeshDimension, yMeshDimension, zMeshDimension, multigridLevels, domain);
 
     // STEP 2: THE PHYSICS
-    LinearElasticity* physics = new LinearElasticity(opt->da_nodes, boundaryConditions);
+    LinearElasticity* physics = new LinearElasticity(opt->da_nodes, boundaryConditions, maxFeaIterations, multigridLevels);
 
     // STEP 3: THE FILTERING
-    Filter* filter = new Filter(opt->da_nodes, opt->xPhys, opt->filter, opt->rmin);
+    /* Always use filter type 1 -- none others are supported by Hyperoptimization. */
+    Filter* filter = new Filter(opt->da_nodes, opt->xPhys, 1, minimumFilterRadius);
 
     PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
     PetscPrintf(PETSC_COMM_WORLD, "########################### Hyperoptimization ##########################\n");
-    PetscPrintf(PETSC_COMM_WORLD, "# - Boundary Conditions:\n");
-
-    for (auto boundaryCondition : boundaryConditions)
-    {
-        PetscPrintf(PETSC_COMM_WORLD, "#       type:    %i\n", boundaryCondition.type);
-        PetscPrintf(PETSC_COMM_WORLD, "#       xRange:  (%f,%f)\n", boundaryCondition.xRange[0], boundaryCondition.xRange[1]);
-        PetscPrintf(PETSC_COMM_WORLD, "#       yRange:  (%f,%f)\n", boundaryCondition.yRange[0], boundaryCondition.yRange[1]);
-        PetscPrintf(PETSC_COMM_WORLD, "#       zRange:  (%f,%f)\n", boundaryCondition.zRange[0], boundaryCondition.zRange[1]);
-        PetscPrintf(PETSC_COMM_WORLD, "#       DOF:     (");
-        for (PetscInt dof : boundaryCondition.degreesOfFreedom)
-            PetscPrintf(PETSC_COMM_WORLD, "%i,", dof);
-        PetscPrintf(PETSC_COMM_WORLD, ")\n#       value:    %f\n", boundaryCondition.value);
-    }
 
     /* Clone Petsc settings from topopt (it initializes everything) */
     Vec initialPositions;
@@ -99,8 +101,8 @@ uint32_t HypOptLib::newRun(std::vector<uint32_t>  *iterationSaveRange)
         PetscCall(VecSet(initialVelocities, std::sqrt(targetTemperature)));
     }
 
-    SensitivitiesWrapper    sensitivities(physics, opt->Emin, opt->Emax, penalty, volumeFraction);
-    FilterWrapper           wrappedFilter(filter, opt->m);
+    SensitivitiesWrapper    sensitivities(physics, this->Emin, this->Emax, penalty, volumeFraction);
+    FilterWrapper           wrappedFilter(filter, numConstraints);
     LagrangeMultiplier      lagrangianMultiplier(wrappedFilter, volumeFraction);
     FileManager             output(physics);
 
@@ -112,8 +114,8 @@ uint32_t HypOptLib::newRun(std::vector<uint32_t>  *iterationSaveRange)
                           gridDimensions.at(0),
                           gridDimensions.at(1),
                           gridDimensions.at(2),
-                          opt->penal,
-                          opt->rmin,
+                          penalty,
+                          minimumFilterRadius,
                           maximumIterations,
                           saveFrequency,
                           noseHooverChainOrder,
@@ -124,6 +126,8 @@ uint32_t HypOptLib::newRun(std::vector<uint32_t>  *iterationSaveRange)
                           boundaryConditions);
 
     PetscPrintf(PETSC_COMM_WORLD, "# Initialing Solver\n");
+
+    printOptions(*iterationSaveRange);
 
     Hyperoptimization solver;
     PetscErrorCode status = solver.init(sensitivities,
@@ -140,6 +144,7 @@ uint32_t HypOptLib::newRun(std::vector<uint32_t>  *iterationSaveRange)
                                         saveHamiltonian,
                                         volumeFraction,
                                         saveFrequency,
+                                        printInfo,
                                         maxSimTime);
 
     if (0 != status)
@@ -200,6 +205,11 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
                                 &previousDomain,
                                 &prevBoundaryConditions);
 
+    if (overrideRestartTimestep)
+    {
+        timestep = this->timestep;
+    }
+
     // STEP 1: THE OPTIMIZATION PARAMETERS, DATA AND MESH (!!! THE DMDA !!!)
 
     PetscInt xMeshDimension = gridDimensions.at(0)+1;
@@ -220,26 +230,14 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
         newBCs = prevBoundaryConditions;
     }
 
-    TopOpt* opt                 = new TopOpt(xMeshDimension, yMeshDimension, zMeshDimension, penalty, minimumFilterRadius, newDomain);
-    LinearElasticity* physics   = new LinearElasticity(opt->da_nodes, newBCs);
-    Filter* filter              = new Filter(opt->da_nodes, opt->xPhys, opt->filter, opt->rmin);
+    TopOpt* opt                 = new TopOpt(xMeshDimension, yMeshDimension, zMeshDimension, multigridLevels, newDomain);
+    LinearElasticity* physics   = new LinearElasticity(opt->da_nodes, newBCs, maxFeaIterations, multigridLevels);
+
+    /* Always use filter type 1 -- none others are supported by Hyperoptimization. */
+    Filter* filter              = new Filter(opt->da_nodes, opt->xPhys, 1, minimumFilterRadius);
 
     PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
     PetscPrintf(PETSC_COMM_WORLD, "########################### Hyperoptimization ##########################\n");
-    PetscPrintf(PETSC_COMM_WORLD, "# Restarting with file: %s\n", restartPath.c_str());
-    PetscPrintf(PETSC_COMM_WORLD, "# - Boundary Conditions:\n");
-
-    for (auto boundaryCondition : newBCs)
-    {
-        PetscPrintf(PETSC_COMM_WORLD, "#       type:    %i\n", boundaryCondition.type);
-        PetscPrintf(PETSC_COMM_WORLD, "#       xRange:  (%f,%f)\n", boundaryCondition.xRange[0], boundaryCondition.xRange[1]);
-        PetscPrintf(PETSC_COMM_WORLD, "#       yRange:  (%f,%f)\n", boundaryCondition.yRange[0], boundaryCondition.yRange[1]);
-        PetscPrintf(PETSC_COMM_WORLD, "#       zRange:  (%f,%f)\n", boundaryCondition.zRange[0], boundaryCondition.zRange[1]);
-        PetscPrintf(PETSC_COMM_WORLD, "#       DOF:     (");
-        for (PetscInt dof : boundaryCondition.degreesOfFreedom)
-            PetscPrintf(PETSC_COMM_WORLD, "%i,", dof);
-        PetscPrintf(PETSC_COMM_WORLD, ")\n#       value:    %f\n", boundaryCondition.value);
-    }
 
     HypOptParameters finalState;
     Vec finalStateField;
@@ -259,8 +257,8 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
 
     physics->CopyVecToStateField(finalStateField);
 
-    SensitivitiesWrapper    sensitivities(physics, opt->Emin, opt->Emax, penalty, volumeFraction);
-    FilterWrapper           wrappedFilter(filter, opt->m);
+    SensitivitiesWrapper    sensitivities(physics, this->Emin, this->Emax, penalty, volumeFraction);
+    FilterWrapper           wrappedFilter(filter, numConstraints);
     LagrangeMultiplier      lagrangianMultiplier(wrappedFilter, volumeFraction);
     FileManager             output(physics);
 
@@ -272,8 +270,8 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
                           gridDimensions[0],
                           gridDimensions[1],
                           gridDimensions[2],
-                          opt->penal,
-                          opt->rmin,
+                          penalty,
+                          minimumFilterRadius,
                           maximumIterations,
                           saveFrequency,
                           noseHooverChainOrder,
@@ -284,6 +282,8 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
                           newBCs);
 
     PetscPrintf(PETSC_COMM_WORLD, "# Initialing Solver\n");
+
+    printOptions(*iterationSaveRange, "restart", restartPath);
 
     Hyperoptimization solver;
     PetscErrorCode status = solver.init(sensitivities,
@@ -304,6 +304,7 @@ uint32_t HypOptLib::restartRun( std::string restartPath,
                                         saveHamiltonian,
                                         volumeFraction,
                                         saveFrequency,
+                                        printInfo,
                                         maxSimTime);
 
     if (0 != status)
@@ -356,7 +357,7 @@ void HypOptLib::generateRandomInitialConditionsFile(std::vector<uint32_t> *gridD
     domain.yMaximum = 0;
     domain.zMinimum = 0;
     domain.zMaximum = 0;
-    TopOpt* opt = new TopOpt(xMeshDimension, yMeshDimension, zMeshDimension, penalty, minimumFilterRadius, domain);
+    TopOpt* opt = new TopOpt(xMeshDimension, yMeshDimension, zMeshDimension, multigridLevels, domain);
 
     /* Clone Petsc vectors from topopt */
     Vec initialPositions;
@@ -364,7 +365,7 @@ void HypOptLib::generateRandomInitialConditionsFile(std::vector<uint32_t> *gridD
     VecDuplicate(opt->x, &initialPositions);
     VecDuplicate(opt->x, &initialVelocities);
 
-    PetscPrintf(PETSC_COMM_WORLD, "########################### Hyperoptimization ##########################\n");
+    PetscPrintf(PETSC_COMM_WORLD, "###################### Generate Initial Conditions #####################\n");
 
     PetscPrintf(PETSC_COMM_WORLD, "# Generating Random Starting Vectors given:\n");
     PetscPrintf(PETSC_COMM_WORLD, "# - Temperature: %f\n", targetTemperature);
@@ -415,7 +416,7 @@ PetscErrorCode HypOptLib::randomizeStartingVectors(Vec initialPosition, Vec init
     /* Assign uniform random distribution as initial values */
     for (PetscInt i = 0; i < localSize; i++)
     {
-        initialValues[i] = distribution(generator); //volumeFraction;
+        initialValues[i] = distribution(generator);
     }
 
     /* Restore Vector */
@@ -429,11 +430,10 @@ PetscErrorCode HypOptLib::randomizeStartingVectors(Vec initialPosition, Vec init
     std::default_random_engine generator2;
     std::uniform_real_distribution<PetscScalar> distribution2;
 
-    // distribution2.reset();
     distribution2 = std::uniform_real_distribution<PetscScalar>(-0.5, 0.5);
     for (PetscInt i = 0; i < localSize; i++)
     {
-        initialValues[i] = distribution2(generator); //volumeFraction;
+        initialValues[i] = distribution2(generator);
     }
 
     PetscCall(VecRestoreArray(initialVelocity, &initialValues));
@@ -465,7 +465,7 @@ PetscErrorCode HypOptLib::runLoop(Hyperoptimization solver, PetscInt numItr, Fil
 
     if (variableTimestep)
     {
-        PetscPrintf(PETSC_COMM_WORLD, "#   - Enabling variable timestep\n");
+        PetscPrintf(PETSC_COMM_WORLD, "# Enabling variable timestep\n");
         solver.enableVariableTimestep(timestepConstantAlpha, timestepConstantBeta, diffusionConstant);
     }
 
@@ -479,6 +479,8 @@ PetscErrorCode HypOptLib::runLoop(Hyperoptimization solver, PetscInt numItr, Fil
     }
     else
     {
+        PetscPrintf(PETSC_COMM_WORLD, "########################################################################\n");
+
         output.saveFinalState(  solver.getSaveHamiltonian(),
                                 solver.getFinalState(),
                                 solver.getHamiltonians(),
@@ -591,3 +593,74 @@ void HypOptLib::setBoundaryConditions(std::vector<BoundaryCondition> *boundaryCo
     }
 }
 
+void HypOptLib::printOptions(std::vector<uint32_t>  iterationSaveRange, std::string options, std::string restartPath)
+{
+
+    if (DEBUG <= printInfo)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "# - Boundary Conditions:\n");
+
+        for (auto boundaryCondition : boundaryConditions)
+        {
+            PetscPrintf(PETSC_COMM_WORLD, "#       type:    %i\n", boundaryCondition.type);
+            PetscPrintf(PETSC_COMM_WORLD, "#       xRange:  (%.1f,%.1f)\n", boundaryCondition.xRange[0], boundaryCondition.xRange[1]);
+            PetscPrintf(PETSC_COMM_WORLD, "#       yRange:  (%.1f,%.1f)\n", boundaryCondition.yRange[0], boundaryCondition.yRange[1]);
+            PetscPrintf(PETSC_COMM_WORLD, "#       zRange:  (%.1f,%.1f)\n", boundaryCondition.zRange[0], boundaryCondition.zRange[1]);
+            PetscPrintf(PETSC_COMM_WORLD, "#       DOF:     (");
+            for (PetscInt dof : boundaryCondition.degreesOfFreedom)
+                PetscPrintf(PETSC_COMM_WORLD, "%i,", dof);
+            PetscPrintf(PETSC_COMM_WORLD, ")\n#       value:    %.2e\n", boundaryCondition.value);
+        }
+    }
+    if ("restart" == options)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "# Restarting with file: %s\n", restartPath.c_str());
+    }
+    PetscPrintf(PETSC_COMM_WORLD, "# ------------ Hyperoptimization Settings ------------\n");
+    PetscPrintf(PETSC_COMM_WORLD, "# - targetTemperature:         %.2e\n", targetTemperature);
+    if (INFO <= printInfo)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "# - noseHooverChainOrder:      %d\n", noseHooverChainOrder);
+        PetscPrintf(PETSC_COMM_WORLD, "# - randomStartingValues:      %s\n", (0 == randomStartingValues)        ? "False" : "True");
+        PetscPrintf(PETSC_COMM_WORLD, "# - saveHamiltonian:           %s\n", (0 == saveHamiltonian)             ? "False" : "True");
+    }
+    PetscPrintf(PETSC_COMM_WORLD, "# --------------- Simulation Settings ----------------\n");
+    PetscPrintf(PETSC_COMM_WORLD, "# - timestep:                  %.2e\n", timestep);
+    PetscPrintf(PETSC_COMM_WORLD, "# - maximumIterations:         %d\n", maximumIterations);
+    if (std::numeric_limits<double>::max() > maxSimTime)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "# - maxSimTime:                %.2e\n", maxSimTime);
+    }
+    if (variableTimestep && (DEBUG <= printInfo))
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "# - timestepConstantAlpha:     %.2e\n", timestepConstantAlpha);
+        PetscPrintf(PETSC_COMM_WORLD, "# - timestepConstantBeta:      %.2e\n", timestepConstantBeta);
+        PetscPrintf(PETSC_COMM_WORLD, "# - diffusionConstant:         %.2e\n", diffusionConstant);
+    }
+    PetscPrintf(PETSC_COMM_WORLD, "# - iterationSaveRange:        (%i, %i)\n", iterationSaveRange[0], iterationSaveRange[1]);
+    PetscPrintf(PETSC_COMM_WORLD, "# - saveFrequency:             %d\n", saveFrequency);
+    if (DEBUG <= printInfo)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "# - restartUseNewMeshes:       %s\n", (0 == restartUseNewMeshes)         ? "False" : "True");
+        PetscPrintf(PETSC_COMM_WORLD, "# - overrideRestartTimestep:   %s\n", (0 == overrideRestartTimestep)     ? "False" : "True");
+    }
+    PetscPrintf(PETSC_COMM_WORLD, "# - variableTimestep:          %s\n", (0 == variableTimestep)            ? "False" : "True");
+    PetscPrintf(PETSC_COMM_WORLD, "# - initialConditionsFromFile: %s\n", (0 == initialConditionsFromFile)   ? "False" : "True");
+    PetscPrintf(PETSC_COMM_WORLD, "# - printInfo:                 %d\n", printInfo);
+
+    if (INFO <= printInfo)
+    {
+        PetscPrintf(PETSC_COMM_WORLD, "# ---------------- Physical Settings -----------------\n");
+        PetscPrintf(PETSC_COMM_WORLD, "# - volumeFraction:            %.2e\n", volumeFraction);
+        PetscPrintf(PETSC_COMM_WORLD, "# - minimumFilterRadius:       %.2e\n", minimumFilterRadius);
+        PetscPrintf(PETSC_COMM_WORLD, "# - penalty:                   %.2e\n", penalty);
+        if (DEBUG <= printInfo)
+        {
+            PetscPrintf(PETSC_COMM_WORLD, "# - Emin:                      %.2e\n", Emin);
+            PetscPrintf(PETSC_COMM_WORLD, "# - Emax:                      %.2e\n", Emax);
+            PetscPrintf(PETSC_COMM_WORLD, "# - maxFeaIterations:          %d\n", maxFeaIterations);
+            PetscPrintf(PETSC_COMM_WORLD, "# - multigridLevels:           %d\n", multigridLevels);
+        }
+        PetscPrintf(PETSC_COMM_WORLD, "# ----------------------------------------------------\n");
+    }
+}

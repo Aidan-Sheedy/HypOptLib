@@ -19,7 +19,7 @@
  Updated: June 2019, Niels Aage
  Updated: February 2024, Aidan Sheedy
 
-Copyright (C) 2013-2019,
+Copyright (C) 2013-2024,
 
  Disclaimer:
  The authors reserves all rights but does not guaranty that the code is
@@ -50,9 +50,11 @@ class TopOpt {
 
   public:
     // Constructor/Destructor
-    TopOpt(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscScalar penalty, PetscScalar minimumFilterRadius, DomainCoordinates domainCoordinates);
+    TopOpt(PetscInt xDimensions, PetscInt yDimensions, PetscInt zDimensions, PetscInt multigridLevels, DomainCoordinates domainCoordinates);
+#ifdef BUILD_MMA
     TopOpt(PetscInt nconstraint);
     TopOpt();
+#endif
     ~TopOpt();
 
     // Method to allocate MMA with/without restarting
@@ -65,7 +67,9 @@ class TopOpt {
     PetscScalar dx, dy, dz; // Element size
     PetscInt    nxyz[3];    // Number of nodes in each direction
     PetscInt    nlvls;      // Number of multigrid levels
+#ifdef BUILD_MMA
     PetscScalar nu;         // Poisson's ratio
+#endif
     /* NOTE: two meshes are needed such the both
      * nodal and element mesh share the partitioning
      */
@@ -75,6 +79,7 @@ class TopOpt {
     DM da_elem;
 
     // Optimization parameters
+#ifdef BUILD_MMA
     PetscInt     n;      // Total number of design variables
     PetscInt     nloc;   // Local number of local nodes?
     PetscInt     m;      // Number of constraints
@@ -85,11 +90,11 @@ class TopOpt {
     PetscScalar  Xmax;   // Max. value of design variables
 
     PetscScalar movlim;     // Max. change of design variables
-    // PetscScalar volfrac;    // Volume fraction
+    PetscScalar volfrac;    // Volume fraction
     PetscScalar penal;      // Penalization parameter
     PetscScalar Emin, Emax; // Modified SIMP, max and min E
 
-    // PetscInt maxItr; // Max iterations
+    PetscInt maxItr; // Max iterations
 
     PetscScalar rmin;             // filter radius
     PetscInt    filter;           // Filter type
@@ -97,38 +102,35 @@ class TopOpt {
     PetscReal   beta;
     PetscReal   betaFinal;
     PetscReal   eta;
-
+#endif
     Vec  x;          // Design variables
-    Vec  xTilde;     // Filtered field
     Vec  xPhys;      // Physical variables (filtered x)
+#ifdef BUILD_MMA
+    Vec  xTilde;     // Filtered field
     Vec  dfdx;       // Sensitivities of objective
     Vec  xmin, xmax; // Vectors with max and min values of x
     Vec  xold;       // x from previous iteration
     Vec* dgdx;       // Sensitivities of constraints (vector array)
 
     // Restart data for MMA:
-    PetscBool   restart, flip;
+    // PetscBool   restart, flip;
     std::string restdens_1, restdens_2;
     Vec         xo1, xo2, U, L;
-
+#endif
   private:
     // Allocate and set default values
     void           Init(PetscInt xDimensions,
                         PetscInt yDimensions,
                         PetscInt zDimensions,
-                        PetscScalar penalty,
-                        PetscScalar minimumFilterRadius,
                         DomainCoordinates domainCoordinates);
     PetscErrorCode SetUp(PetscInt xDimensions,
                          PetscInt yDimensions,
                          PetscInt zDimensions,
-                         PetscScalar penalty,
-                         PetscScalar minimumFilterRadius,
                          DomainCoordinates domainCoordinates);
 
     PetscErrorCode SetUpMESH();
     PetscErrorCode SetUpOPT();
-
+#ifdef BUILD_MMA
     // Restart filenames
     std::string filename00, filename00Itr, filename01, filename01Itr;
 
@@ -140,6 +142,7 @@ class TopOpt {
         }
         return PETSC_FALSE;
     }
+#endif
 };
 
 #endif

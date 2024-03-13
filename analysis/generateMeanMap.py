@@ -6,7 +6,21 @@ an arbitrary number of restart files.
 
 Author: Aidan Sheedy
 
-TODO This file needs license information.
+Copyright (C) 2024 Aidan Sheedy
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import h5py
@@ -17,11 +31,10 @@ from utilities import *
 files = ['SampleFiles/sample_cantilever.h5',
          'SampleFiles/sample_cantilever_restart.h5']
 
-# files = ['G:/Projects/ENPH455/PETSc_paper_github/Hyperoptimization_using_Petsc/run/medium_cantilever/t0.001/medium_cantilever_0.001deg.h5'
-#         ]
-
 # Manually decide when the simulation has converged.
 converged_iteration = 8580
+useIterationConverged = False
+converged_time = 0.6
 
 # Get settings from file. If multiple files, assume each file has the same settings as the first.
 hdf5File = h5py.File(files[0])
@@ -30,6 +43,9 @@ nely = hdf5File["/Setting"].attrs["nely"]
 nelz = hdf5File["/Setting"].attrs["nelz"]
 dt = hdf5File["/Setting"].attrs["dt"]
 hdf5File.close()
+
+if useIterationConverged:
+    converged_time = converged_iteration*dt
 
 # Initialize variables
 mean_map = np.zeros(shape=(nelz, nely, nelx))
@@ -40,8 +56,12 @@ i = 0
 for file in files:
     hdf5File = h5py.File(file)
 
-    # TODO ---- This should be parsed from the file once this is supported.
-    saveFreq = 10
+    try:
+        saveFreq = hdf5File["/Setting"].attrs["saveFreq"]
+    except:
+        print("Provided file does not indicate save frequency. Using 10 as default.")
+        saveFreq = 10
+
     names = getSortedNames(hdf5File["/Dataset/State"])
     for name in names:
         # The iterations start saving at iteration 0.
@@ -51,7 +71,7 @@ for file in files:
         i += 1
 
         # only sum iterations that have converged.
-        if ( converged_iteration*dt < timestamp ):
+        if ( converged_time < timestamp ):
             iteration = np.asarray(hdf5File[name])
             mean_map += np.asarray(iteration)
             num_iterations += 1

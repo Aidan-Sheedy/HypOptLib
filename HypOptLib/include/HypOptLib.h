@@ -5,7 +5,21 @@
  *
  * @author Aidan Sheedy
  *
- * @todo THIS FILE NEEDS LICENSE INFORMATION
+ * Copyright (C) 2024 Aidan Sheedy
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  ******************************************************************************/
 
@@ -293,6 +307,59 @@ class HypOptLib
             this->restartUseNewMeshes = true;
         }
 
+        /**
+         * Compatibility flag. Call this function if the restart file provided was generated before the custom mesh and boundary
+         * conditions were implemented.
+         *
+         * @warning if this flag is set, the grid properties and boundary conditions supplied *must* match the restart file.
+         */
+        void setLoggingVerbosity(verbosity printInfo)
+        {
+            this->printInfo = printInfo;
+        }
+
+        /**
+         * Optional setting to restrict number of iterations on the Krylov Method iterative solver.
+         *
+         * The default value is 200, and is recommended for low temperature simulations. At high temperatures,
+         * the compliance of the system can become very large, and the number of iterations (and hence compute time)
+         * to solve the Finite Element Analysis (FEA) becomes quite high. In these situations, it is recomended to
+         * lower the maximum number of iterations. However, lowering the iteration count effectively truncates the solution,
+         * so the accuracy will become much reduced. This should not be an issue for high temperature simulations, where
+         * the solution space is less suceptible to lower FEA accuracy.
+         *
+         * @param maxIterations maximum number of iterations for the Kylov method iterative solver.
+         */
+        void setMaximumFeaSolverIterations(uint32_t maxIterations)
+        {
+            this->maxFeaIterations = maxIterations;
+        }
+
+        /**
+         * Optional setting to use the timestep provided by HypOptLib::setTimestep instead of the value in the restart file.
+         */
+        void overrideRestartFileTimestep()
+        {
+            this->overrideRestartTimestep = true;
+        }
+
+        /**
+         * Optional setting to update emin and emax values for linear elasticity solving.
+         */
+        void setElimits(double Emin, double Emax)
+        {
+            this->Emin = Emin;
+            this->Emax = Emax;
+        }
+
+        /**
+         * Optional setting to update number of multigrid levels.
+         */
+        void setMultigridLevels(uint32_t levels)
+        {
+            this->multigridLevels = levels;
+        }
+
     private:
         /**
          * Utility function, runs the design loop set up by either newRun or restartRun.
@@ -317,31 +384,49 @@ class HypOptLib
          */
         PetscErrorCode randomizeStartingVectors(Vec initialPosition, Vec initialVelocity);
 
+        /**
+         * Prints the simulation settings. Uses logging level to decide on how many to print.
+         *
+         * @param iterationSaveRange range of iterations to save to output file.
+         * @param options [optional] "restart" or empty. Prints additional logs.
+         * @param restartPath [optional] restart setting to print the restarting file path.
+         */
+        void printOptions(std::vector<uint32_t> iterationSaveRange, std::string options = "", std::string restartPath = "");
+
+        /* Simulation Settings */
         std::string savePath                = "hypopt_output.h5";
+        std::string initialConditionsFile   = "";
         double      targetTemperature       = 0;
         double      penalty                 = 3;
         double      minimumFilterRadius     = 0.08;
         double      volumeFraction          = 0.12;
         double      timestep                = 0.001;
+        double      Emin                    = 1.0e-9;
+        double      Emax                    = 1.0;
+        double      timestepConstantAlpha   = 1.1;
+        double      timestepConstantBeta    = 0.99;
+        double      diffusionConstant       = 0.00000001;
+        double      maxSimTime              = std::numeric_limits<double>::max();
         uint32_t    noseHooverChainOrder    = 10;
         uint32_t    maximumIterations       = 100;
         uint32_t    saveFrequency           = 1;
+        uint32_t    maxFeaIterations        = 200;
+        uint32_t    multigridLevels         = 4;
         bool        randomStartingValues    = true;
         bool        saveHamiltonian         = false;
         bool        restartUseNewMeshes     = false;
+        bool        overrideRestartTimestep = false;
+        bool        variableTimestep        = false;
+        bool        initialConditionsFromFile = false;
+        verbosity   printInfo               = INFO;
 
+        /* This is not exposed to Python. */
+        PetscInt numConstraints = 1;
+
+        /* Required Mesh Settings */
         std::vector<uint32_t> gridDimensions;
         DomainCoordinates domain = {0};
         std::vector<BoundaryCondition> boundaryConditions;
-
-        bool   variableTimestep = false;
-        double timestepConstantAlpha = 1.1;
-        double timestepConstantBeta = 0.99;
-        double diffusionConstant = 0.00000001;
-        double maxSimTime = std::numeric_limits<double>::max();
-
-        bool        initialConditionsFromFile = false;
-        std::string initialConditionsFile = "";
 };
 
 /**
@@ -399,11 +484,22 @@ PYBIND11_MODULE(HypOptLib, m)
         .def("setMaxSimulationTime",    &HypOptLib::setMaxSimulationTime,   "Optional setting to finish simulation at a given time.")
         .def("setGridProperties",       &HypOptLib::setGridProperties,      "Required settings for grid dimensions and domain.")
         .def("setBoundaryConditions",   &HypOptLib::setBoundaryConditions,  "Required setting for problem boundary conditions.")
-        .def("restartDoesntSupportCustomMesh",   &HypOptLib::restartDoesntSupportCustomMesh,  "Optional setting for cross compatibility.");
+        .def("restartDoesntSupportCustomMesh",   &HypOptLib::restartDoesntSupportCustomMesh,  "Optional setting for cross compatibility.")
+        .def("setLoggingVerbosity",     &HypOptLib::setLoggingVerbosity,    "Optional setting for output verbosity.")
+        .def("setMaximumFeaSolverIterations", &HypOptLib::setMaximumFeaSolverIterations, "Optional setting to restrict number of iterations on the Krylov Method iterative solver.")
+        .def("overrideRestartFileTimestep", &HypOptLib::overrideRestartFileTimestep, "Optional setting to use the provided timestep instead of the one in the restart file.")
+        .def("setMultigridLevels",      &HypOptLib::setMultigridLevels,     "Optional setting to update number of multigrid levels.")
+        .def("setElimits",              &HypOptLib::setElimits,             "Optional setting to update linear elasticity E minimum and maximum.");
 
     py::enum_<BoundaryConditionType>(m, "BoundaryConditionType")
         .value("FIXED_POINT",   FIXED_POINT)
         .value("LOAD",          LOAD)
+        .export_values();
+
+    py::enum_<verbosity>(m, "verbosity")
+        .value("QUIET", QUIET)
+        .value("INFO",  INFO)
+        .value("DEBUG", DEBUG)
         .export_values();
 
     py::class_<BoundaryCondition>(m, "BoundaryCondition")
