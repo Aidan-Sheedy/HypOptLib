@@ -23,14 +23,18 @@ list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake-modules)
 # find_package(PythonInterp 3.7 REQUIRED)
 # find_package(PythonLibs 3.7 REQUIRED)
 
-get_filename_component(PETSC_ABS_DIR "../../petsc" ABSOLUTE)
-set(PETSC_DIR ${PETSC_ABS_DIR})
-set(PETSC_ARCH "arch-linux-c-debug")
+## Set these values to point directly to your petsc location, if it is not found automatically.
+# get_filename_component(PETSC_ABS_DIR "../../petsc" ABSOLUTE)
+# set(PETSC_DIR /usr/local/lib/petsc)
+# set(PETSC_ARCH "arch-linux-c-debug")
 
 find_package(pybind11 REQUIRED)
 find_package(PETSc REQUIRED)
 
 message (STATUS "PETSC COMPILER ${PETSC_COMPILER}")
+
+# Set install settings
+set(CMAKE_INSTALL_RPATH "${PETSC_DIR}/${PETSC_ARCH}/lib")
 
 add_definitions (-std=c++0x)
 
@@ -42,17 +46,11 @@ add_definitions (-g)
 message (STATUS "PETSC_DEFINITIONS ${PETSC_DEFINITIONS}")
 
 file(GLOB SOURCES "src/*.cc")
-# add_executable(HypOptLib ${SOURCES})
 
-# add_subdirectory(pybind11)
+# Pybind11 library instructions
 pybind11_add_module(HypOptLib SHARED ${SOURCES})
 target_include_directories(HypOptLib PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/include ${PETSC_INCLUDES} pybind11/include)
-
 target_link_libraries(HypOptLib PUBLIC ${PETSC_LIBRARIES})
-
-# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/python)
-
-
 
 set_target_properties(
     HypOptLib
@@ -61,3 +59,7 @@ set_target_properties(
         OUTPUT_NAME "HypOptLib"
         LIBRARY_OUTPUT_DIRECTORY "../../run"
     )
+
+# Setup install path. Change the destination if you need a different location.
+find_package(Python ${PYTHON_VERSION} REQUIRED COMPONENTS Interpreter Development)
+install(TARGETS HypOptLib DESTINATION ${Python_SITELIB})
