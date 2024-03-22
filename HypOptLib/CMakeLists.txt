@@ -10,6 +10,10 @@
 # check minimum required cmake version
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
+# Command line options
+option(InstallPythonSysPath "Will use the Python_SITELIB as the libray install directory." OFF)
+option(CustomInstallPath "Sets a custom install path for the library." OFF)
+
 # set the compiler
 set(CMAKE_C_COMPILER mpicc)
 set(CMAKE_CXX_COMPILER mpicxx)
@@ -60,6 +64,16 @@ set_target_properties(
         LIBRARY_OUTPUT_DIRECTORY "../../run"
     )
 
-# Setup install path. Change the destination if you need a different location.
-find_package(Python ${PYTHON_VERSION} REQUIRED COMPONENTS Interpreter Development)
-install(TARGETS HypOptLib DESTINATION ${Python_SITELIB})
+# Setup install path based on command line options.
+if(${InstallPythonSysPath})
+    find_package(Python ${PYTHON_VERSION} REQUIRED COMPONENTS Interpreter Development)
+    install(TARGETS HypOptLib DESTINATION ${Python_SITELIB})
+    message (STATUS "InstallPythonSysPath is TRUE")
+    message (STATUS "Installing to ${CMAKE_INSTALL_PREFIX}/${Python_SITELIB}")
+elseif (NOT ("OFF" MATCHES "${CustomInstallPath}"))
+    INSTALL(TARGETS HypOptLib DESTINATION ${CustomInstallPath})
+    message (STATUS "Custom install path provided.")
+    message (STATUS "Installing to ${CMAKE_INSTALL_PREFIX}/${CustomInstallPath}")
+else()
+    INSTALL(TARGETS HypOptLib DESTINATION lib)
+endif()

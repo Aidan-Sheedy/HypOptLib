@@ -14,13 +14,14 @@ print_help () {
     echo -e "Supported macros:"
     echo -e '\t'build_docs
     echo -e '\t\t'generates documentation for the library in the \'docs\' folder.
-    echo -e '\t'build [options]
+    echo -e '\t'build [clean] [install \<--PySysInstall\> \<--InstallPath=path\>]
     echo -e '\t\t'auto-builds the HypOptLib library.
     echo -e '\t\t'options:
-    echo -e '\t\t' - [none] defaults to all
-    echo -e '\t\t' - all: will build cmake files if none present, otherwise just run make file.
-    echo -e '\t\t' - clean: deletes all build files and objects and rebuilds fresh.
-    echo -e '\t'setup [-mpi]
+    echo -e '\t\t' - clean: optional flag to delete make and cmake cache and files
+    echo -e '\t\t' - install: optional flag to install the library on the system.
+    echo -e '\t\t\t' --PySysInstall additional flag to use the system python dist-packages directory.
+    echo -e '\t\t\t' --InstallPath=path additional flag to use the provided path as install sub-directory.
+    echo -e '\t'setup [--mpi=\<option\>]
     echo -e '\t\t'Sets up the build environment. This can be done manually if this fails. See HypOptLib documentation for more details.
     echo -e '\t\t\t'1. Installs the latest PETSc version if not present
     echo -e '\t\t\t'2. Installs the latest mpi version if not present
@@ -37,10 +38,10 @@ install_dependencies () {
 
     for var in "$@"
     do
-        if [ "-mpi=openmpi" =  $var ]
+        if [ "--mpi=openmpi" =  $var ]
         then
             mpi=openmpi
-        elif [ "-mpi=mpich" =  $var ]
+        elif [ "--mpi=mpich" =  $var ]
         then
             mpi=mpich
         fi
@@ -96,65 +97,62 @@ build_docs () {
 }
 
 build () {
-    if [ 3 -lt $# ]
-    then
-        echo Invalid argument number for macro \'build\'. Run \'./macros.sh \-h\' for more info.
-        exit 0
-    elif [ 1 -eq $# ]
-    then
-        option="all"
-    else
-        option="$2"
-    fi
 
-    if [ 3 -eq $# ]
-    then
-        if [ "install" = $3 ]
+    makeArgs=""
+    cmakeArgs=""
+
+    for var in "$@"
+    do
+        if [ "install" = $var ]
         then
-            install=True
+            makeArgs="$makeArgs install"
+        elif [ "clean" = $var ]
+        then
+            clean=True
+        elif [ "--PySysInstall" = $var ]
+        then
+            if [ $customInstall ]
+            then
+                echo "Can't have both custom and python installs!"
+                exit 0
+            fi
+            pyInstall=True
+            cmakeArgs="$cmakeArgs -DInstallPythonSysPath=ON"
+        elif [[ $var == *"--InstallPath="* ]]
+        then
+            if [ $pyInstall ]
+            then
+                echo "Can't have both custom and python installs!"
+                exit 0
+            fi
+            customInstall=True
+            cmakeArgs="$cmakeArgs -DCustomInstallPath=${var#*=}"
         else
-            echo Invalid argument "$3" for macro \'build "$2"\'. Run \'./macros.sh \-h\' for more info.
+            echo "Invalid argument: $var"
+            exit 0
         fi
-    else
-        install=False
-    fi
+    done
 
-    if [ "clean" = "$option" ]
+    if [ $clean ]
     then
+        echo "-- Cleaning!!!"
         cd run
         rm ./HypOptLib.cpython*
         cd ../HypOptLib/
         rm build -r
-        mkdir build
-        cd build
-        cmake ..
-        if [ "True" = "$install" ]
-        then
-            make install
-        else
-            make
-        fi
-    elif [ "all" = "$option" ]
-    then
-        cd ./HypOptLib
-        if ! test -f ./build/Makefile
-        then
-            rm build -r
-            mkdir build
-            cd build
-            cmake ..
-        else
-            cd build
-        fi
-        if [ "True" = "$install" ]
-        then
-            make install
-        else
-            make
-        fi
-    else
-        echo Invalid argument "$2" for macro \'build\'. Run \'./macros.sh \-h\' for more info.
     fi
+
+    cd ./HypOptLib
+    if ! test -f ./build/Makefile
+    then
+        mkdir build
+    fi
+
+    cd build
+    echo "cmake $cmakeArgs .."
+    cmake $cmakeArgs ..
+    echo "make $makeArgs"
+    make $makeArgs
 }
 
 if [ "-h" = "$1" ]
@@ -165,6 +163,7 @@ then
     build_docs "$@"
 elif [ "build" = "$1" ]
 then
+    shift
     build "$@"
 elif [ "setup" = "$1" ]
 then
