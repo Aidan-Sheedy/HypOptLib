@@ -12,7 +12,11 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 # Command line options
 option(InstallPythonSysPath "Will use the Python_SITELIB as the libray install directory." OFF)
-option(CustomInstallPath "Sets a custom install path for the library." OFF)
+option(CUSTOM_INSTALL_PREFIX "Sets a custom prefix path for the library installation." OFF)
+option(FORCE_INSTALL_PATH "Sets a custom install path for the library." OFF)
+option(USE_PETSC_RPATH "Sets the RPATH to use the Petsc library directory." OFF)
+option(USE_PYTHON_VERSION "The install location will try to use this python version if it is found." OFF)
+
 
 # set the compiler
 set(CMAKE_C_COMPILER mpicc)
@@ -37,8 +41,76 @@ find_package(PETSc REQUIRED)
 
 message (STATUS "PETSC COMPILER ${PETSC_COMPILER}")
 
+MACRO(SUBDIRLIST result curdir)
+    FILE(GLOB children LIST_DIRECTORIES true RELATIVE ${curdir} ${curdir}/*)
+    SET(dirlist "")
+    FOREACH(child ${children})
+        # message(STATUS "    ${curdir} child: ${child}")
+        if (IS_DIRECTORY ${curdir}/${child})
+            # message(STATUS "       ${curdir}/${child} IS DIRECTORY!")
+            LIST(APPEND dirlist ${child})
+        else()
+            # message(STATUS "       ${curdir}/${child} isn't :(")
+        endif()
+    ENDFOREACH()
+    set(${result} ${dirlist})
+    # message(STATUS "dirlist: ${dirlist}")
+    # message(STATUS "result: ${result}")
+ENDMACRO()
+
+MACRO(FIND_INSTALLPATH return)
+    set(INSTALLPATH /lib)
+    if(EXISTS ${CMAKE_INSTALL_PREFIX}${INSTALLPATH})
+        SUBDIRLIST(PREFIX_SUBDIRS ${CMAKE_INSTALL_PREFIX}${INSTALLPATH})
+        foreach(subdir ${PREFIX_SUBDIRS})
+            if (${subdir} MATCHES python.*)
+                if (${subdir} MATCHES /^python$/)
+                    set(INSTALLPATH /lib/${subdir})
+                    break()
+                elseif (EXISTS ${CMAKE_INSTALL_PREFIX}lib/${subdir}/site-packages)
+                    set(INSTALLPATH /lib/${subdir}/site-packages)
+                    break()
+                endif()
+            endif()
+        endforeach()
+    endif()
+    set(${return} ${INSTALLPATH})
+ENDMACRO()
+
+# Setup install path based on command line options.
+if (NOT ("OFF" MATCHES "${CUSTOM_INSTALL_PREFIX}"))
+    set(CMAKE_INSTALL_PREFIX ${CUSTOM_INSTALL_PREFIX})
+endif()
+
+
+if (NOT ("OFF" MATCHES "${FORCE_INSTALL_PATH}"))
+    set(INSTALLPATH ${FORCE_INSTALL_PATH})
+else()
+    if (NOT ("OFF" MATCHES "${USE_PYTHON_VERSION}"))
+        if(EXISTS ${CMAKE_INSTALL_PREFIX}lib/${USE_PYTHON_VERSION}/site-packages)
+            set(INSTALLPATH lib/${USE_PYTHON_VERSION}/site-packages)
+        else()
+            message(WARNING "Could not find python version: ${USE_PYTHON_VERSION}")
+            FIND_INSTALLPATH(INSTALLPATH)
+        endif()
+    else()
+        FIND_INSTALLPATH(INSTALLPATH)
+    endif()
+
+    if (NOT EXISTS ${CMAKE_INSTALL_PREFIX}/${INSTALLPATH})
+        message(ERROR "Could not find appropriate install path in ${CMAKE_INSTALL_PREFIX}")
+        return()
+    endif()
+endif()
+
+message(STATUS "Install path: ${INSTALLPATH}")
+
 # Set install settings
-set(CMAKE_INSTALL_RPATH "${PETSC_DIR}/${PETSC_ARCH}/lib")
+if ("ON" MATCHES "${USE_PETSC_RPATH}")
+    set(CMAKE_INSTALL_RPATH "${PETSC_DIR}/${PETSC_ARCH}/lib")
+else()
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}${INSTALLPATH}")
+endif()
 
 add_definitions (-std=c++0x)
 
@@ -64,16 +136,14 @@ set_target_properties(
         LIBRARY_OUTPUT_DIRECTORY "../../run"
     )
 
-# Setup install path based on command line options.
 if(${InstallPythonSysPath})
     find_package(Python ${PYTHON_VERSION} REQUIRED COMPONENTS Interpreter Development)
     install(TARGETS HypOptLib DESTINATION ${Python_SITELIB})
     message (STATUS "InstallPythonSysPath is TRUE")
-    message (STATUS "Installing to ${CMAKE_INSTALL_PREFIX}/${Python_SITELIB}")
-elseif (NOT ("OFF" MATCHES "${CustomInstallPath}"))
-    INSTALL(TARGETS HypOptLib DESTINATION ${CustomInstallPath})
-    message (STATUS "Custom install path provided.")
-    message (STATUS "Installing to ${CMAKE_INSTALL_PREFIX}/${CustomInstallPath}")
+    message (STATUS "Installing to ${CMAKE_INSTALL_PREFIX}${Python_SITELIB}")
 else()
-    INSTALL(TARGETS HypOptLib DESTINATION lib)
+    message (STATUS "installing to ${CMAKE_INSTALL_PREFIX}${INSTALLPATH}")
+    message(STATUS "    Prefix path: ${CMAKE_INSTALL_PREFIX}")
+    message(STATUS "    Install path: ${INSTALLPATH}")
+    INSTALL(TARGETS HypOptLib DESTINATION ${CMAKE_INSTALL_PREFIX}${INSTALLPATH})
 endif()
