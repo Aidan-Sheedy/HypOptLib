@@ -1,18 +1,20 @@
 from flow import FlowProject
 import cantilevered_beam
-import json
 
 
 class Project(FlowProject):
     pass
 
+class HypOptCAC(environment.DefaultSlurmSnevironment):
+    hostname_pattern=r"cac.*"
+    template = "HypOptCAC.sh"
 
 def is_completed(job):
     return job.isfile("Finished.txt")
 
 @Project.post(is_completed)
 # @Project.operation
-@FlowProject.operation(directives={"nranks": 10})
+@FlowProject.operation(directives={"nranks": 20})
 def simulate_hypoptlib(job):
     with job:
         beam = cantilevered_beam.CantileveredBeam(
