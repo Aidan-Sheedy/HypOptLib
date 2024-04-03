@@ -1,11 +1,11 @@
-from flow import FlowProject
+from flow import FlowProject, environment
 import cantilevered_beam
 
 
 class Project(FlowProject):
     pass
 
-class HypOptCAC(environment.DefaultSlurmSnevironment):
+class HypOptCAC(environment.DefaultSlurmEnvironment):
     hostname_pattern=r"cac.*"
     template = "HypOptCAC.sh"
 
