@@ -14,7 +14,7 @@ def is_completed(job):
 
 @Project.post(is_completed)
 # @Project.operation
-@FlowProject.operation(directives={"nranks": 20})
+@FlowProject.operation(directives={"nranks": 8})
 def simulate_hypoptlib(job):
     with job:
         beam = cantilevered_beam.CantileveredBeam(

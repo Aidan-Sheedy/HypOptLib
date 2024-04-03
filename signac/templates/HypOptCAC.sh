@@ -2,10 +2,10 @@
 
 {% block header %}
     {{- super () -}}
-#SBATCH -ntasks=20
-#SBATCH -nodes=1
-#SBATCH -cpus-per-task=1
-#SBATCH --mem=2G
+#SBATCH --nodes=1
+#SBATCH --ntasks=8
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=2048
 {% endblock header %}
 {% block custom_content %}
 {#
