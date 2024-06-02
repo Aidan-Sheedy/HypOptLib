@@ -34,7 +34,7 @@ Pareto-Laplace filter [1]:
   Z(\beta) = \int_{C_\text{min}(V)}^{\infty}dC e^{-\beta C} \Omega(C,V),
 
 where :math:`\beta` represents the Laplace variable and :math:`C_\text{min}` denotes the
-minimal compliance for a given material volume :math:`V`. :math:`Z(\beta)`, thus acts as a
+minimal compliance for a given material volume :math:`V`. :math:`Z(\beta)` thus acts as a
 generating function, encoding the solution space's geometry through a weighted
 summation over possible design realizations.
 
@@ -52,10 +52,10 @@ material volume through the Dirac delta function.
 
 This redefined :math:`Z(\beta)` serves to geometrize the compliance minimization
 solution space, with :math:`\Omega(C,V)` representing the material distribution
-patterns meeting specific compliance and volume criteria. As :math:`beta` varies,
+patterns meeting specific compliance and volume criteria. As :math:`\beta` varies,
 we transition from emphasizing configurations near minimal compliance to treating
 all configurations equally, providing a comprehensive understanding of the
-solution space dynamics.
+solution space dynamics [2].
 
 Numerical Implementation and Molecular Dynamics
 _______________________________________________
@@ -84,5 +84,5 @@ References
 [1] Aliahmadi, H., Perez, R. and van Anders, G. (2024) Transforming Design Spaces
 Using Pareto-Laplace Filters [Preprint]. doi:arXiv:2403.00631.
 
-[2] Aliahmadi, H., Perez, R. and van Anders, G. (2024) Hyperoptimization insight
-for computational morphogenesis [Preprint]. doi:arXiv:--.
+[2] Aliahmadi, H., Sheedy, A., Perez, R. and van Anders, G. (2024) Hyperoptimization insight
+for computational morphogenesis [Preprint]. [Unpublished]
