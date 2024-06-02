@@ -1,3 +1,10 @@
+++++++++++++++++++++++++
+Getting Started
+++++++++++++++++++++++++
+
+These sections describe downloading, building, and running HypOptLib.
+This should act as a basic quick-start tutorial.
+
 ========================
 Installation and Setup
 ========================
@@ -14,6 +21,10 @@ provided :doc:`here </apidocs/macros>`.
 
 Automatic Install
 ========================
+
+This installation method can be useful for personal systems, but may not be ideal as it
+won't account for any idiosyncrasies. However, it can also be useful to look through the
+bash script to see which dependencies are being installed.
 
 1. Clone the HypOptLib repository from https://github.com/Aidan-Sheedy/Hyperoptimization_using_Petsc.git.
 
@@ -72,7 +83,7 @@ When configuring PETSc, you must add the `--download-hdf5` tag:
     ./configure --download-hdf5
 
 Some operating systems or environments may also need additional configure flags. If the compilation
-fails, check the `PETSc install reference <https://petsc.org/release/install/install/>` for help.
+fails, check the `PETSc install reference <https://petsc.org/release/install/install/>`_ for help.
 
 .. note::
 
@@ -83,8 +94,26 @@ fails, check the `PETSc install reference <https://petsc.org/release/install/ins
 Building and Running
 ========================
 
-They macros script again provides automatic building, but this can still be done
+The macros script again provides automatic building, but this can still be done
 manually.
+
+In general, a few items may need to be set manually to ensure the build works:
+
+1. In **HypOptLib/CMakeLists.txt**, the two lines setting **PETSC_DIR** and **PETSC_ARCH**
+   may need to be uncommented and set to point to your local PETSc install location.
+
+2. In the same file, the two lines setting the **PythonInterp** and **PythonLibs** versions
+   may be needed to help CMake find the correct Python version.
+
+3. At the end of the file, you may need to uncomment the line 
+
+   .. code-block:: bash
+
+        # list( APPEND CMAKE_INSTALL_RPATH ${PETSC_DIR}/lib )
+
+   if petsc is not being found or if the library is not being imported to python after building
+   with make install. Only do this if you actually want to add the PETSc library to the executable
+   rpath.
 
 Manual Buildings
 ========================
@@ -92,17 +121,42 @@ Manual Buildings
 1. Make a folder called `build` in the HypOptLib directory.
 
 2. In that folder, run:
+
     .. code-block:: bash
 
         cmake ..
 
 3. Then, run:
+
     .. code-block:: bash
 
         make
 
-4. The output will be built in the `run` folder alongside `main.py`. Alternatively, 
+4. The output binary will be built in the `run` folder alongside `main.py`. You can import HypOptLib
+   in any Python file that has this binary in the same runtime directory.
 
+Make Install
+------------------------
+
+To install HypOptLib system or user-wide, you can run :code:`make install` to install the library
+to the location determined by the cmake command.
+
+The default install location is to **${CMAKE_INSTALL_PREFIX}/lib**, where for my WSL setup this resolves
+to **/usr/local/lib**. This is probably not the ideal location for an install, so there are a few cmake
+command line options to help set a better install location:
+
+ * -DCUSTOM_INSTALL_PREFIX=<prefix> will set the install path to **${prefix}/lib** instead of
+   **${CMAKE_INSTALL_PREFIX}/lib**
+
+ * -DFORCE_INSTALL_PATH=<path> will set the install path to **${CMAKE_INSTALL_PREFIX}/<path>** instead of
+   **${CMAKE_INSTALL_PREFIX}/lib**
+
+ * -DInstallPythonSysPath=ON will use the Python_SITELIB as the libray install directory. This is **not**
+   recommended in general, especially on clusters or shared systems. However it is a quick and dirty way to
+   install the library globally on personal systems.
+
+Of course, it these options may not be enough for all circumstances, so it may still be necessary to modify
+the cmake files for your own specific environment.
 
 Automatic Building
 ========================
@@ -115,7 +169,8 @@ To build automatically, use the following macro.sh command:
 
 By default, the `all` build option will be used, which builds cmake and make commands. If
 the cmake output is already complete, only make will be run. The `clean` build option will
-clear all cmake and make outputs and objects.
+clear all cmake and make outputs and objects. This should be equivalent to following the manual
+installation without running :code:`make install`.
 
 Running HypOptLib
 ========================
@@ -225,4 +280,4 @@ Then, run
 
     ./macros.sh build_docs
 
-to compile the documentation. The output will be available in `docs/build/html/index.html`.
+to compile the documentation. The output will be available in **docs/build/html/index.html**.

@@ -86,6 +86,7 @@ find_path (PETSC_DIR include/petsc.h
   HINTS ENV PETSC_DIR
   PATHS
   /usr/lib/petsc
+  /usr/local/lib/petsc
   # Debian paths
   ${DEB_PATHS}
   # Arch Linux path
@@ -93,7 +94,11 @@ find_path (PETSC_DIR include/petsc.h
   # MacPorts path
   /opt/local/lib/petsc
   $ENV{HOME}/petsc
+  lmod path
+  $ENV{PETSC_DIR}
   DOC "PETSc Directory")
+
+message (STATUS "PETSC Directory ${PETSC_DIR}")
 
 find_program (MAKE_EXECUTABLE NAMES make gmake)
 
@@ -101,13 +106,14 @@ if (PETSC_DIR AND NOT PETSC_ARCH)
   set (_petsc_arches
     $ENV{PETSC_ARCH}                   # If set, use environment variable first
     linux-gnu-c-debug linux-gnu-c-opt  # Debian defaults
-    x86_64-unknown-linux-gnu i386-unknown-linux-gnu)
+    x86_64-unknown-linux-gnu i386-unknown-linux-gnu 
+    arch-linux-c-debug arch-linux-c-opt) # Ubuntu defaults
   set (petscconf "NOTFOUND" CACHE FILEPATH "Cleared" FORCE)
   foreach (arch ${_petsc_arches})
     if (NOT PETSC_ARCH)
       find_path (petscconf petscconf.h
         HINTS ${PETSC_DIR}
-        PATH_SUFFIXES ${arch}/include bmake/${arch}
+        PATH_SUFFIXES include ${arch}/include bmake/${arch}
         NO_DEFAULT_PATH)
       if (petscconf)
         set (PETSC_ARCH "${arch}" CACHE STRING "PETSc build architecture")
@@ -116,6 +122,8 @@ if (PETSC_DIR AND NOT PETSC_ARCH)
   endforeach (arch)
   set (petscconf "NOTFOUND" CACHE INTERNAL "Scratch variable" FORCE)
 endif (PETSC_DIR AND NOT PETSC_ARCH)
+
+message (STATUS "PETSC Arch ${PETSC_ARCH}")
 
 set (petsc_slaves LIBRARIES_SYS LIBRARIES_VEC LIBRARIES_MAT LIBRARIES_DM LIBRARIES_KSP LIBRARIES_SNES LIBRARIES_TS
   INCLUDE_DIR INCLUDE_CONF)
@@ -126,7 +134,10 @@ find_package_multipass (PETSc petsc_config_current
 
 # Determine whether the PETSc layout is old-style (through 2.3.3) or
 # new-style (>= 3.0.0)
-if (EXISTS "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables") # > 3.5
+if (EXISTS "${PETSC_DIR}/lib/petsc/conf/petscvariables") # > ????
+  set (petsc_conf_rules "${PETSC_DIR}/lib/petsc/conf/rules")
+  set (petsc_conf_variables "${PETSC_DIR}/lib/petsc/conf/variables")
+elseif (EXISTS "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables") # > 3.5
   set (petsc_conf_rules "${PETSC_DIR}/lib/petsc/conf/rules")
   set (petsc_conf_variables "${PETSC_DIR}/lib/petsc/conf/variables")
 elseif (EXISTS "${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h")   # > 2.3.3
@@ -287,7 +298,7 @@ int main(int argc,char *argv[]) {
 
 
   find_path (PETSC_INCLUDE_DIR petscts.h HINTS "${PETSC_DIR}" PATH_SUFFIXES include NO_DEFAULT_PATH)
-  find_path (PETSC_INCLUDE_CONF petscconf.h HINTS "${PETSC_DIR}" PATH_SUFFIXES "${PETSC_ARCH}/include" "bmake/${PETSC_ARCH}" NO_DEFAULT_PATH)
+  find_path (PETSC_INCLUDE_CONF petscconf.h HINTS "${PETSC_DIR}" PATH_SUFFIXES include "${PETSC_ARCH}/include" "bmake/${PETSC_ARCH}" NO_DEFAULT_PATH)
   mark_as_advanced (PETSC_INCLUDE_DIR PETSC_INCLUDE_CONF)
   set (petsc_includes_minimal ${PETSC_INCLUDE_CONF} ${PETSC_INCLUDE_DIR})
 
