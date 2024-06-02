@@ -112,6 +112,10 @@ else()
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}${INSTALLPATH}")
 endif()
 
+## This line may be needed if petsc is not being found or if the library is not being imported
+## to python after building with make install.
+# list( APPEND CMAKE_INSTALL_RPATH ${PETSC_DIR}/lib )
+
 add_definitions (-std=c++0x)
 
 # include_directories("${CMAKE_SOURCE_DIR}/include" "${CMAKE_BINARY_DIR}/include" "${PETSC_INCLUDES}" "pybind11/include")
