@@ -50,7 +50,7 @@ install_dependencies () {
     if [ "openmpi" =  $mpi ]
     then
         petscCfgArgs+=' --download-openmpi'
-    elif [ "mpich" =  $var ]
+    elif [ "mpich" =  $mpi ]
     then
         petscCfgArgs+=' --download-mpich'
     fi
