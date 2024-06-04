@@ -23,9 +23,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Setup Dependencies
+      # Install dependencies and Petsc
+      run: ./macros.sh setup
+
     - name: Build
-      # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/HypOptLib/build --config ${{env.BUILD_TYPE}} ..
+      # Build HypOptLib
+      run:  ./macros.sh build --DefaultPetscLocation
 
     # - name: Test
     #   working-directory: ${{github.workspace}}/build
