@@ -73,8 +73,8 @@ install_dependencies () {
     git clone -b release https://gitlab.com/petsc/petsc.git petsc
     cd petsc
     git pull
-    ./configure $petscCfgArgs
-    make all check
+    ./configure $petscCfgArgs -j
+    make all check -j
 
     sudo cp arch-linux-c-debug/bin/mpicc /usr/local/bin
     sudo cp arch-linux-c-debug/bin/mpicxx /usr/local/bin
@@ -100,6 +100,7 @@ build () {
 
     makeArgs=""
     cmakeArgs=""
+    scriptDir="$PWD"
 
     for var in "$@"
     do
@@ -127,6 +128,9 @@ build () {
             fi
             customInstall=True
             cmakeArgs="$cmakeArgs -DCustomInstallPath=${var#*=}"
+        elif [ "--DefaultPetscLocation" = $var ]
+        then
+            cmakeArgs="$cmakeArgs -DPETSC_DIR=$script_dir/../petsc -DPETSC_ARCH=arch-linux-c-debug"
         else
             echo "Invalid argument: $var"
             exit 0
@@ -151,8 +155,8 @@ build () {
     cd build
     echo "cmake $cmakeArgs .."
     cmake $cmakeArgs ..
-    echo "make $makeArgs"
-    make $makeArgs
+    echo "make $makeArgs -j"
+    make $makeArgs -j
 }
 
 if [ "-h" = "$1" ]
