@@ -130,7 +130,7 @@ build () {
             cmakeArgs="$cmakeArgs -DCustomInstallPath=${var#*=}"
         elif [ "--DefaultPetscLocation" = $var ]
         then
-            cmakeArgs="$cmakeArgs -DPETSC_DIR=$script_dir/../petsc -DPETSC_ARCH=arch-linux-c-debug"
+            cmakeArgs="$cmakeArgs -DPETSC_DIR=$scriptDir/../petsc -DPETSC_ARCH=arch-linux-c-debug"
         else
             echo "Invalid argument: $var"
             exit 0
