@@ -98,7 +98,27 @@ usually involves finite element analysis which greatly benefits from parallel co
 
 ## Sample Results
 
+`HypOptLib` is used to generate optimized solutions to topology optimization problems with
+user defined paremeters. The primary parameters used are:
 
+ * Boundary conditions to define the geometry and loads
+
+ * Temperature of the system, which will affect "optimality"
+
+ * Simluation settings, such as timestep, numer of iterations, volume fraction etc.
+
+The full list of parameters can be found in the [online documentation](). Once the problem
+geometery has been defined, the primary parameter that is varied across simulations is the
+temperature. This allows for investigation of solutions at decreasing optimality. Samples
+of results at temperatures 0 and 1.75E-06 are provided in \autoref{fig:zeroTempEx} and
+\autoref{fig:lowTempEx} respectively. The key insights from solutions like this come from
+averaging simulations over time across a range of temperatures. The averages show how cells
+behave at lower and lower optimality, and can be used to generate importance maps when combined
+with optimal solutions at temperature 0.
+
+![A solution generated with zero temperature and volume fraction of 0.5. \label{fig:zeroTempEx}](example-solution-t0.png "Example of a solution at zero temperature.")
+
+![A solution generated with temperature 1.75E-06 and volume fraction of 0.5. \label{fig:lowTempEx}](example-solution-t1.75e-6.png "Example of a solution at zero temperature.")
 
 # Acknowledgements
 
