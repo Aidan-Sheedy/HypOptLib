@@ -116,9 +116,9 @@ averaging simulations over time across a range of temperatures. The averages sho
 behave at lower and lower optimality, and can be used to generate importance maps when combined
 with optimal solutions at temperature 0.
 
-![A solution generated with zero temperature and volume fraction of 0.5. \label{fig:zeroTempEx}](example-solution-t0.png "Example of a solution at zero temperature.")
+![A solution generated with zero temperature and volume fraction of 0.5. \label{fig:zeroTempEx}](example-solution-t0.jpg "Example of a solution at zero temperature.")
 
-![A solution generated with temperature 1.75E-06 and volume fraction of 0.5. \label{fig:lowTempEx}](example-solution-t1.75e-6.png "Example of a solution at zero temperature.")
+![A solution generated with temperature 1.75E-06 and volume fraction of 0.5. \label{fig:lowTempEx}](example-solution-t1.75e-6.jpg "Example of a solution at zero temperature.")
 
 # Acknowledgements
 
