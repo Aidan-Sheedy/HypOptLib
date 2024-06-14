@@ -62,7 +62,7 @@ implementing the approach at scale.
 While there are extensive software packages for topology optimization,
 leveraging PETSc,[@Topopt] [@TopOptLib] using GPUs, [@Schmidt] and more [@which],
 there are none available which can effectively analyze deviations from
-optimality. A scalable implementation of hyperoptimziation enables a richer
+optimality. A scalable implementation of hyperoptimization enables a richer
 understanding of topology optimization problems and solutions than the current offerings
 by quantifying the robustness of non-optimal solutions.
 
@@ -88,8 +88,8 @@ parallel code for topology optimization.[@TopOpt] By replacing the optimization
 class with the hyperoptimization algorithm, `HypOptLib` leverages the proven
 finite element analysis code from `TopOpt_in_PETSc`. In addition, the algorithm is
 abstracted away from the filtering, sensitivity, and Lagrange multiplier code to allow
-for portability to any arbitrary optimziation problem that can leverage PETSc. Finally,
-a Python wrapper is provided for easy and quick problem definition and use.
+for portability to any arbitrary optimization problem that can leverage PETSc. Finally,
+`HypOptLib` provides a Python wrapper easy and quick problem definition and use.
 
 While hyperoptimization itself has not been parallelized, `HypOptLib` has been
 implemented in a "semi-parallel" manner which allows for the parallel computation of
@@ -99,16 +99,16 @@ usually involves finite element analysis which greatly benefits from parallel co
 ## Sample Results
 
 `HypOptLib` is used to generate optimized solutions to topology optimization problems with
-user defined paremeters. The primary parameters used are:
+user defined parameters. The primary parameters used are:
 
  * Boundary conditions to define the geometry and loads
 
- * Temperature of the system, which will affect "optimality"
+ * Temperature of the system, which will affect deviations from "optimality"
 
- * Simluation settings, such as timestep, numer of iterations, volume fraction etc.
+ * Simulation settings, such as timestep, number of iterations, volume fraction etc.
 
 The full list of parameters can be found in the [online documentation](). Once the problem
-geometery has been defined, the primary parameter that is varied across simulations is the
+geometry has been defined, the primary parameter that is varied across simulations is the
 temperature. This allows for investigation of solutions at decreasing optimality. Samples
 of results at temperatures 0 and 1.75E-06 are provided in \autoref{fig:zeroTempEx} and
 \autoref{fig:lowTempEx} respectively. The key insights from solutions like this come from
