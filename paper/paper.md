@@ -60,8 +60,8 @@ demonstration requires numerical simulation codes that are capable of
 implementing the approach at scale.
 
 While there are extensive software packages for topology optimization,
-leveraging PETSc,[@Topopt] [@TopOptLib] using GPUs, [@Schmidt] and more [@which],
-there are none available which can effectively analyze deviations from
+leveraging PETSc,[@Topopt] [@TopOptLib] using GPUs, [@Schmidt] and more [@55Line]
+[@Hunter2007william] [99line3D], there are none available which can effectively analyze deviations from
 optimality. A scalable implementation of hyperoptimization enables a richer
 understanding of topology optimization problems and solutions than the current offerings
 by quantifying the robustness of non-optimal solutions.
@@ -111,14 +111,14 @@ The full list of parameters can be found in the [online documentation](). Once t
 geometry has been defined, the primary parameter that is varied across simulations is the
 temperature. This allows for investigation of solutions at decreasing optimality. Samples
 of results at temperatures 0 and 1.75E-06 are provided in \autoref{fig:zeroTempEx} and
-\autoref{fig:lowTempEx} respectively. The key insights from solutions like this come from
-averaging simulations over time across a range of temperatures. The averages show how cells
-behave at lower and lower optimality, and can be used to generate importance maps when combined
-with optimal solutions at temperature 0.
+\autoref{fig:lowTempEx} respectively. These samples are snaphots of simulations in time, but
+the key insights from solutions like this come from averaging simulations over time across a
+range of temperatures. The averages show how cells behave at lower and lower optimality, and
+can be used to generate importance maps when combined with optimal solutions at temperature 0.[@hypopt]
 
 ![A solution generated with zero temperature and volume fraction of 0.5. \label{fig:zeroTempEx}](example-solution-t0.jpg "Example of a solution at zero temperature.")
 
-![A solution generated with temperature 1.75E-06 and volume fraction of 0.5. \label{fig:lowTempEx}](example-solution-t1.75e-6.jpg "Example of a solution at zero temperature.")
+![A solution generated with temperature 1.75E-06 and volume fraction of 0.5. \label{fig:lowTempEx}](example-solution-t1.75e-6.jpg "Example of a solution at temperature 1.75E-06.")
 
 # Acknowledgements
 
