@@ -1,18 +1,18 @@
 This paper is work in progress, and is intented for submission to the Journal of Open Source Software (JOSS). The following items are needed before it will be published:
 
 - [ ] Find citations for:
-  - [ ]  morphogenesis on understanding how deviations from optimality affect key design
+  - [x]  morphogenesis on understanding how deviations from optimality affect key design
 objectives
 
-  - [ ] compliance minimization problems
+  - [x] compliance minimization problems
 
   - [ ] material deposition in:
-    - [ ] structural applications
-    - [ ] optical applications
-    - [ ] hydrodynamic applications
+    - [x] structural applications
+    - [x] optical applications
+    - [x] hydrodynamic applications
     - [ ] thermodynamic applications
 
-  - [ ] why above is necessary in engineering design
+  - [x] why above is necessary in engineering design
 
   - [x] a couple citations for more topology optimization codes
 

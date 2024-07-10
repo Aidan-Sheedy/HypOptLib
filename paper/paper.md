@@ -30,27 +30,27 @@ Topology optimization is a powerful,[@gigavoxel] well-established [@TopOptBook]
 numerical technique for a range of scientific and engineering problems that
 require the generation of optimal material distribution to satisfy a set of
 physical objectives. The utility of topology optimization in applications to
-additive manufacturing [@TopOptAddMfg] or morphogenesis [@which] requires
+additive manufacturing [@TopOptAddMfg] or morphogenesis [@7829422] requires
 systematically understanding how deviations from optimality affect key design
 objectives [@hypopt]. `HypOptLib` provides a C++/Python implementation of
 hyperoptimization,[@hypopt] an information theory based framework
 [@ParetoLaplace] for systematically analyzing non-optimal matter distributions.
 `HypOptLib` can generate high-resolution "importance maps" of deposition
 patterns in topology optimization problems. We give example results for
-compliance minimization problems,[@which] via `PetSc` [@petsc-web-page], but the code can
+compliance minimization problems,[@alma991486910605151] via `PetSc` [@petsc-web-page], but the code can
 be adapted straightforwardly to problems that rely on different underlying
 physics.
 
 # Statement of need
 
 Numerical methods for design problems that involve spatially depositing material
-to satisfy some structural,[@which] optical,[@which], hydrodynamic,[@which] or
-thermodynamic[@which] criterion are crucial both for engineering design
-[@which] and for understanding morphogenesis.[@which] A key challenge in the
-practical implementation of these methods, e.g., via techniques such as topology
-optimization [@TopOptBook], is to ensure that generated patterns of spatial deposition
-can be produced reliably and robustly. However, ensuring reliable, robust
-realizations requires the ability to understand redundancy among deposition
+to satisfy some structural,[@TopOptAddMfg] optical,[@Christiansen21], hydrodynamic,[@fluids5010029]
+or thermodynamic[@which] criterion are crucial both for engineering design
+[@alma991486910605151] [@TopOptAddMfg] and for understanding morphogenesis.[@7829422]
+A key challenge in the practical implementation of these methods, e.g., via techniques
+such as topology optimization [@TopOptBook], is to ensure that generated patterns of
+spatial deposition can be produced reliably and robustly. However, ensuring reliable,
+robust realizations requires the ability to understand redundancy among deposition
 patterns.[@hypopt] Recent work has introduced "hyperoptimization" [@hypopt] as an
 information-theoretic approach to robust implementations of topology
 optimization. Hyperoptimization has been shown to generate so-called importance
@@ -80,7 +80,7 @@ thermodynamic ensemble of putative solutions. `HypOptLib` leverages `PetSc`
 optimization problems. The hyperoptimization framework is physics-agnostic and
 can be applied to a broad range of problem domains. `HypOptLib` gives example
 applications to problems related to mechanical stiffness, e.g. compliance
-minimization [@which], but the code is extensible to problems that rely on
+minimization [@alma991486910605151], but the code is extensible to problems that rely on
 different forms of underlying physics.
 
 The code is built around the `TopOpt_in_PETSc` package, which implements a scalable,
