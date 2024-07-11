@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HypOptException &mdash; HypOptLib 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="HypOptParameters" href="HypOptParameters.html" />
+    <link rel="prev" title="Hyperoptimization" href="Hyperoptimization.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HypOptLib
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../background.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../library.html">Library Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../additions.html">Additional Information</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../fullapi.html">Full API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../fullapi.html#basic-functionality">Basic Functionality</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../fullapi.html#c-classes-and-structs">C++ Classes and Structs</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="FileManager.html">FileManager</a></li>
+<li class="toctree-l3"><a class="reference internal" href="FilterWrapper.html">Filter Wrapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Hyperoptimization.html">Hyperoptimization</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">HypOptException</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv415HypOptException"><code class="docutils literal notranslate"><span class="pre">HypOptException</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="HypOptParameters.html">HypOptParameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="LagrangeMultiplier.html">LagrangeMultiplier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PetscExtensions.html">PetscExtensions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SensitivitiesWrapper.html">SensitivitiesWrapper</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HypOptLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../fullapi.html">Full API</a></li>
+      <li class="breadcrumb-item active">HypOptException</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/apidocs/HypOptException.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="hypoptexception">
+<h1>HypOptException<a class="headerlink" href="#hypoptexception" title="Link to this heading"></a></h1>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv415HypOptException">
+<span id="_CPPv315HypOptException"></span><span id="_CPPv215HypOptException"></span><span id="HypOptException"></span><span class="target" id="d5/d77/classHypOptException"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">HypOptException</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">exception</span></span><a class="headerlink" href="#_CPPv415HypOptException" title="Link to this definition"></a><br /></dt>
+<dd><p>Exception class intended for hyperoptimization related errors.</p>
+<p>Petsc exception handling is used for the majority of the design loop, but C++ style exceptions are useful especially when propagating errors to the Python wrapper. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15HypOptException15HypOptExceptionEPKc">
+<span id="_CPPv3N15HypOptException15HypOptExceptionEPKc"></span><span id="_CPPv2N15HypOptException15HypOptExceptionEPKc"></span><span id="HypOptException::HypOptException__cCP"></span><span class="target" id="d5/d77/classHypOptException_1a09d824d288e97c39ee11596508d12bde"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">HypOptException</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">msg</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15HypOptException15HypOptExceptionEPKc" title="Link to this definition"></a><br /></dt>
+<dd><p>Basic exception constructor. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK15HypOptException4whatEv">
+<span id="_CPPv3NK15HypOptException4whatEv"></span><span id="_CPPv2NK15HypOptException4whatEv"></span><span id="HypOptException::whatC"></span><span class="target" id="d5/d77/classHypOptException_1a07aa930acef58037553e1fd3580b6b8a"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">what</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK15HypOptException4whatEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Exception message function. </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N15HypOptException3msgE">
+<span id="_CPPv3N15HypOptException3msgE"></span><span id="_CPPv2N15HypOptException3msgE"></span><span id="HypOptException::msg__cCP"></span><span class="target" id="d5/d77/classHypOptException_1a51e29b55354f5f7014b8022ff7a7803d"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">msg</span></span></span><a class="headerlink" href="#_CPPv4N15HypOptException3msgE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Hyperoptimization.html" class="btn btn-neutral float-left" title="Hyperoptimization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="HypOptParameters.html" class="btn btn-neutral float-right" title="HypOptParameters" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Aidan Sheedy.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

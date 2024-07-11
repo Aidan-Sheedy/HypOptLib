@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python Wrapper &mdash; HypOptLib 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Macros" href="macros.html" />
+    <link rel="prev" title="Full API" href="../fullapi.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HypOptLib
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../background.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../library.html">Library Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../additions.html">Additional Information</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../fullapi.html">Full API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../fullapi.html#basic-functionality">Basic Functionality</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Python Wrapper</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#contents">Contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#structs-and-enums">Structs and Enums</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hypoptlib">HypOptLib</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="macros.html">Macros</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../fullapi.html#c-classes-and-structs">C++ Classes and Structs</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HypOptLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../fullapi.html">Full API</a></li>
+      <li class="breadcrumb-item active">Python Wrapper</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/apidocs/pybind11.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="python-wrapper">
+<h1>Python Wrapper<a class="headerlink" href="#python-wrapper" title="Link to this heading"></a></h1>
+<p>This section describes the functionality exposed to Python in HypOptLib.</p>
+<p>Note that all parameter types here are shown as C++ variables. The Python wrapper auto-translates
+these from Python types. For example, a Python <em>list of ints</em> will be translated into a C++
+<em>std::vector&lt;uint32_t&gt;*</em> automatically.</p>
+<section id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Link to this heading"></a></h2>
+<ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#structs-and-enums"><span class="std std-ref">Structs and Enums</span></a></dt><dd><ul class="simple">
+<li><p><a class="reference internal" href="#boundaryconditiontype"><span class="std std-ref">BoundaryConditionType</span></a></p></li>
+<li><p><a class="reference internal" href="#verbosity"><span class="std std-ref">verbosity</span></a></p></li>
+<li><p><a class="reference internal" href="#boundarycondition"><span class="std std-ref">BoundaryCondition</span></a></p></li>
+<li><p><a class="reference internal" href="#domaincoordinates"><span class="std std-ref">DomainCoordinates</span></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><a class="reference internal" href="#hypoptlib-header"><span class="std std-ref">HypOptLib</span></a></p>
+<blockquote>
+<div><table class="hlist"><tr><td><ul class="simple">
+<li><dl class="simple">
+<dt><a class="reference internal" href="#basic-functionality"><span class="std std-ref">Basic Functionality</span></a></dt><dd><ul>
+<li><p><a class="reference internal" href="#hypoptlib-function"><span class="std std-ref">HypOptLib</span></a></p></li>
+<li><p><a class="reference internal" href="#newrun"><span class="std std-ref">newRun</span></a></p></li>
+<li><p><a class="reference internal" href="#restartrun"><span class="std std-ref">restartRun</span></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#advanced-functionality"><span class="std std-ref">Advanced Functionality</span></a></dt><dd><ul>
+<li><p><a class="reference internal" href="#generaterandominitialconditionsfile"><span class="std std-ref">generateRandomInitialConditionsFile</span></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#required-settings"><span class="std std-ref">Required Settings</span></a></dt><dd><ul>
+<li><p><a class="reference internal" href="#setgridproperties"><span class="std std-ref">setGridProperties</span></a></p></li>
+<li><p><a class="reference internal" href="#setboundaryconditions"><span class="std std-ref">setBoundaryConditions</span></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</td><td><ul class="simple">
+<li><dl class="simple">
+<dt><a class="reference internal" href="#recommneded-settings"><span class="std std-ref">Recommneded Settings</span></a></dt><dd><ul>
+<li><p><a class="reference internal" href="#setsavepath"><span class="std std-ref">setSavePath</span></a></p></li>
+<li><p><a class="reference internal" href="#settargettemperature"><span class="std std-ref">setTargetTemperature</span></a></p></li>
+<li><p><a class="reference internal" href="#settimestep"><span class="std std-ref">setTimestep</span></a></p></li>
+<li><p><a class="reference internal" href="#setnosehooverchainorder"><span class="std std-ref">setNoseHooverChainOrder</span></a></p></li>
+<li><p><a class="reference internal" href="#setmaximumiterations"><span class="std std-ref">setMaximumIterations</span></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#optional-settings"><span class="std std-ref">Optional Settings</span></a></dt><dd><ul>
+<li><p><a class="reference internal" href="#setpenalty"><span class="std std-ref">setPenalty</span></a></p></li>
+<li><p><a class="reference internal" href="#setminimumfilterradius"><span class="std std-ref">setMinimumFilterRadius</span></a></p></li>
+<li><p><a class="reference internal" href="#setvolumefraction"><span class="std std-ref">setVolumeFraction</span></a></p></li>
+<li><p><a class="reference internal" href="#setrandomstartingvalues"><span class="std std-ref">setRandomStartingValues</span></a></p></li>
+<li><p><a class="reference internal" href="#setsavehamiltonian"><span class="std std-ref">setSaveHamiltonian</span></a></p></li>
+<li><p><a class="reference internal" href="#setmaxsimulationtime"><span class="std std-ref">setMaxSimulationTime</span></a></p></li>
+<li><p><a class="reference internal" href="#enablevariabletimestep"><span class="std std-ref">enableVariableTimestep</span></a></p></li>
+<li><p><a class="reference internal" href="#loadinitialconditionsfromfile"><span class="std std-ref">loadInitialConditionsFromFile</span></a></p></li>
+<li><p><a class="reference internal" href="#restartdoesntsupportcustommesh"><span class="std std-ref">restartDoesntSupportCustomMesh</span></a></p></li>
+<li><p><a class="reference internal" href="#setmaximumfeasolveriterations"><span class="std std-ref">setMaximumFeaSolverIterations</span></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</td></tr></table>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="structs-and-enums">
+<span id="id1"></span><h2>Structs and Enums<a class="headerlink" href="#structs-and-enums" title="Link to this heading"></a></h2>
+<p>These objects are used to define the physical characteristics of the problem: the mesh and the boundary
+conditions.</p>
+<dl class="cpp enum" id="boundaryconditiontype">
+<dt class="sig sig-object cpp" id="_CPPv421BoundaryConditionType">
+<span id="_CPPv321BoundaryConditionType"></span><span id="_CPPv221BoundaryConditionType"></span><span class="target" id="db/d75/HypOptParameters_8h_1a1e77af973549bb6475b8f7124ea565fe"></span><span class="k"><span class="pre">enum</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">BoundaryConditionType</span></span></span><a class="headerlink" href="#_CPPv421BoundaryConditionType" title="Link to this definition"></a><br /></dt>
+<dd><p>Types of boundary conditions currently supported. </p>
+<p><em>Values:</em></p>
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N21BoundaryConditionType11FIXED_POINTE">
+<span id="_CPPv3N21BoundaryConditionType11FIXED_POINTE"></span><span id="_CPPv2N21BoundaryConditionType11FIXED_POINTE"></span><span class="target" id="db/d75/HypOptParameters_8h_1a1e77af973549bb6475b8f7124ea565fea17a28b52f08e3c422de5423574d84ebe"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FIXED_POINT</span></span></span><a class="headerlink" href="#_CPPv4N21BoundaryConditionType11FIXED_POINTE" title="Link to this definition"></a><br /></dt>
+<dd><p>Cells are fixed at one. Future support may allow for arbitrary fixed point values and voids. </p>
+</dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N21BoundaryConditionType4LOADE">
+<span id="_CPPv3N21BoundaryConditionType4LOADE"></span><span id="_CPPv2N21BoundaryConditionType4LOADE"></span><span class="target" id="db/d75/HypOptParameters_8h_1a1e77af973549bb6475b8f7124ea565fea972dbcdf74cff71e20bdcfb53be9c391"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">LOAD</span></span></span><a class="headerlink" href="#_CPPv4N21BoundaryConditionType4LOADE" title="Link to this definition"></a><br /></dt>
+<dd><p>Cells have a load applied at this ponit. </p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="cpp enum" id="verbosity">
+<dt class="sig sig-object cpp" id="_CPPv49verbosity">
+<span id="_CPPv39verbosity"></span><span id="_CPPv29verbosity"></span><span class="target" id="db/d75/HypOptParameters_8h_1a97b1cc04ec204ba7f1507498beb1d460"></span><span class="k"><span class="pre">enum</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">verbosity</span></span></span><a class="headerlink" href="#_CPPv49verbosity" title="Link to this definition"></a><br /></dt>
+<dd><p>Debug log verbosity levels. </p>
+<p><em>Values:</em></p>
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N9verbosity5QUIETE">
+<span id="_CPPv3N9verbosity5QUIETE"></span><span id="_CPPv2N9verbosity5QUIETE"></span><span class="target" id="db/d75/HypOptParameters_8h_1a97b1cc04ec204ba7f1507498beb1d460a4e8e36e4a6c3348cb98fd3223fb07b28"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">QUIET</span></span></span><a class="headerlink" href="#_CPPv4N9verbosity5QUIETE" title="Link to this definition"></a><br /></dt>
+<dd><p>Most logs are muted. </p>
+</dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N9verbosity4INFOE">
+<span id="_CPPv3N9verbosity4INFOE"></span><span id="_CPPv2N9verbosity4INFOE"></span><span class="target" id="db/d75/HypOptParameters_8h_1a97b1cc04ec204ba7f1507498beb1d460a748005382152808a72b1a9177d9dc806"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">INFO</span></span></span><a class="headerlink" href="#_CPPv4N9verbosity4INFOE" title="Link to this definition"></a><br /></dt>
+<dd><p>Default log level. </p>
+</dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N9verbosity5DEBUGE">
+<span id="_CPPv3N9verbosity5DEBUGE"></span><span id="_CPPv2N9verbosity5DEBUGE"></span><span class="target" id="db/d75/HypOptParameters_8h_1a97b1cc04ec204ba7f1507498beb1d460a0593585da9181e972974c1274d8f2b4f"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">DEBUG</span></span></span><a class="headerlink" href="#_CPPv4N9verbosity5DEBUGE" title="Link to this definition"></a><br /></dt>
+<dd><p>Higher level logs are printed. </p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="cpp struct" id="boundarycondition">
+<dt class="sig sig-object cpp" id="_CPPv417BoundaryCondition">
+<span id="_CPPv317BoundaryCondition"></span><span id="_CPPv217BoundaryCondition"></span><span id="BoundaryCondition"></span><span class="target" id="de/d52/structBoundaryCondition"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">BoundaryCondition</span></span></span><a class="headerlink" href="#_CPPv417BoundaryCondition" title="Link to this definition"></a><br /></dt>
+<dd><p>Boundary condition set by user. The types supported are fixed points and loads.</p>
+<p>The range in each dimension are defined as (min, max), where max &gt;= min. If max = min, then the range is singular in that axis. If all ranges are singular, the boundary condition describes a single piont. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17BoundaryCondition4typeE">
+<span id="_CPPv3N17BoundaryCondition4typeE"></span><span id="_CPPv2N17BoundaryCondition4typeE"></span><span id="BoundaryCondition::type__BoundaryConditionType"></span><span class="target" id="de/d52/structBoundaryCondition_1a57c71f61cd6ead325978f8ddea797192"></span><a class="reference internal" href="#_CPPv421BoundaryConditionType" title="BoundaryConditionType"><span class="n"><span class="pre">BoundaryConditionType</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">type</span></span></span><a class="headerlink" href="#_CPPv4N17BoundaryCondition4typeE" title="Link to this definition"></a><br /></dt>
+<dd><p>fixed point or laod. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17BoundaryCondition6xRangeE">
+<span id="_CPPv3N17BoundaryCondition6xRangeE"></span><span id="_CPPv2N17BoundaryCondition6xRangeE"></span><span id="BoundaryCondition::xRange__std::vector:PetscScalar:"></span><span class="target" id="de/d52/structBoundaryCondition_1abce16f536b58b64db91c36a1e0dcc72d"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">xRange</span></span></span><a class="headerlink" href="#_CPPv4N17BoundaryCondition6xRangeE" title="Link to this definition"></a><br /></dt>
+<dd><p>Range at which the boundary condition applies in the x direction. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17BoundaryCondition6yRangeE">
+<span id="_CPPv3N17BoundaryCondition6yRangeE"></span><span id="_CPPv2N17BoundaryCondition6yRangeE"></span><span id="BoundaryCondition::yRange__std::vector:PetscScalar:"></span><span class="target" id="de/d52/structBoundaryCondition_1ab5ed8ff657d28ca83c7dbc5505d717e8"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">yRange</span></span></span><a class="headerlink" href="#_CPPv4N17BoundaryCondition6yRangeE" title="Link to this definition"></a><br /></dt>
+<dd><p>Range at which the boundary condition applies in the y direction. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17BoundaryCondition6zRangeE">
+<span id="_CPPv3N17BoundaryCondition6zRangeE"></span><span id="_CPPv2N17BoundaryCondition6zRangeE"></span><span id="BoundaryCondition::zRange__std::vector:PetscScalar:"></span><span class="target" id="de/d52/structBoundaryCondition_1a718fad9cd0170211243b84455c5d740e"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">zRange</span></span></span><a class="headerlink" href="#_CPPv4N17BoundaryCondition6zRangeE" title="Link to this definition"></a><br /></dt>
+<dd><p>Range at which the boundary condition applies in the z direction. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17BoundaryCondition16degreesOfFreedomE">
+<span id="_CPPv3N17BoundaryCondition16degreesOfFreedomE"></span><span id="_CPPv2N17BoundaryCondition16degreesOfFreedomE"></span><span id="BoundaryCondition::degreesOfFreedom__std::set:PetscInt:"></span><span class="target" id="de/d52/structBoundaryCondition_1a596d4f1aedfed88cd09f18c59ec87b4b"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">set</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscInt</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">degreesOfFreedom</span></span></span><a class="headerlink" href="#_CPPv4N17BoundaryCondition16degreesOfFreedomE" title="Link to this definition"></a><br /></dt>
+<dd><p>set of desired degrees of freedom. Must one or multiple of 0, 1, or 2, corresponding to x, y, and z respectively. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17BoundaryCondition5valueE">
+<span id="_CPPv3N17BoundaryCondition5valueE"></span><span id="_CPPv2N17BoundaryCondition5valueE"></span><span id="BoundaryCondition::value__PetscScalar"></span><span class="target" id="de/d52/structBoundaryCondition_1a47cf5774d84fbd71c4d0f5e1f99ce36b"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">value</span></span></span><a class="headerlink" href="#_CPPv4N17BoundaryCondition5valueE" title="Link to this definition"></a><br /></dt>
+<dd><p>Only used for load types currently, typically around -0.001. If there is more than one degree of freedom, the value is applies to each one respectively. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="cpp struct" id="domaincoordinates">
+<dt class="sig sig-object cpp" id="_CPPv417DomainCoordinates">
+<span id="_CPPv317DomainCoordinates"></span><span id="_CPPv217DomainCoordinates"></span><span id="DomainCoordinates"></span><span class="target" id="d8/dfc/structDomainCoordinates"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">DomainCoordinates</span></span></span><a class="headerlink" href="#_CPPv417DomainCoordinates" title="Link to this definition"></a><br /></dt>
+<dd><p>Domain definition. These coordinates define the size of the problem.</p>
+<p>This allows for varying grid sizes without modifying the boundary conditions. The domain is used in all boundary condition calculations. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17DomainCoordinates8xMinimumE">
+<span id="_CPPv3N17DomainCoordinates8xMinimumE"></span><span id="_CPPv2N17DomainCoordinates8xMinimumE"></span><span id="DomainCoordinates::xMinimum__PetscScalar"></span><span class="target" id="d8/dfc/structDomainCoordinates_1a37446c60dd51b9734223ff71f624984e"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">xMinimum</span></span></span><a class="headerlink" href="#_CPPv4N17DomainCoordinates8xMinimumE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17DomainCoordinates8xMaximumE">
+<span id="_CPPv3N17DomainCoordinates8xMaximumE"></span><span id="_CPPv2N17DomainCoordinates8xMaximumE"></span><span id="DomainCoordinates::xMaximum__PetscScalar"></span><span class="target" id="d8/dfc/structDomainCoordinates_1acb4d78218793e0805c1aa0580a1fee5c"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">xMaximum</span></span></span><a class="headerlink" href="#_CPPv4N17DomainCoordinates8xMaximumE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17DomainCoordinates8yMinimumE">
+<span id="_CPPv3N17DomainCoordinates8yMinimumE"></span><span id="_CPPv2N17DomainCoordinates8yMinimumE"></span><span id="DomainCoordinates::yMinimum__PetscScalar"></span><span class="target" id="d8/dfc/structDomainCoordinates_1a0e2dc64d2ddd86547052e3d89ab7dedc"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">yMinimum</span></span></span><a class="headerlink" href="#_CPPv4N17DomainCoordinates8yMinimumE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17DomainCoordinates8yMaximumE">
+<span id="_CPPv3N17DomainCoordinates8yMaximumE"></span><span id="_CPPv2N17DomainCoordinates8yMaximumE"></span><span id="DomainCoordinates::yMaximum__PetscScalar"></span><span class="target" id="d8/dfc/structDomainCoordinates_1a45e36c01dbc4adfa0406afc20db0234d"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">yMaximum</span></span></span><a class="headerlink" href="#_CPPv4N17DomainCoordinates8yMaximumE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17DomainCoordinates8zMinimumE">
+<span id="_CPPv3N17DomainCoordinates8zMinimumE"></span><span id="_CPPv2N17DomainCoordinates8zMinimumE"></span><span id="DomainCoordinates::zMinimum__PetscScalar"></span><span class="target" id="d8/dfc/structDomainCoordinates_1a4f47b730a5d3b4db20a15721087b5b2a"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">zMinimum</span></span></span><a class="headerlink" href="#_CPPv4N17DomainCoordinates8zMinimumE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17DomainCoordinates8zMaximumE">
+<span id="_CPPv3N17DomainCoordinates8zMaximumE"></span><span id="_CPPv2N17DomainCoordinates8zMaximumE"></span><span id="DomainCoordinates::zMaximum__PetscScalar"></span><span class="target" id="d8/dfc/structDomainCoordinates_1a4d257add6acf0b4ac315d518b7475d0c"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">zMaximum</span></span></span><a class="headerlink" href="#_CPPv4N17DomainCoordinates8zMaximumE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+<section id="hypoptlib">
+<span id="hypoptlib-header"></span><h2>HypOptLib<a class="headerlink" href="#hypoptlib" title="Link to this heading"></a></h2>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv49HypOptLib">
+<span id="_CPPv39HypOptLib"></span><span id="_CPPv29HypOptLib"></span><span id="HypOptLib"></span><span class="target" id="da/d71/classHypOptLib"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">HypOptLib</span></span></span><a class="headerlink" href="#_CPPv49HypOptLib" title="Link to this definition"></a><br /></dt>
+<dd><p>Main <a class="reference internal" href="#da/d71/classHypOptLib"><span class="std std-ref">HypOptLib</span></a> class.</p>
+<p>This is the equivalent to a “main” function, and provides access to the Python wrapper to the essential functions to run <a class="reference internal" href="Hyperoptimization.html#d3/dd0/classHyperoptimization"><span class="std std-ref">Hyperoptimization</span></a>. </p>
+</dd></dl>
+
+<section id="basic-functionality">
+<span id="id2"></span><h3>Basic Functionality<a class="headerlink" href="#basic-functionality" title="Link to this heading"></a></h3>
+<p>The following functions are used to initialize and start the hyperoptimization algorithm.</p>
+<dl class="cpp function" id="hypoptlib-function">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib9HypOptLibEv">
+<span id="_CPPv3N9HypOptLib9HypOptLibEv"></span><span id="_CPPv2N9HypOptLib9HypOptLibEv"></span><span id="HypOptLib::HypOptLib"></span><span class="target" id="da/d71/classHypOptLib_1a2f6c968cd0511fd01cda415f72fd9517"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv4N9HypOptLib9HypOptLibEv" title="HypOptLib::HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">HypOptLib</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib9HypOptLibEv" title="Link to this definition"></a><br /></dt>
+<dd><p>An empty constructor is used to make Pybind11 translation easier. </p>
+</dd></dl>
+
+<dl class="cpp function" id="newrun">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib6newRunEPNSt6vectorI8uint32_tEE">
+<span id="_CPPv3N9HypOptLib6newRunEPNSt6vectorI8uint32_tEE"></span><span id="_CPPv2N9HypOptLib6newRunEPNSt6vectorI8uint32_tEE"></span><span id="HypOptLib::newRun__std::vector:uint32_t:P"></span><span class="target" id="da/d71/classHypOptLib_1a9e90f8adf644b90894737f7c2ba8ae9f"></span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">newRun</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uint32_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">iterationSaveRange</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib6newRunEPNSt6vectorI8uint32_tEE" title="Link to this definition"></a><br /></dt>
+<dd><p>Starts a fresh run with the provided parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>iterationSaveRange</strong> – Range of iterations to save. Does not need to include the final iteration to support restarting, this is saved regardless.</p>
+</dd>
+<dt class="field-even">Throws<span class="colon">:</span></dt>
+<dd class="field-even"><p><span><span class="cpp-expr sig sig-inline cpp"><a class="reference internal" href="HypOptException.html#_CPPv415HypOptException" title="HypOptException"><span class="n">HypOptException</span></a></span></span> – </p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>0 on success, or error. Only used to align with Petsc exception handling. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function" id="restartrun">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib10restartRunENSt6stringEPNSt6vectorI8uint32_tEE">
+<span id="_CPPv3N9HypOptLib10restartRunENSt6stringEPNSt6vectorI8uint32_tEE"></span><span id="_CPPv2N9HypOptLib10restartRunENSt6stringEPNSt6vectorI8uint32_tEE"></span><span id="HypOptLib::restartRun__ss.std::vector:uint32_t:P"></span><span class="target" id="da/d71/classHypOptLib_1aeaabe58675e11b09bc82b6b9f9439d4f"></span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">restartRun</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">restartPath</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uint32_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">iterationSaveRange</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib10restartRunENSt6stringEPNSt6vectorI8uint32_tEE" title="Link to this definition"></a><br /></dt>
+<dd><p>Restarts a simualtion from the provided file path. All options are parsed from the metadata in the restart file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>restartPath</strong> – Location of the restart file. </p></li>
+<li><p><strong>iterationSaveRange</strong> – Range of iterations to save. Does not need to include the final iteration to support restarting, this is saved regardless.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Throws<span class="colon">:</span></dt>
+<dd class="field-even"><p><span><span class="cpp-expr sig sig-inline cpp"><a class="reference internal" href="HypOptException.html#_CPPv415HypOptException" title="HypOptException"><span class="n">HypOptException</span></a></span></span> – </p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>0 on success, or error. Only used to align with Petsc exception handling. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="advanced-functionality">
+<span id="id3"></span><h3>Advanced Functionality<a class="headerlink" href="#advanced-functionality" title="Link to this heading"></a></h3>
+<p>For more advanced hyperoptimization usage or debugging.</p>
+<dl class="cpp function" id="generaterandominitialconditionsfile">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib35generateRandomInitialConditionsFileEPNSt6vectorI8uint32_tEENSt6stringE">
+<span id="_CPPv3N9HypOptLib35generateRandomInitialConditionsFileEPNSt6vectorI8uint32_tEENSt6stringE"></span><span id="_CPPv2N9HypOptLib35generateRandomInitialConditionsFileEPNSt6vectorI8uint32_tEENSt6stringE"></span><span id="HypOptLib::generateRandomInitialConditionsFile__std::vector:uint32_t:P.ss"></span><span class="target" id="da/d71/classHypOptLib_1a705d2d0ee836b78972479dc1cf766b5a"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">generateRandomInitialConditionsFile</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uint32_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">gridDimensions</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">filePath</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib35generateRandomInitialConditionsFileEPNSt6vectorI8uint32_tEENSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd><p>Generates a file with randomized initial velocities and positions. This file can then be passed as an optional parameter to ensure the same initial conditions are used accross multiple runs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gridDimensions</strong> – Dimensions of the cells in the grid. The final mesh will have be one higher in each dimension. The dimenions should each be divisible by 2 three times. </p></li>
+<li><p><strong>filePath</strong> – Name and path to save the output to.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Throws<span class="colon">:</span></dt>
+<dd class="field-even"><p><span><span class="cpp-expr sig sig-inline cpp"><a class="reference internal" href="HypOptException.html#_CPPv415HypOptException" title="HypOptException"><span class="n">HypOptException</span></a></span></span> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="required-settings">
+<span id="id4"></span><h3>Required Settings<a class="headerlink" href="#required-settings" title="Link to this heading"></a></h3>
+<p>These functions are required in order to define the topology optimization problem.</p>
+<dl class="cpp function" id="setgridproperties">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib17setGridPropertiesEPNSt6vectorI8uint32_tEE17DomainCoordinates">
+<span id="_CPPv3N9HypOptLib17setGridPropertiesEPNSt6vectorI8uint32_tEE17DomainCoordinates"></span><span id="_CPPv2N9HypOptLib17setGridPropertiesEPNSt6vectorI8uint32_tEE17DomainCoordinates"></span><span id="HypOptLib::setGridProperties__std::vector:uint32_t:P.DomainCoordinates"></span><span class="target" id="da/d71/classHypOptLib_1ac676365a211a6021aa5bb380a928d760"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setGridProperties</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uint32_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">gridDimensions</span></span>, <a class="reference internal" href="#_CPPv417DomainCoordinates" title="DomainCoordinates"><span class="n"><span class="pre">DomainCoordinates</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">domain</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib17setGridPropertiesEPNSt6vectorI8uint32_tEE17DomainCoordinates" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets the provided dimensions for any future simulations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gridDimensions</strong> – x, y, and z coordinate dimensions for the grid. The mesh will be 1 larger in each direction. </p></li>
+<li><p><strong>domain</strong> – domain coordinates for the grid. This defines the actual unit lengths of each dimension. For example, a mesh with grid dimensions [32, 32, 32] and domain [(0, 1), (0, 1), (-1, 1)] means that each cell in the grid will be a rectangle, with the z axis twice the width of other two dimensions. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function" id="setboundaryconditions">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib21setBoundaryConditionsEPNSt6vectorI17BoundaryConditionEE">
+<span id="_CPPv3N9HypOptLib21setBoundaryConditionsEPNSt6vectorI17BoundaryConditionEE"></span><span id="_CPPv2N9HypOptLib21setBoundaryConditionsEPNSt6vectorI17BoundaryConditionEE"></span><span id="HypOptLib::setBoundaryConditions__std::vector:BoundaryCondition:P"></span><span class="target" id="da/d71/classHypOptLib_1aecac930d87c430ddd79a0d70f99ff557"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setBoundaryConditions</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv417BoundaryCondition" title="BoundaryCondition"><span class="n"><span class="pre">BoundaryCondition</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">boundaryConditions</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib21setBoundaryConditionsEPNSt6vectorI17BoundaryConditionEE" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets the provided list of boundary conditions.</p>
+<p>Each boundary condition is defined by its:</p>
+<p><ul class="simple">
+<li><p>Type: FIXED_POINT or LOAD.</p></li>
+<li><p>&lt;x,y,z&gt;Range: range in each dimension over which the condition applies. This can either be a range, ie x coordinates from [0, 4] or a single value, ie [4, 4]. Only points with x coordinate 4 will apply this BC.</p></li>
+<li><p>degreesOfFreedom: a set of either 0, 1, or 2, where 0 is the x axis, 1 is the y axis, and 2 is the z axis.</p></li>
+<li><p>value: for LOAD types, the scalar value for the load.</p></li>
+</ul>
+</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>boundaryConditions</strong> – list of boundary conditions to apply. If an empty or invalid list is supplied, this will throw an error. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="recommneded-settings">
+<span id="id5"></span><h3>Recommneded Settings<a class="headerlink" href="#recommneded-settings" title="Link to this heading"></a></h3>
+<p>These functions are recommended for basic usage. Each will use default values if not set,
+but are commonly set to custom values.</p>
+<dl class="cpp function" id="setsavepath">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib11setSavePathENSt6stringE">
+<span id="_CPPv3N9HypOptLib11setSavePathENSt6stringE"></span><span id="_CPPv2N9HypOptLib11setSavePathENSt6stringE"></span><span id="HypOptLib::setSavePath__ss"></span><span class="target" id="da/d71/classHypOptLib_1a6a855b56564456bc00f0595f8a1b8aa8"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setSavePath</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">filePath</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib11setSavePathENSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd><p>Optional setting. Sets the save path and file name of the simulation result.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Defaults to ‘hypopt_output.h5’ </p>
+</div>
+</dd></dl>
+
+<dl class="cpp function" id="settargettemperature">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib20setTargetTemperatureEd">
+<span id="_CPPv3N9HypOptLib20setTargetTemperatureEd"></span><span id="_CPPv2N9HypOptLib20setTargetTemperatureEd"></span><span id="HypOptLib::setTargetTemperature__double"></span><span class="target" id="da/d71/classHypOptLib_1a567f9025896245b082fdfd8a215f800c"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setTargetTemperature</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">targetTemperature</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib20setTargetTemperatureEd" title="Link to this definition"></a><br /></dt>
+<dd><p>Recommended setting. Sets the target system temperature for the simulation on new runs. Must be greater than 0.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>defaults to 0. </p>
+</div>
+</dd></dl>
+
+<dl class="cpp function" id="settimestep">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib11setTimestepEd">
+<span id="_CPPv3N9HypOptLib11setTimestepEd"></span><span id="_CPPv2N9HypOptLib11setTimestepEd"></span><span id="HypOptLib::setTimestep__double"></span><span class="target" id="da/d71/classHypOptLib_1a5ba120eea8e82f71f47df6275f6eed76"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setTimestep</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">timestep</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib11setTimestepEd" title="Link to this definition"></a><br /></dt>
+<dd><p>Recommended setting. Sets the timestep between each iteration.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>defaults to 0.001. </p>
+</div>
+</dd></dl>
+
+<dl class="cpp function" id="setnosehooverchainorder">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib23setNoseHooverChainOrderE8uint32_t">
+<span id="_CPPv3N9HypOptLib23setNoseHooverChainOrderE8uint32_t"></span><span id="_CPPv2N9HypOptLib23setNoseHooverChainOrderE8uint32_t"></span><span id="HypOptLib::setNoseHooverChainOrder__uint32_t"></span><span class="target" id="da/d71/classHypOptLib_1a42dc40219eabff375cf59c650152e49c"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setNoseHooverChainOrder</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">noseHooverChainOrder</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib23setNoseHooverChainOrderE8uint32_t" title="Link to this definition"></a><br /></dt>
+<dd><p>Recommended setting. Sets the number of Nose Hoover particles in the chain.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>defaults to 10. </p>
+</div>
+</dd></dl>
+
+<dl class="cpp function" id="setmaximumiterations">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib20setMaximumIterationsE8uint32_t">
+<span id="_CPPv3N9HypOptLib20setMaximumIterationsE8uint32_t"></span><span id="_CPPv2N9HypOptLib20setMaximumIterationsE8uint32_t"></span><span id="HypOptLib::setMaximumIterations__uint32_t"></span><span class="target" id="da/d71/classHypOptLib_1af6ff02f2067e1f780b8382dc9aaa5a4f"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setMaximumIterations</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">maximumIterations</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib20setMaximumIterationsE8uint32_t" title="Link to this definition"></a><br /></dt>
+<dd><p>Recommended setting. Sets the number of Nose Hoover particles in the chain.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>defaults to 100. </p>
+</div>
+</dd></dl>
+
+</section>
+<section id="optional-settings">
+<span id="id6"></span><h3>Optional Settings<a class="headerlink" href="#optional-settings" title="Link to this heading"></a></h3>
+<p>These functions help specify specific parameters for hyperoptimization runs. If not specified,
+each parameter will be set to a default value.</p>
+<dl class="cpp function" id="setpenalty">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib10setPenaltyEd">
+<span id="_CPPv3N9HypOptLib10setPenaltyEd"></span><span id="_CPPv2N9HypOptLib10setPenaltyEd"></span><span id="HypOptLib::setPenalty__double"></span><span class="target" id="da/d71/classHypOptLib_1a7b4292dfa9ff5b29d7b65ee46b1aec6a"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setPenalty</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">penalty</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib10setPenaltyEd" title="Link to this definition"></a><br /></dt>
+<dd><p>Optional setting. Sets optimization penalty power.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>defaults to 3. </p>
+</div>
+</dd></dl>
+
+<dl class="cpp function" id="setminimumfilterradius">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib22setMinimumFilterRadiusEd">
+<span id="_CPPv3N9HypOptLib22setMinimumFilterRadiusEd"></span><span id="_CPPv2N9HypOptLib22setMinimumFilterRadiusEd"></span><span id="HypOptLib::setMinimumFilterRadius__double"></span><span class="target" id="da/d71/classHypOptLib_1a14492b16c3178233c3eb4ebfe0444b16"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setMinimumFilterRadius</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">minimumFilterRadius</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib22setMinimumFilterRadiusEd" title="Link to this definition"></a><br /></dt>
+<dd><p>Optional setting. Sets the minimum filter radius. Must be greater than 0.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>defaults to 0.08. </p>
+</div>
+</dd></dl>
+
+<dl class="cpp function" id="setvolumefraction">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib17setVolumeFractionEd">
+<span id="_CPPv3N9HypOptLib17setVolumeFractionEd"></span><span id="_CPPv2N9HypOptLib17setVolumeFractionEd"></span><span id="HypOptLib::setVolumeFraction__double"></span><span class="target" id="da/d71/classHypOptLib_1aad6c14344003481f6905274d157033fb"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setVolumeFraction</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">volumeFraction</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib17setVolumeFractionEd" title="Link to this definition"></a><br /></dt>
+<dd><p>Optional setting. Sets the volume fraction.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>defaults to 0.12. </p>
+</div>
+</dd></dl>
+
+<dl class="cpp function" id="setrandomstartingvalues">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib23setRandomStartingValuesEb">
+<span id="_CPPv3N9HypOptLib23setRandomStartingValuesEb"></span><span id="_CPPv2N9HypOptLib23setRandomStartingValuesEb"></span><span id="HypOptLib::setRandomStartingValues__b"></span><span class="target" id="da/d71/classHypOptLib_1a695e083e0342620d45a7ef8e1a8a1fb1"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setRandomStartingValues</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">randomStartingValues</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib23setRandomStartingValuesEb" title="Link to this definition"></a><br /></dt>
+<dd><p>Debugging setting. If false, all positions be initialized to the volume fraction.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Defaults to true. </p>
+</div>
+</dd></dl>
+
+<dl class="cpp function" id="setsavehamiltonian">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib18setSaveHamiltonianEb">
+<span id="_CPPv3N9HypOptLib18setSaveHamiltonianEb"></span><span id="_CPPv2N9HypOptLib18setSaveHamiltonianEb"></span><span id="HypOptLib::setSaveHamiltonian__b"></span><span class="target" id="da/d71/classHypOptLib_1a58142492bfb08bb114272a64e032688e"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setSaveHamiltonian</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">saveHamiltonian</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib18setSaveHamiltonianEb" title="Link to this definition"></a><br /></dt>
+<dd><p>Debugging parameter. Enabling will double run time, but save the compliance and Hamiltonian.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Defaults to false. </p>
+</div>
+</dd></dl>
+
+<dl class="cpp function" id="setmaxsimulationtime">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib20setMaxSimulationTimeEd">
+<span id="_CPPv3N9HypOptLib20setMaxSimulationTimeEd"></span><span id="_CPPv2N9HypOptLib20setMaxSimulationTimeEd"></span><span id="HypOptLib::setMaxSimulationTime__double"></span><span class="target" id="da/d71/classHypOptLib_1aabbc149a323006015a83ccf24ff26c93"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setMaxSimulationTime</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">simTime</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib20setMaxSimulationTimeEd" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets the maximum amount of time the simulation can run for.</p>
+<p>This is calculated as timestep*iteration. Useful for variable timestep runs when the number of iterations might not be predictable.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If this is set, the lower of simulation time and setMaximumIterations will be used.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>simTime</strong> – Maxmimum allowed simulation time. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function" id="enablevariabletimestep">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib22enableVariableTimestepEddd">
+<span id="_CPPv3N9HypOptLib22enableVariableTimestepEddd"></span><span id="_CPPv2N9HypOptLib22enableVariableTimestepEddd"></span><span id="HypOptLib::enableVariableTimestep__double.double.double"></span><span class="target" id="da/d71/classHypOptLib_1ad18342110391a9eeda4b2e1c7096d80d"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">enableVariableTimestep</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">timestepConstantAlpha</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">timestepConstantBeta</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">diffusionConstant</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib22enableVariableTimestepEddd" title="Link to this definition"></a><br /></dt>
+<dd><p>Enables variable timestepping with the provided parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timestepConstantAlpha</strong> – Growth parameter. Should be close to but greater than 1. </p></li>
+<li><p><strong>timestepConstantBeta</strong> – Decay parameter. Should be close to but less than 1. </p></li>
+<li><p><strong>diffusionConstant</strong> – Conditional error parameter. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function" id="loadinitialconditionsfromfile">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib29loadInitialConditionsFromFileENSt6stringE">
+<span id="_CPPv3N9HypOptLib29loadInitialConditionsFromFileENSt6stringE"></span><span id="_CPPv2N9HypOptLib29loadInitialConditionsFromFileENSt6stringE"></span><span id="HypOptLib::loadInitialConditionsFromFile__ss"></span><span class="target" id="da/d71/classHypOptLib_1a6dcc0324972bfdf0081a9373001c6455"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">loadInitialConditionsFromFile</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">filePath</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib29loadInitialConditionsFromFileENSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd><p>Loads the starting positions and velocities from the provided file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filePath</strong> – HDF5 file containing a valid initial conditions given the temperature and grid dimensions provided. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function" id="restartdoesntsupportcustommesh">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib30restartDoesntSupportCustomMeshEv">
+<span id="_CPPv3N9HypOptLib30restartDoesntSupportCustomMeshEv"></span><span id="_CPPv2N9HypOptLib30restartDoesntSupportCustomMeshEv"></span><span id="HypOptLib::restartDoesntSupportCustomMesh"></span><span class="target" id="da/d71/classHypOptLib_1ad0361744bda8b100328a23a54ad345b9"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">restartDoesntSupportCustomMesh</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib30restartDoesntSupportCustomMeshEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Compatibility flag. Call this function if the restart file provided was generated before the custom mesh and boundary conditions were implemented.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>if this flag is set, the grid properties and boundary conditions supplied <em>must</em> match the restart file. </p>
+</div>
+</dd></dl>
+
+<dl class="cpp function" id="setmaximumfeasolveriterations">
+<dt class="sig sig-object cpp" id="_CPPv4N9HypOptLib29setMaximumFeaSolverIterationsE8uint32_t">
+<span id="_CPPv3N9HypOptLib29setMaximumFeaSolverIterationsE8uint32_t"></span><span id="_CPPv2N9HypOptLib29setMaximumFeaSolverIterationsE8uint32_t"></span><span id="HypOptLib::setMaximumFeaSolverIterations__uint32_t"></span><span class="target" id="da/d71/classHypOptLib_1ad2a20e0d0a46911a669d6c4791aa869f"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><a class="reference internal" href="#_CPPv49HypOptLib" title="HypOptLib"><span class="n"><span class="pre">HypOptLib</span></span></a><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setMaximumFeaSolverIterations</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">maxIterations</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9HypOptLib29setMaximumFeaSolverIterationsE8uint32_t" title="Link to this definition"></a><br /></dt>
+<dd><p>Optional setting to restrict number of iterations on the Krylov Method iterative solver.</p>
+<p>The default value is 200, and is recommended for low temperature simulations. At high temperatures, the compliance of the system can become very large, and the number of iterations (and hence compute time) to solve the Finite Element Analysis (FEA) becomes quite high. In these situations, it is recomended to lower the maximum number of iterations. However, lowering the iteration count effectively truncates the solution, so the accuracy will become much reduced. This should not be an issue for high temperature simulations, where the solution space is less suceptible to lower FEA accuracy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>maxIterations</strong> – maximum number of iterations for the Kylov method iterative solver. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../fullapi.html" class="btn btn-neutral float-left" title="Full API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="macros.html" class="btn btn-neutral float-right" title="Macros" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Aidan Sheedy.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Library Documentation &mdash; HypOptLib 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=2709fde1"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Additional Information" href="additions.html" />
+    <link rel="prev" title="Getting Started" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            HypOptLib
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="background.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Library Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#class-structure">Class Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-modify-hypoptlib">How to Modify HypOptLib</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#topology-optimization">Topology optimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#generic-optimization-problems">Generic optimization problems</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="additions.html">Additional Information</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fullapi.html">Full API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HypOptLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Library Documentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/library.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="library-documentation">
+<h1>Library Documentation<a class="headerlink" href="#library-documentation" title="Link to this heading"></a></h1>
+<section id="class-structure">
+<h2>Class Structure<a class="headerlink" href="#class-structure" title="Link to this heading"></a></h2>
+<p>HypOptLib is built around the original TopOpt code, replacing the MMA algorithm with a new Hyperoptimization class.
+The Hyperoptimization class uses all Petsc types and functions, and has full parallelization support. The call
+structure is shown in <a class="reference internal" href="#fig1"><span class="std std-numref">Fig. 1</span></a>, and follows these steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>The problem is defined in a Python script. This includes boundary conditions and the mesh, the temperature,
+timestep, iteration count, and a variety of other optional settings.</p></li>
+<li><p>The Python file is interpreted by a Pybind11 wrapper, which wraps the HypOptLib class. This class contains basic
+settings functions, such as options for meshes and boundary conditions, temperature, timestep, number of iterations, etc.</p></li>
+<li><p>HypOptLib instantiates the hyperoptimization problem based on the settings provided by the problem file, and when indicated
+starts the hyperoptimization simulation.</p></li>
+<li><p>Each iteration, Hyperoptimization calls a number of wrappers for Lagrange Multiplier, Filter, and Sensitivity calculations.
+These then either call implementation classes (provided by TopOpt by default), or implement the calculation directly.</p></li>
+<li><p>At the end of each iteration, and at the end of the simulation, data is saved by the FileManager class. Files are saved in the
+HDF5 format.</p></li>
+<li><p>Finally, all classes from Hyperoptimization and down utilize calls to PETSc. Some small utility functions are also provided
+by an extension class.</p></li>
+</ol>
+</div></blockquote>
+<p>It should be noted that three classes are used from the original TopOpt library: TopOpt, Filter, and Linear Elasticity.</p>
+<figure class="align-default" id="id1">
+<span id="fig1"></span><a class="reference internal image-reference" href="_images/software_diagram.svg"><img alt="_images/software_diagram.svg" src="_images/software_diagram.svg" width="800" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 1 </span><span class="caption-text">Diagram indicating the class structure in HypOptLib. Classes at the top call classes below them.
+HypOptLib is the library exposed via Pybind11, and instantiates all classes. Hyperoptimization then
+calls the green wrapper classes, which provide lower level functionality. All classes below and including
+Hyperoptimization make calls to the PETSc library for computations and solvers.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="how-to-modify-hypoptlib">
+<h2>How to Modify HypOptLib<a class="headerlink" href="#how-to-modify-hypoptlib" title="Link to this heading"></a></h2>
+<p>If you want to update HypOptLib to apply hyperoptimization to a new problem, there are two ways depending on the
+problem.</p>
+<section id="topology-optimization">
+<h3>Topology optimization<a class="headerlink" href="#topology-optimization" title="Link to this heading"></a></h3>
+<p>For topology optimization, some properties are exposed to the Python wrapper, such as:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Volume fraction,</p></li>
+<li><p>Filter radius,</p></li>
+<li><p>Penalty,</p></li>
+<li><p>Grid dimensions,</p></li>
+<li><p>Boundary conditions,</p></li>
+<li><p>Temperature,</p></li>
+<li><p>Nose Hoover chain order.</p></li>
+</ul>
+</div></blockquote>
+<p>This should cover most generic topology optimization problems, but a few small features are not yet implemented:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Void points or arbitrary-density fixed points,</p></li>
+<li><dl class="simple">
+<dt>Non-rectilinear boundary conditions,</dt><dd><ul>
+<li><p>This can be done manually in Python by generating arrays of single-point boundary conditions or something similar.
+However, this might not be ideal and users may want to expand on the exisitng boundary condition options.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Advanced initial condition files,</dt><dd><ul>
+<li><p>This can be done by generating an HDF5 initial conditions file that matches the data format used by the library.
+However, there is no support for standard 3D modelling data formats as initial condition inputs, such as stl.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>non-rectilinear meshes.</p></li>
+</ul>
+</div></blockquote>
+<p>Additionally, changes to the filtering, Lagrange Multipliers, or Linear Elasticity calculations must be done in C++,
+as the have not been exposed to Python.</p>
+</section>
+<section id="generic-optimization-problems">
+<h3>Generic optimization problems<a class="headerlink" href="#generic-optimization-problems" title="Link to this heading"></a></h3>
+<p>For any other optimization problem, the above section still holds true. However, new sensitivity, filter, and Lagrange Multiplier
+calcualtions will probably be necessary. However, there is no need to overwrite the existing classes. Instead, derived classes of
+each type can be created which inherit the original wrapper functions. So long as the derived classes have new implementations of
+the virtual functions provided in the wrapper, the Hyperoptimization class will call the derived implementations instead of the
+wrapper.</p>
+<p>For example, if all the original classes can be reused for a given problem but the LagrangeMultiplier needs to be redone, then a
+new <strong>ExampleLagrangeMultiplier</strong> class can be created. This will inherit the original <strong>LagrangeMultiplier</strong> class, but will
+overwrite <strong>LagrangeMultiplier::computeLagrangeMultiplier</strong>. <strong>ExampleLagrangeMultiplier</strong> can then be passed to <strong>Hyperoptimization</strong>
+when initializing, and the new <strong>ExampleLagrangeMultiplier::computeLagrangeMultiplier</strong> function will be used without having to change
+the original Hyperoptimization code.</p>
+<p>The following files can be changed based on the requirements for the new optimization problem:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><strong>LinearElasticity</strong> must be modified for all boundary conditions.</p></li>
+<li><p><strong>LagrangeMultiplier</strong> must be used as a base class for any new overwritten Lagrange Multiplier calculations.</p></li>
+<li><p><strong>FilterWrapper</strong> must be used as a base class for any new filters. The filter <em>must</em> be linear. <strong>Hazhir is this true?</strong></p></li>
+<li><p><strong>SensitivityWrapper</strong> must be used as a base class for sensitivity and objective function calculations.</p></li>
+</ol>
+</div></blockquote>
+<p>Finally, if for any reason HypOptLib needs to be edited (for example to add additional parameters to save), it is recommended that
+as much is exposed to the Python wrapper as possible to avoid re-compiling the library.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="additions.html" class="btn btn-neutral float-right" title="Additional Information" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Aidan Sheedy.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

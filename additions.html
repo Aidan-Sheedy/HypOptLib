@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Additional Information &mdash; HypOptLib 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=2709fde1"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Full API" href="fullapi.html" />
+    <link rel="prev" title="Library Documentation" href="library.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            HypOptLib
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="background.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="library.html">Library Documentation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Additional Information</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#analysis-scripts">Analysis Scripts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#utilities-py">utilities.py</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#animate-py">animate.py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#finalpositiontoxdmf-py">finalPositionToXdmf.py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#generatemeanmap-py">generateMeanMap.py</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#a-note-on-parallelization">A Note on parallelization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#file-formats">File Formats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visualization-and-paraview">Visualization and ParaView</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#viewing-volumes">Viewing Volumes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#animating-timestepped-files">Animating Timestepped Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filters">Filters</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fullapi.html">Full API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HypOptLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Additional Information</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/additions.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="additional-information">
+<h1>Additional Information<a class="headerlink" href="#additional-information" title="Link to this heading"></a></h1>
+<p>The following sections contains information on some suplimental scripts provided with HypOptLib, as well as general notes on
+the implementation.</p>
+<section id="analysis-scripts">
+<h2>Analysis Scripts<a class="headerlink" href="#analysis-scripts" title="Link to this heading"></a></h2>
+<p>Several Python scripts are provided for basic data analysis. They are intended mostly as a guide for how to work with HypOptLib
+data. the intent is mostly to provide a starting point for developers own analysis.</p>
+<section id="utilities-py">
+<h3>utilities.py<a class="headerlink" href="#utilities-py" title="Link to this heading"></a></h3>
+<p>The utilities file contains some helpfer functions, but the main object is the xdmf helper class.
+This class provides a basic xmf writer to interface ParaView and other viewers with the HypOptLib
+HDF5 output files.</p>
+<section id="methods">
+<h4>Methods<a class="headerlink" href="#methods" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>startGenericFile()</dt><dd><p>Writes the header for an arbitrary xmf file. Must be closed with closeGenericFile().</p>
+</dd>
+<dt>closeGenericFile()</dt><dd><p>Writes the footer to a generic xmf file.</p>
+</dd>
+<dt>insertRectilinearMesh(dimensions)</dt><dd><p>Inserts a rectilinear mesh of the provided dimensions.</p>
+</dd>
+<dt>insertAttribute(fileName, attributeName, attributeLocation)</dt><dd><p>Inserts the desired attribute into the xmf file.</p>
+</dd>
+<dt>startTimesteppedFile()</dt><dd><p>Writes the header for a timestepped xmf file. Must be closed with closeTimesteppedFile().</p>
+</dd>
+<dt>closeTimesteppedFile()</dt><dd><p>Writes the footer to a timestepped xmf file.</p>
+</dd>
+<dt>insertTimestep(time, hdf5FileName, iterationName)</dt><dd><p>Inserts a timestep into an opened timestepped xmf file.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="animate-py">
+<h3>animate.py<a class="headerlink" href="#animate-py" title="Link to this heading"></a></h3>
+<p>The animate script generates an xdmf file with all timestep information. This allows ParaView
+to properly interpret the HDF5 output file as a timestepped file, and in turn create animations.
+It supports an arbitrary number of restart files.</p>
+</section>
+<section id="finalpositiontoxdmf-py">
+<h3>finalPositionToXdmf.py<a class="headerlink" href="#finalpositiontoxdmf-py" title="Link to this heading"></a></h3>
+<p>This script creates a simple xdmf file pointing to the final positions of the provided file. This is mostly
+designed to show how to access iterations in ParView.</p>
+</section>
+<section id="generatemeanmap-py">
+<h3>generateMeanMap.py<a class="headerlink" href="#generatemeanmap-py" title="Link to this heading"></a></h3>
+<p>This script calculates the mean of the position from the provided files, and writes it to a new xdmf and associated
+HDF5 file. This is a useful script to show how a system and structure changes behaves at different temperatures.</p>
+</section>
+</section>
+<section id="a-note-on-parallelization">
+<h2>A Note on parallelization<a class="headerlink" href="#a-note-on-parallelization" title="Link to this heading"></a></h2>
+<p>Hyperoptimization itself is not an algorithm that is inherently parallelisable. There are a few steps that must be sequential,
+or that must break parallelism. For example, there are a number of sections that rely on left-shifting by one element, and reducing
+the size of that vector. This is mostly related to Nose Hoover calculations. This means that while the rest of the algorithm can be done
+in parallel, in general it should be considered a sequential algorithm.</p>
+<p>However, this limitation does not prevent using parallel techniques when solving the objective function, sensitivities, filtering, etc.
+In fact, HypOptLb has been designed to take advantage of parallel computing to facilitate these operations. For example, the finite
+element analysis done in the Linear Elasticity class from TopOpt uses a parallelized KSP solver from PETSc. So, since HypOptLib has been
+designed in order to support mpi parallelism, users can take full advantage of the parallel KSP solvers to greatly reduce the time to solve
+problems. This is why we refer to HypOptLib as semi-parallel: there are sequential parts of the Hyperoptimization algorithm, but the rest is
+implemented to support parallel computing in order to allow for faster computation of the finite element analysis.</p>
+</section>
+<section id="file-formats">
+<h2>File Formats<a class="headerlink" href="#file-formats" title="Link to this heading"></a></h2>
+<p>HypOptLib uses HDF5 for the simulation save files, and for all telemetry and restart information. This could be modified if desired to use other
+file formats supported by PETSc, such as raw binary. All the file access is handled by the FileManager class, so any modifications to file type
+or format can be done there.</p>
+<p>The data structure is designed as follows:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>file.h5
+|___Dataset
+|       Compliance
+|       Energy Error
+|       FEA Solver Itr Hamiltonian
+|       FEA Solver Itr Sensitivity
+|       Final Position
+|       Final State Field
+|       Final Velocity
+|       Final even NH Pos
+|       Final even NH Vel
+|       Final odd NH Pos
+|       Final odd NH Vel
+|       Hamiltonian
+|       Iteration Compute Time
+|       Lambda
+|
+|_______State
+|       |   iteration0
+|       |   iteration1
+|       |   ...
+|
+|       Temperature
+|       Timestep
+|       Volume Fraction
+|
+|___Setting
+|       Init Conditions File
+|       Random Init Conditions
+|       T
+|       ch_order
+|       dt
+|       nelx
+|       nely
+|       nelz
+|       penal
+|       rmin
+|       saveFreq
+|       stepN
+|       volfrac
+|
+|_______boundaryConditions
+|       |   boundaryCondition_0
+|       |   boundaryCondition_1
+|       |   ...
+|
+|_______domain
+</pre></div>
+</div>
+</section>
+<section id="visualization-and-paraview">
+<h2>Visualization and ParaView<a class="headerlink" href="#visualization-and-paraview" title="Link to this heading"></a></h2>
+<p>ParaView is the recommended tool for visualising HypOptLib outputs. The analysis scripts mentioned above can be used to generate xmf files that
+ParaView can read both for animations and static models. The following section outlines some general tips for those unfamiliar with ParaView.</p>
+<section id="viewing-volumes">
+<h3>Viewing Volumes<a class="headerlink" href="#viewing-volumes" title="Link to this heading"></a></h3>
+<p>After generating the xmf file, open the file in ParaView. You will be prompeted to select a reader with which to view the file. Usually the default
+one is fine.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/paraview_open_file_prompt.png"><img alt="_images/paraview_open_file_prompt.png" src="_images/paraview_open_file_prompt.png" style="width: 500px;" /></a>
+</figure>
+<p>The file with then be loaded in the Pipeline Browser. If there are multiple datasets present in the xmf file, select the one you’d like to view.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/paraview_press_apply.png"><img alt="_images/paraview_press_apply.png" src="_images/paraview_press_apply.png" style="width: 500px;" /></a>
+</figure>
+<p>Press <strong>Apply</strong> to load it in.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/paraview_select_volume.png"><img alt="_images/paraview_select_volume.png" src="_images/paraview_select_volume.png" style="width: 800px;" /></a>
+</figure>
+<p>Select the box that says <strong>Outline</strong>, and choose <strong>Volume</strong> from the dropdown.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/paraview_volume_selected.png"><img alt="_images/paraview_volume_selected.png" src="_images/paraview_volume_selected.png" style="width: 800px;" /></a>
+</figure>
+<p>The volume will then be displayed in the Layout window. If this is a timestepped file, then it will show the first timestep in the file.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/paraview_volume_open.png"><img alt="_images/paraview_volume_open.png" src="_images/paraview_volume_open.png" style="width: 800px;" /></a>
+</figure>
+</section>
+<section id="animating-timestepped-files">
+<h3>Animating Timestepped Files<a class="headerlink" href="#animating-timestepped-files" title="Link to this heading"></a></h3>
+<p>Timestepped files can be animated through the <strong>Time Inspector</strong>. Under View, make sure this option is selected:</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/paraview_time_inspector.png"><img alt="_images/paraview_time_inspector.png" src="_images/paraview_time_inspector.png" style="width: 500px;" /></a>
+</figure>
+<p>Then select the <strong>Time Inspector</strong> tab on the right of the Layout window:</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/paraview_time_opened.png"><img alt="_images/paraview_time_opened.png" src="_images/paraview_time_opened.png" style="width: 800px;" /></a>
+</figure>
+<p>You can now press the play button to view the animation, or skip forward and backwards with the arrows.</p>
+<p>For more advanced control, select the <strong>Animation View</strong> from the View dropdown.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/paraview_animation_view.png"><img alt="_images/paraview_animation_view.png" src="_images/paraview_animation_view.png" style="width: 800px;" /></a>
+</figure>
+<p>Different modes can be selected from the <strong>Mode</strong> drop down:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>Sequence</strong> allows you to choose exactly how many frames to use in the animation.</p></li>
+<li><p><strong>Real Time</strong> uses all frames but selects the desired length of the animation</p></li>
+<li><p><strong>Snap To Timesteps</strong> uses every timestep as a frame.</p></li>
+</ul>
+</div></blockquote>
+<p>To save the animatino, go to File and select <strong>Save Animation</strong>.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/paraview_save_animation.png"><img alt="_images/paraview_save_animation.png" src="_images/paraview_save_animation.png" style="width: 800px;" /></a>
+</figure>
+<p>After choosing a name and path to save the animation, you will be given options for the animation. The resolution can
+be update here, along with frame rate an window to save.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/paraview_animation_options.png"><img alt="_images/paraview_animation_options.png" src="_images/paraview_animation_options.png" style="width: 500px;" /></a>
+</figure>
+<p>This will render the animation and save it to the selected location.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/animation_example.gif"><img alt="_images/animation_example.gif" src="_images/animation_example.gif" style="width: 700px;" /></a>
+</figure>
+</section>
+<section id="filters">
+<h3>Filters<a class="headerlink" href="#filters" title="Link to this heading"></a></h3>
+<p>There are many filters ParaView provides to analyze data, but as a basic introduction here is an introcution to a filter
+is especially useful for topology problems with HypOptLib.</p>
+<p>The threshold filter allows you to filter out cells within an upper and lower bound. The main use for this
+filter is to understand the internal structure of a simulation. For example, we will walk through looking at
+thresholding a beam at temperature 0 early in the simulation.</p>
+<p>To select a filter, go to the Filters dropdown and either search for the desired filter, or browse the available categories.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/paraview_filters.png"><img alt="_images/paraview_filters.png" src="_images/paraview_filters.png" style="width: 500px;" /></a>
+</figure>
+<p>After selecting the Threshold filter, a new Pipeline will appear in the Pipeline Browser.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="_images/paraview_threshold_browser.png"><img alt="_images/paraview_threshold_browser.png" src="_images/paraview_threshold_browser.png" style="width: 500px;" /></a>
+</figure>
+<p>Here you can select upper and lower threshold values, then press <strong>Apply</strong>. If the threshold is set to 0, then all cells with
+a value of 0 will show as part of the surface, and the structure will not be visible.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/paraview_threshold_0.png"><img alt="_images/paraview_threshold_0.png" src="_images/paraview_threshold_0.png" style="width: 800px;" /></a>
+</figure>
+<p>However, as the lower threshold is increased, more of the internal structure is revealed. At threshold 1e-09, we can see the shape
+of the beam start to be revealed. However, it is mostly covered in low density points.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/paraview_threshold_small.png"><img alt="_images/paraview_threshold_small.png" src="_images/paraview_threshold_small.png" style="width: 800px;" /></a>
+</figure>
+<p>At threshold 0.2, the lower density points are pulled back to reveal more structure.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/paraview_threshold_med.png"><img alt="_images/paraview_threshold_med.png" src="_images/paraview_threshold_med.png" style="width: 800px;" /></a>
+</figure>
+<p>And finally at threshold 0.6, msot of the internal structure is revealed, as the beam starts to take shape.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/paraview_threshold_large.png"><img alt="_images/paraview_threshold_large.png" src="_images/paraview_threshold_large.png" style="width: 800px;" /></a>
+</figure>
+<p>The other case in which the threshold is useful is to render high-resolution images, as the <strong>Volume</strong> view is not always as good
+looking as the <strong>Surface</strong> view. For example, the following image shows the same simulation as the above example, but much further
+in the simulation. This uses a threshold of 1e-09.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/paraview_threshold_small_end.png"><img alt="_images/paraview_threshold_small_end.png" src="_images/paraview_threshold_small_end.png" style="width: 800px;" /></a>
+</figure>
+<p>Notice how much clearer the above image is than the volume render below:</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="_images/paraview_threshold_volume_compare.png"><img alt="_images/paraview_threshold_volume_compare.png" src="_images/paraview_threshold_volume_compare.png" style="width: 800px;" /></a>
+</figure>
+<p>While the volume render appears totally converged, the thresholded image clearly shows lots of cells with low density, indicating the
+simulation still needs more time to fully converge.</p>
+<p>There are many more filters provided by ParaView which may be helpful. For more information, please see the ParaView Documentation
+<a class="reference external" href="https://docs.paraview.org/en/latest/UsersGuide/filteringData.html">here</a>.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="library.html" class="btn btn-neutral float-left" title="Library Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="fullapi.html" class="btn btn-neutral float-right" title="Full API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Aidan Sheedy.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

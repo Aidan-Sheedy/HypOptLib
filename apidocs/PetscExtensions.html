@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PetscExtensions &mdash; HypOptLib 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="SensitivitiesWrapper" href="SensitivitiesWrapper.html" />
+    <link rel="prev" title="LagrangeMultiplier" href="LagrangeMultiplier.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HypOptLib
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../background.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../library.html">Library Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../additions.html">Additional Information</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../fullapi.html">Full API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../fullapi.html#basic-functionality">Basic Functionality</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../fullapi.html#c-classes-and-structs">C++ Classes and Structs</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="FileManager.html">FileManager</a></li>
+<li class="toctree-l3"><a class="reference internal" href="FilterWrapper.html">Filter Wrapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Hyperoptimization.html">Hyperoptimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="HypOptException.html">HypOptException</a></li>
+<li class="toctree-l3"><a class="reference internal" href="HypOptParameters.html">HypOptParameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="LagrangeMultiplier.html">LagrangeMultiplier</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">PetscExtensions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv415PetscExtensions"><code class="docutils literal notranslate"><span class="pre">PetscExtensions</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="SensitivitiesWrapper.html">SensitivitiesWrapper</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HypOptLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../fullapi.html">Full API</a></li>
+      <li class="breadcrumb-item active">PetscExtensions</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/apidocs/PetscExtensions.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="petscextensions">
+<h1>PetscExtensions<a class="headerlink" href="#petscextensions" title="Link to this heading"></a></h1>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv415PetscExtensions">
+<span id="_CPPv315PetscExtensions"></span><span id="_CPPv215PetscExtensions"></span><span id="PetscExtensions"></span><span class="target" id="d9/dc3/classPetscExtensions"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">PetscExtensions</span></span></span><a class="headerlink" href="#_CPPv415PetscExtensions" title="Link to this definition"></a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15PetscExtensions15PetscExtensionsEv">
+<span id="_CPPv3N15PetscExtensions15PetscExtensionsEv"></span><span id="_CPPv2N15PetscExtensions15PetscExtensionsEv"></span><span id="PetscExtensions::PetscExtensions"></span><span class="target" id="d9/dc3/classPetscExtensions_1a0b5f83292a910a3063ee928e229e01e8"></span><span class="sig-name descname"><span class="n"><span class="pre">PetscExtensions</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">delete</span></span><a class="headerlink" href="#_CPPv4N15PetscExtensions15PetscExtensionsEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Delete all constructors, all access should be static </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15PetscExtensions15PetscExtensionsERK15PetscExtensions">
+<span id="_CPPv3N15PetscExtensions15PetscExtensionsERK15PetscExtensions"></span><span id="_CPPv2N15PetscExtensions15PetscExtensionsERK15PetscExtensions"></span><span id="PetscExtensions::PetscExtensions__PetscExtensionsCR"></span><span class="target" id="d9/dc3/classPetscExtensions_1a51d4744ee7d0d695fada65c983c559a2"></span><span class="sig-name descname"><span class="n"><span class="pre">PetscExtensions</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N15PetscExtensions15PetscExtensionsERK15PetscExtensions" title="PetscExtensions::PetscExtensions"><span class="n"><span class="pre">PetscExtensions</span></span></a><span class="p"><span class="pre">&amp;</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">delete</span></span><a class="headerlink" href="#_CPPv4N15PetscExtensions15PetscExtensionsERK15PetscExtensions" title="Link to this definition"></a><br /></dt>
+<dd><p>Delete all constructors, all access should be static </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-functions">Public Static Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15PetscExtensions25VecParallelFromSequentialE3VecP3Vec">
+<span id="_CPPv3N15PetscExtensions25VecParallelFromSequentialE3VecP3Vec"></span><span id="_CPPv2N15PetscExtensions25VecParallelFromSequentialE3VecP3Vec"></span><span id="PetscExtensions::VecParallelFromSequential__Vec.VecP"></span><span class="target" id="d9/dc3/classPetscExtensions_1a0b658a0397bba25deb9bb1b230b166d5"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">VecParallelFromSequential</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">sequential</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">parallel</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15PetscExtensions25VecParallelFromSequentialE3VecP3Vec" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a parallel vector from a given sequential vector.</p>
+<p>The parallel vector must already be created using either VecCreate followed by VecSetFromOptions, or from a VecDuplicate call.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sequential</strong> – the sequential vector to prallelize. </p></li>
+<li><p><strong>parallel</strong> – [out] the parallel vector to populate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15PetscExtensions25VecSequentialFromParallelE3VecP3Vec">
+<span id="_CPPv3N15PetscExtensions25VecSequentialFromParallelE3VecP3Vec"></span><span id="_CPPv2N15PetscExtensions25VecSequentialFromParallelE3VecP3Vec"></span><span id="PetscExtensions::VecSequentialFromParallel__Vec.VecP"></span><span class="target" id="d9/dc3/classPetscExtensions_1ae5640046570346712f45b3c07b16485d"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">VecSequentialFromParallel</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">parallel</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">sequential</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15PetscExtensions25VecSequentialFromParallelE3VecP3Vec" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a sequential vector from a given parallel vector.</p>
+<p>The sequential vector will be created in the function, so a fresh Vec object can be passed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parallel</strong> – the parallel vector to sequentialize. </p></li>
+<li><p><strong>sequential</strong> – [out] the sequential vector to populate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15PetscExtensions21VecGetOffProcessIndexE3Vec8PetscIntP11PetscScalar">
+<span id="_CPPv3N15PetscExtensions21VecGetOffProcessIndexE3Vec8PetscIntP11PetscScalar"></span><span id="_CPPv2N15PetscExtensions21VecGetOffProcessIndexE3Vec8PetscIntP11PetscScalar"></span><span id="PetscExtensions::VecGetOffProcessIndex__Vec.PetscInt.PetscScalarP"></span><span class="target" id="d9/dc3/classPetscExtensions_1ab45ebad757ac0d5f8416a278b862c7e7"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">VecGetOffProcessIndex</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">parallelVector</span></span>, <span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">index</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">result</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15PetscExtensions21VecGetOffProcessIndexE3Vec8PetscIntP11PetscScalar" title="Link to this definition"></a><br /></dt>
+<dd><p>Fetches a value from a parallel vector that is not stored in the local vector.</p>
+<p>This may not be the most efficient way of doing so, but it is fast enough not to bottleneck the code with large finite element analysis meshes to solve. It works as follows:</p>
+<p><ol class="lowerroman simple">
+<li><p>Get a local sequential copy of the parallel vector of length 1</p></li>
+<li><p>Perform scatter operation for only the given index to retrieve</p></li>
+<li><p>Clean up and return the result</p></li>
+</ol>
+</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parallelVector</strong> – the parallel vector to access. </p></li>
+<li><p><strong>index</strong> – the index to retrieve from </p></li>
+<li><p><strong>result</strong> – [out] resulting value from the desired index.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN15PetscExtensions24VecParallelFromStdVectorE14PetscErrorCodeNSt6vectorI1TEE3Vec">
+<span id="_CPPv3I0EN15PetscExtensions24VecParallelFromStdVectorENSt6vectorI1TEE3Vec"></span><span id="_CPPv2I0EN15PetscExtensions24VecParallelFromStdVectorENSt6vectorI1TEE3Vec"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="d9/dc3/classPetscExtensions_1add7b6e5559e9858f13094901b5993fa1"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">VecParallelFromStdVector</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN15PetscExtensions24VecParallelFromStdVectorE14PetscErrorCodeNSt6vectorI1TEE3Vec" title="PetscExtensions::VecParallelFromStdVector::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">stdVector</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">parallel</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN15PetscExtensions24VecParallelFromStdVectorE14PetscErrorCodeNSt6vectorI1TEE3Vec" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a parallel vector from a given C++ std vector.</p>
+<p>The parallel vector must already be created using either VecCreate followed by VecSetFromOptions, or from a VecDuplicate call. This function simply populates the parallel vector with the contents of the std vector. This function is parallelized.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This version of the overloaded function uses a templated vector type which is cast to PetscScalar. It should only be used if the vector type can safely be cast to PetscScalar.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stdVector</strong> – the std vector to prallelize. </p></li>
+<li><p><strong>parallel</strong> – [out] the parallel vector to populate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15PetscExtensions24VecParallelFromStdVectorENSt6vectorI11PetscScalarEE3Vec">
+<span id="_CPPv3N15PetscExtensions24VecParallelFromStdVectorENSt6vectorI11PetscScalarEE3Vec"></span><span id="_CPPv2N15PetscExtensions24VecParallelFromStdVectorENSt6vectorI11PetscScalarEE3Vec"></span><span id="PetscExtensions::VecParallelFromStdVector__std::vector:PetscScalar:.Vec"></span><span class="target" id="d9/dc3/classPetscExtensions_1a7712038b99214be7302c797788fdfec9"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">VecParallelFromStdVector</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">stdVector</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">parallel</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15PetscExtensions24VecParallelFromStdVectorENSt6vectorI11PetscScalarEE3Vec" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a parallel vector from a given C++ std vector.</p>
+<p>The parallel vector must already be created using either VecCreate followed by VecSetFromOptions, or from a VecDuplicate call. This function simply populates the parallel vector with the contents of the std vector. This function is parallelized.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stdVector</strong> – the std vector to prallelize. </p></li>
+<li><p><strong>parallel</strong> – [out] the parallel vector to populate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15PetscExtensions12VecLeftShiftE3VecP3Vec">
+<span id="_CPPv3N15PetscExtensions12VecLeftShiftE3VecP3Vec"></span><span id="_CPPv2N15PetscExtensions12VecLeftShiftE3VecP3Vec"></span><span id="PetscExtensions::VecLeftShift__Vec.VecP"></span><span class="target" id="d9/dc3/classPetscExtensions_1ac177c96388fe642423441baa1b3ff422"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">VecLeftShift</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">input</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">output</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15PetscExtensions12VecLeftShiftE3VecP3Vec" title="Link to this definition"></a><br /></dt>
+<dd><p>Shifts all elements in the input vector down one index.</p>
+<p>Note that this is an explicit shift, not a rotate. The last element in the vector is set to 0. This is a parallelized implementation, and is not optimized for sequential vectors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> – the vector to shift. </p></li>
+<li><p><strong>output</strong> – [out] the shifted vector.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15PetscExtensions19VecContainsNanOrInfE3VecP9PetscBool">
+<span id="_CPPv3N15PetscExtensions19VecContainsNanOrInfE3VecP9PetscBool"></span><span id="_CPPv2N15PetscExtensions19VecContainsNanOrInfE3VecP9PetscBool"></span><span id="PetscExtensions::VecContainsNanOrInf__Vec.PetscBoolP"></span><span class="target" id="d9/dc3/classPetscExtensions_1aa53846c1d4610997b884576f76e49280"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">VecContainsNanOrInf</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">input</span></span>, <span class="n"><span class="pre">PetscBool</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">out</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15PetscExtensions19VecContainsNanOrInfE3VecP9PetscBool" title="Link to this definition"></a><br /></dt>
+<dd><p>Parses a vector and returns whether or not it contains Not a Number or Infinite values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input</strong> – the vector to parse.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>PetscTrue if Nan or Infinite numbers are found, PetscFalse otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15PetscExtensions18PrintVecMinMaxMeanE3VecPKc">
+<span id="_CPPv3N15PetscExtensions18PrintVecMinMaxMeanE3VecPKc"></span><span id="_CPPv2N15PetscExtensions18PrintVecMinMaxMeanE3VecPKc"></span><span id="PetscExtensions::PrintVecMinMaxMean__Vec.cCP"></span><span class="target" id="d9/dc3/classPetscExtensions_1aeac836ef67be08fe2a7784f23502b1bf"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">PrintVecMinMaxMean</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">vector</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15PetscExtensions18PrintVecMinMaxMeanE3VecPKc" title="Link to this definition"></a><br /></dt>
+<dd><p>Convenience function to print the minimum, maximum, and mean values of a vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vector</strong> – the vector to print values of. </p></li>
+<li><p><strong>name</strong> – name of the vector to print to print (for debug purposes).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N15PetscExtensions8PrintVecE3VecPKc">
+<span id="_CPPv3N15PetscExtensions8PrintVecE3VecPKc"></span><span id="_CPPv2N15PetscExtensions8PrintVecE3VecPKc"></span><span id="PetscExtensions::PrintVec__Vec.cCP"></span><span class="target" id="d9/dc3/classPetscExtensions_1a8297aff45139d5658f0d8e8d66290c5a"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">PrintVec</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">vector</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N15PetscExtensions8PrintVecE3VecPKc" title="Link to this definition"></a><br /></dt>
+<dd><p>Convenience function to print all elements in a vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vector</strong> – the vector to print values of. </p></li>
+<li><p><strong>name</strong> – name of the vector to print to print (for debug purposes).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="LagrangeMultiplier.html" class="btn btn-neutral float-left" title="LagrangeMultiplier" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="SensitivitiesWrapper.html" class="btn btn-neutral float-right" title="SensitivitiesWrapper" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Aidan Sheedy.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hyperoptimization &mdash; HypOptLib 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="HypOptException" href="HypOptException.html" />
+    <link rel="prev" title="Filter Wrapper" href="FilterWrapper.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HypOptLib
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../background.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../library.html">Library Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../additions.html">Additional Information</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../fullapi.html">Full API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../fullapi.html#basic-functionality">Basic Functionality</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../fullapi.html#c-classes-and-structs">C++ Classes and Structs</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="FileManager.html">FileManager</a></li>
+<li class="toctree-l3"><a class="reference internal" href="FilterWrapper.html">Filter Wrapper</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Hyperoptimization</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv417Hyperoptimization"><code class="docutils literal notranslate"><span class="pre">Hyperoptimization</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="HypOptException.html">HypOptException</a></li>
+<li class="toctree-l3"><a class="reference internal" href="HypOptParameters.html">HypOptParameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="LagrangeMultiplier.html">LagrangeMultiplier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PetscExtensions.html">PetscExtensions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SensitivitiesWrapper.html">SensitivitiesWrapper</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HypOptLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../fullapi.html">Full API</a></li>
+      <li class="breadcrumb-item active">Hyperoptimization</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/apidocs/Hyperoptimization.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="hyperoptimization">
+<h1>Hyperoptimization<a class="headerlink" href="#hyperoptimization" title="Link to this heading"></a></h1>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv417Hyperoptimization">
+<span id="_CPPv317Hyperoptimization"></span><span id="_CPPv217Hyperoptimization"></span><span id="Hyperoptimization"></span><span class="target" id="d3/dd0/classHyperoptimization"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Hyperoptimization</span></span></span><a class="headerlink" href="#_CPPv417Hyperoptimization" title="Link to this definition"></a><br /></dt>
+<dd><p><a class="reference internal" href="#d3/dd0/classHyperoptimization"><span class="std std-ref">Hyperoptimization</span></a> implementation.</p>
+<p>Main functionality is in initialization and design loop functions. This class assumes position vectors are set up in accordance to the settings used by whatever Petsc solver is being used.</p>
+<p>The class is abstracted from Petsc as much as possible, other than the use of Petsc type variables. Wrappers are provided for all operations that are problem specific, i.e. for filtering, Lagrangian multiplier calculation, and sensitivity calculation. This is so that while the implementation provided is intended for topology optimization, these wrappers can be modified for any optimization problem that uses Petsc. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization17HyperoptimizationEv">
+<span id="_CPPv3N17Hyperoptimization17HyperoptimizationEv"></span><span id="_CPPv2N17Hyperoptimization17HyperoptimizationEv"></span><span id="Hyperoptimization::Hyperoptimization"></span><span class="target" id="d3/dd0/classHyperoptimization_1af97bb2eafd089ba2f0d9b0f4e269fdf7"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Hyperoptimization</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization17HyperoptimizationEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Empty constructor. Initialization functions are used to comply with Petsc error handling. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17HyperoptimizationD0Ev">
+<span id="_CPPv3N17HyperoptimizationD0Ev"></span><span id="_CPPv2N17HyperoptimizationD0Ev"></span><span id="Hyperoptimization::~Hyperoptimization"></span><span class="target" id="d3/dd0/classHyperoptimization_1a2a4a0d646c0d531c3d266aa415a8f24d"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~Hyperoptimization</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17HyperoptimizationD0Ev" title="Link to this definition"></a><br /></dt>
+<dd><p>Destructor. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization4initER20SensitivitiesWrapperR13FilterWrapperR18LagrangeMultiplier11PetscScalar3Vec3Vec8PetscInt8PetscInt11PetscScalarP11FileManagerNSt6vectorI8uint32_tEEb11PetscScalar8uint32_t9verbosityd">
+<span id="_CPPv3N17Hyperoptimization4initER20SensitivitiesWrapperR13FilterWrapperR18LagrangeMultiplier11PetscScalar3Vec3Vec8PetscInt8PetscInt11PetscScalarP11FileManagerNSt6vectorI8uint32_tEEb11PetscScalar8uint32_t9verbosityd"></span><span id="_CPPv2N17Hyperoptimization4initER20SensitivitiesWrapperR13FilterWrapperR18LagrangeMultiplier11PetscScalar3Vec3Vec8PetscInt8PetscInt11PetscScalarP11FileManagerNSt6vectorI8uint32_tEEb11PetscScalar8uint32_t9verbosityd"></span><span id="Hyperoptimization::init__SensitivitiesWrapperR.FilterWrapperR.LagrangeMultiplierR.PetscScalar.Vec.Vec.PetscInt.PetscInt.PetscScalar.FileManagerP.std::vector:uint32_t:.b.PetscScalar.uint32_t.verbosity.double"></span><span class="target" id="d3/dd0/classHyperoptimization_1a53fb38ae3ee616840b5e4fbbeb0c5b18"></span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">init</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="SensitivitiesWrapper.html#_CPPv420SensitivitiesWrapper" title="SensitivitiesWrapper"><span class="n"><span class="pre">SensitivitiesWrapper</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">sensitivitiesWrapper</span></span>, <a class="reference internal" href="FilterWrapper.html#_CPPv413FilterWrapper" title="FilterWrapper"><span class="n"><span class="pre">FilterWrapper</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">filter</span></span>, <a class="reference internal" href="LagrangeMultiplier.html#_CPPv418LagrangeMultiplier" title="LagrangeMultiplier"><span class="n"><span class="pre">LagrangeMultiplier</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">lagMult</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">temperature</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">initialPositions</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">initialVelocities</span></span>, <span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">NHChainOrder</span></span>, <span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">numIterations</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">timestep</span></span>, <a class="reference internal" href="FileManager.html#_CPPv411FileManager" title="FileManager"><span class="n"><span class="pre">FileManager</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">fileManager</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uint32_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">iterationSaveRange</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">saveHamiltonian</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">volumeFraction</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">saveFrequency</span></span>, <a class="reference internal" href="pybind11.html#_CPPv49verbosity" title="verbosity"><span class="n"><span class="pre">verbosity</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">printInfo</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">maxSimTime</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">numeric_limits</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">max</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization4initER20SensitivitiesWrapperR13FilterWrapperR18LagrangeMultiplier11PetscScalar3Vec3Vec8PetscInt8PetscInt11PetscScalarP11FileManagerNSt6vectorI8uint32_tEEb11PetscScalar8uint32_t9verbosityd" title="Link to this definition"></a><br /></dt>
+<dd><p>Initialization funciton.</p>
+<p>Sets up the design loop. This version initializes the Nose Hoover chain and is intended for new runs with no restart variables. Chains the initialization by calling the overloaded initialization function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sensitivitiesWrapper</strong> – wrapper called to calculate sensitivities. </p></li>
+<li><p><strong>filter</strong> – wrapper called to calculate all filtering. </p></li>
+<li><p><strong>lagMult</strong> – Lagrangian Multiplier wrapper. </p></li>
+<li><p><strong>temperature</strong> – target temperature for the system. </p></li>
+<li><p><strong>initialPositions</strong> – position vectors initialized to desired distribution. </p></li>
+<li><p><strong>initialVelocities</strong> – velocity vectors initialized to desired distribution. </p></li>
+<li><p><strong>NHChainOrder</strong> – number of Nose Hoover particles. </p></li>
+<li><p><strong>numIterations</strong> – number of iterations to simulate. </p></li>
+<li><p><strong>timestep</strong> – timestep between iterations. </p></li>
+<li><p><strong>fileManager</strong> – contains helper functions for saving states and iterations. </p></li>
+<li><p><strong>iterationSaveRange</strong> – range between which to save position data. </p></li>
+<li><p><strong>saveHamiltonian</strong> – optional parameter to save Hamiltonian and Compliance data. </p></li>
+<li><p><strong>volumeFraction</strong> – target volume fraction. </p></li>
+<li><p><strong>saveFrequency</strong> – frequency at which to save position state within save range. </p></li>
+<li><p><strong>maxSimTime</strong> – if set, maxmimum amount of simulation time to iterate for.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization4initER20SensitivitiesWrapperR18LagrangeMultiplierR13FilterWrapperP11FileManager8PetscInt11PetscScalar11PetscScalar8PetscIntNSt6vectorI8uint32_tEE3Vec3Vec3Vec3Vec3Vec3Vecb11PetscScalar8uint32_t9verbosityd">
+<span id="_CPPv3N17Hyperoptimization4initER20SensitivitiesWrapperR18LagrangeMultiplierR13FilterWrapperP11FileManager8PetscInt11PetscScalar11PetscScalar8PetscIntNSt6vectorI8uint32_tEE3Vec3Vec3Vec3Vec3Vec3Vecb11PetscScalar8uint32_t9verbosityd"></span><span id="_CPPv2N17Hyperoptimization4initER20SensitivitiesWrapperR18LagrangeMultiplierR13FilterWrapperP11FileManager8PetscInt11PetscScalar11PetscScalar8PetscIntNSt6vectorI8uint32_tEE3Vec3Vec3Vec3Vec3Vec3Vecb11PetscScalar8uint32_t9verbosityd"></span><span id="Hyperoptimization::init__SensitivitiesWrapperR.LagrangeMultiplierR.FilterWrapperR.FileManagerP.PetscInt.PetscScalar.PetscScalar.PetscInt.std::vector:uint32_t:.Vec.Vec.Vec.Vec.Vec.Vec.b.PetscScalar.uint32_t.verbosity.double"></span><span class="target" id="d3/dd0/classHyperoptimization_1a0bbd5de5e5cd832e11fe6d913132f0d7"></span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">init</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="SensitivitiesWrapper.html#_CPPv420SensitivitiesWrapper" title="SensitivitiesWrapper"><span class="n"><span class="pre">SensitivitiesWrapper</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">sensitivitiesWrapper</span></span>, <a class="reference internal" href="LagrangeMultiplier.html#_CPPv418LagrangeMultiplier" title="LagrangeMultiplier"><span class="n"><span class="pre">LagrangeMultiplier</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">lagMult</span></span>, <a class="reference internal" href="FilterWrapper.html#_CPPv413FilterWrapper" title="FilterWrapper"><span class="n"><span class="pre">FilterWrapper</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">filter</span></span>, <a class="reference internal" href="FileManager.html#_CPPv411FileManager" title="FileManager"><span class="n"><span class="pre">FileManager</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">fileManager</span></span>, <span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">NHChainOrder</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">timestep</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">temperature</span></span>, <span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">numIterations</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uint32_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">iterationSaveRange</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">initialPositions</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">initialVelocities</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">initialEvenNoseHooverPosition</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">initialEvenNoseHooverVelocity</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">initialOddNoseHooverPosition</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">initialOddNoseHooverVelocity</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">saveHamiltonian</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">volumeFraction</span></span>, <span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">saveFrequency</span></span>, <a class="reference internal" href="pybind11.html#_CPPv49verbosity" title="verbosity"><span class="n"><span class="pre">verbosity</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">printInfo</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">maxSimTime</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">numeric_limits</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">max</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization4initER20SensitivitiesWrapperR18LagrangeMultiplierR13FilterWrapperP11FileManager8PetscInt11PetscScalar11PetscScalar8PetscIntNSt6vectorI8uint32_tEE3Vec3Vec3Vec3Vec3Vec3Vecb11PetscScalar8uint32_t9verbosityd" title="Link to this definition"></a><br /></dt>
+<dd><p>Overloaded initialization funciton.</p>
+<p>Sets up the design loop. This version takes restarted Nose Hoover chain variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sensitivitiesWrapper</strong> – wrapper called to calculate sensitivities. </p></li>
+<li><p><strong>lagMult</strong> – Lagrangian Multiplier wrapper. </p></li>
+<li><p><strong>filter</strong> – wrapper called to calculate all filtering. </p></li>
+<li><p><strong>fileManager</strong> – contains helper functions for saving states and iterations. </p></li>
+<li><p><strong>NHChainOrder</strong> – number of Nose Hoover particles. </p></li>
+<li><p><strong>timestep</strong> – timestep between iterations. </p></li>
+<li><p><strong>temperature</strong> – target temperature for the system. </p></li>
+<li><p><strong>numIterations</strong> – number of iterations to simulate. </p></li>
+<li><p><strong>iterationSaveRange</strong> – range between which to save position data. </p></li>
+<li><p><strong>initialPositions</strong> – position vectors initialized to desired distribution. </p></li>
+<li><p><strong>initialVelocities</strong> – velocity vectors initialized to desired distribution. </p></li>
+<li><p><strong>initialEvenNoseHooverPosition</strong> – initial positions of Nose Hoover particles with even indices </p></li>
+<li><p><strong>initialEvenNoseHooverVelocity</strong> – initial velocities of Nose Hoover particles with even indices </p></li>
+<li><p><strong>initialOddNoseHooverPosition</strong> – initial positions of Nose Hoover particles with odd indices </p></li>
+<li><p><strong>initialOddNoseHooverVelocity</strong> – initial velocities of Nose Hoover particles with odd indices </p></li>
+<li><p><strong>saveHamiltonian</strong> – optional parameter to save Hamiltonian and Compliance data. </p></li>
+<li><p><strong>volumeFraction</strong> – target volume fraction. </p></li>
+<li><p><strong>saveFrequency</strong> – frequency at which to save position state within save range. </p></li>
+<li><p><strong>maxSimTime</strong> – if set, maxmimum amount of simulation time to iterate for.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization22enableVariableTimestepE11PetscScalar11PetscScalar11PetscScalar">
+<span id="_CPPv3N17Hyperoptimization22enableVariableTimestepE11PetscScalar11PetscScalar11PetscScalar"></span><span id="_CPPv2N17Hyperoptimization22enableVariableTimestepE11PetscScalar11PetscScalar11PetscScalar"></span><span id="Hyperoptimization::enableVariableTimestep__PetscScalar.PetscScalar.PetscScalar"></span><span class="target" id="d3/dd0/classHyperoptimization_1a6f0de09b3435c5a38f78de548080b51d"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">enableVariableTimestep</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">timestepConstantAlpha</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">timestepConstantBeta</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">diffusionConstant</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization22enableVariableTimestepE11PetscScalar11PetscScalar11PetscScalar" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets up variable timestepping.</p>
+<p><dl>
+<dt class="sig sig-object cpp">
+<em><span class="pre">Todo:</span></em></dt>
+<dd><p>fill out info on how the algorithm works when fully implemented.</p>
+</dd></dl>
+
+</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timestepConstantAlpha</strong> – </p></li>
+<li><p><strong>timestepConstantBeta</strong> – </p></li>
+<li><p><strong>timestepConstantK</strong> – </p></li>
+<li><p><strong>diffusionConstant</strong> – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization13runDesignLoopEv">
+<span id="_CPPv3N17Hyperoptimization13runDesignLoopEv"></span><span id="_CPPv2N17Hyperoptimization13runDesignLoopEv"></span><span id="Hyperoptimization::runDesignLoop"></span><span class="target" id="d3/dd0/classHyperoptimization_1a7a49e7c8e32413fcb247ddae34c6a308"></span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">runDesignLoop</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization13runDesignLoopEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Main iteration loop which implements the hyperoptimization design algorithm.</p>
+<p><dl>
+<dt class="sig sig-object cpp">
+<em><span class="pre">Todo:</span></em></dt>
+<dd><p>basic info on the loop here? </p>
+</dd></dl>
+
+</p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization15getHamiltoniansEv">
+<span id="_CPPv3N17Hyperoptimization15getHamiltoniansEv"></span><span id="_CPPv2N17Hyperoptimization15getHamiltoniansEv"></span><span id="Hyperoptimization::getHamiltonians"></span><span class="target" id="d3/dd0/classHyperoptimization_1aaec0337880154a7e2ed97d4254815907"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getHamiltonians</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization15getHamiltoniansEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Accessor for final vector of Hamiltonians after running design loop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>vector of Hamiltonians for each iteration. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization13getComplianceEv">
+<span id="_CPPv3N17Hyperoptimization13getComplianceEv"></span><span id="_CPPv2N17Hyperoptimization13getComplianceEv"></span><span id="Hyperoptimization::getCompliance"></span><span class="target" id="d3/dd0/classHyperoptimization_1a673fb0c65acaf336fe5705d5127fbd37"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getCompliance</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization13getComplianceEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Accessor for final vector of Compliance after running design loop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>vector of Compliance for each iteration. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization15getTemperaturesEv">
+<span id="_CPPv3N17Hyperoptimization15getTemperaturesEv"></span><span id="_CPPv2N17Hyperoptimization15getTemperaturesEv"></span><span id="Hyperoptimization::getTemperatures"></span><span class="target" id="d3/dd0/classHyperoptimization_1a03cf57b2a614235e29c9dc70cc2aee35"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getTemperatures</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization15getTemperaturesEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Accessor for final vector of Hamiltonians after running design loop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>vector of temperatures for each iteration. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization22getLagrangeMultipliersEv">
+<span id="_CPPv3N17Hyperoptimization22getLagrangeMultipliersEv"></span><span id="_CPPv2N17Hyperoptimization22getLagrangeMultipliersEv"></span><span id="Hyperoptimization::getLagrangeMultipliers"></span><span class="target" id="d3/dd0/classHyperoptimization_1accc080cf28465428575741e8302176ab"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getLagrangeMultipliers</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization22getLagrangeMultipliersEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Accessor for final vector of Hamiltonians after running design loop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>vector of Lagrange Multipliers for each iteration. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization17getIterationTimesEv">
+<span id="_CPPv3N17Hyperoptimization17getIterationTimesEv"></span><span id="_CPPv2N17Hyperoptimization17getIterationTimesEv"></span><span id="Hyperoptimization::getIterationTimes"></span><span class="target" id="d3/dd0/classHyperoptimization_1a16d92c6e70f7c30536aae5e579321293"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getIterationTimes</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization17getIterationTimesEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Accessor for final vector of Hamiltonians after running design loop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>vector of iteration times for each iteration. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization30getSolverIterationsHamiltonianEv">
+<span id="_CPPv3N17Hyperoptimization30getSolverIterationsHamiltonianEv"></span><span id="_CPPv2N17Hyperoptimization30getSolverIterationsHamiltonianEv"></span><span id="Hyperoptimization::getSolverIterationsHamiltonian"></span><span class="target" id="d3/dd0/classHyperoptimization_1a97ac712978b4ddc14f65fa54f4f39252"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscInt</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getSolverIterationsHamiltonian</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization30getSolverIterationsHamiltonianEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Accessor for final vector of Hamiltonians after running design loop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>vector of iteration times for each iteration. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization30getSolverIterationsSensitivityEv">
+<span id="_CPPv3N17Hyperoptimization30getSolverIterationsSensitivityEv"></span><span id="_CPPv2N17Hyperoptimization30getSolverIterationsSensitivityEv"></span><span id="Hyperoptimization::getSolverIterationsSensitivity"></span><span class="target" id="d3/dd0/classHyperoptimization_1ad1287f051029f8ba9a74509e69e08485"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscInt</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getSolverIterationsSensitivity</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization30getSolverIterationsSensitivityEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Accessor for final vector of Hamiltonians after running design loop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>vector of iteration times for each iteration. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization13getFinalStateEv">
+<span id="_CPPv3N17Hyperoptimization13getFinalStateEv"></span><span id="_CPPv2N17Hyperoptimization13getFinalStateEv"></span><span id="Hyperoptimization::getFinalState"></span><span class="target" id="d3/dd0/classHyperoptimization_1ab78dad1ccfea3123cc2addbef3928d41"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="HypOptParameters.html#_CPPv416HypOptParameters" title="HypOptParameters"><span class="n"><span class="pre">HypOptParameters</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getFinalState</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization13getFinalStateEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Accessor for final vector of Hamiltonians after running design loop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>vector of positions for the final iteration. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization18getSaveHamiltonianEv">
+<span id="_CPPv3N17Hyperoptimization18getSaveHamiltonianEv"></span><span id="_CPPv2N17Hyperoptimization18getSaveHamiltonianEv"></span><span id="Hyperoptimization::getSaveHamiltonian"></span><span class="target" id="d3/dd0/classHyperoptimization_1a99db15f689985be3b1ff2810ee2e5077"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getSaveHamiltonian</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization18getSaveHamiltonianEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Accessor for final vector of Hamiltonians after running design loop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>save hamiltonian option. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization12getTimestepsEv">
+<span id="_CPPv3N17Hyperoptimization12getTimestepsEv"></span><span id="_CPPv2N17Hyperoptimization12getTimestepsEv"></span><span id="Hyperoptimization::getTimesteps"></span><span class="target" id="d3/dd0/classHyperoptimization_1a63f41f32b7c0a76902b7796638adfa3b"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getTimesteps</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization12getTimestepsEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Accessor for timestep value at each iteration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a vector of the timestep used at each iteration. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization15getEnergyErrorsEv">
+<span id="_CPPv3N17Hyperoptimization15getEnergyErrorsEv"></span><span id="_CPPv2N17Hyperoptimization15getEnergyErrorsEv"></span><span id="Hyperoptimization::getEnergyErrors"></span><span class="target" id="d3/dd0/classHyperoptimization_1af3a412d5b12f232d788cc1eabe61dd8b"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getEnergyErrors</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization15getEnergyErrorsEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Accessor for energy error at each timestep.</p>
+<p><dl>
+<dt class="sig sig-object cpp">
+<em><span class="pre">Todo:</span></em></dt>
+<dd><p>update description when variable timestep is finished.</p>
+</dd></dl>
+
+</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a vector of the energy error at each iteration. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization11getVolFracsEv">
+<span id="_CPPv3N17Hyperoptimization11getVolFracsEv"></span><span id="_CPPv2N17Hyperoptimization11getVolFracsEv"></span><span id="Hyperoptimization::getVolFracs"></span><span class="target" id="d3/dd0/classHyperoptimization_1af074ced10c9a9fbac3a1ddfe2eec7fef"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getVolFracs</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization11getVolFracsEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Accessor for volume fraction at each iteration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a vector of the systems volume fraction calculated at each iteration </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization36calculateFirstNoseHooverAccelerationE3VecP3Vec">
+<span id="_CPPv3N17Hyperoptimization36calculateFirstNoseHooverAccelerationE3VecP3Vec"></span><span id="_CPPv2N17Hyperoptimization36calculateFirstNoseHooverAccelerationE3VecP3Vec"></span><span id="Hyperoptimization::calculateFirstNoseHooverAcceleration__Vec.VecP"></span><span class="target" id="d3/dd0/classHyperoptimization_1a10a7f0202eae5a799658d890a4d251e6"></span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">calculateFirstNoseHooverAcceleration</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">allVelocities</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">accelerations</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization36calculateFirstNoseHooverAccelerationE3VecP3Vec" title="Link to this definition"></a><br /></dt>
+<dd><p>the acceleration of the first Nose Hoover particle. Solves the equation:</p>
+<p><div class="math notranslate nohighlight">
+\[ a_{s_1} = \frac{\sum_i(v_i^2) - (N - N_c)T}{Q_1} \]</div>
+</p>
+<p>where:<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\( a_{s1} \)</span> is the first Nose Hoover particle’s acceleration</p></li>
+<li><p><span class="math notranslate nohighlight">\( v_i \)</span> is the i’th design particle’s velocity</p></li>
+<li><p><span class="math notranslate nohighlight">\( N \)</span> is number of particles</p></li>
+<li><p><span class="math notranslate nohighlight">\( N_c \)</span> is number of constraints</p></li>
+<li><p><span class="math notranslate nohighlight">\( T \)</span> is target temperature</p></li>
+<li><p><span class="math notranslate nohighlight">\( Q_1 \)</span> is mass of the first Nose Hoover particle</p></li>
+</ul>
+</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>allVelocities</strong> – vector of particle velocities with which to calculate the accelerations </p></li>
+<li><p><strong>accelerations</strong> – [out] vector of Nose Hoover accelerations (only first index populated)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization41calculateRemainingNoseHooverAccelerationsE3VecbP3Vec">
+<span id="_CPPv3N17Hyperoptimization41calculateRemainingNoseHooverAccelerationsE3VecbP3Vec"></span><span id="_CPPv2N17Hyperoptimization41calculateRemainingNoseHooverAccelerationsE3VecbP3Vec"></span><span id="Hyperoptimization::calculateRemainingNoseHooverAccelerations__Vec.b.VecP"></span><span class="target" id="d3/dd0/classHyperoptimization_1af90ea2c04e3d7df92ac4202f781fe49c"></span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">calculateRemainingNoseHooverAccelerations</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">noseHooverVelocities</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">evenOutput</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">result</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization41calculateRemainingNoseHooverAccelerationsE3VecbP3Vec" title="Link to this definition"></a><br /></dt>
+<dd><p>Computes the acceleration of the all Nose Hoover particles beyond the first. Solves the equation:</p>
+<p><div class="math notranslate nohighlight">
+\[ a_{s_i} = \frac{Q_{i-1} v_{s_{i-1}}^2 - T}{Q_i} \]</div>
+</p>
+<p>where:<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\( a_{s_i} \)</span> is the i’th Nose Hoover acceleration</p></li>
+<li><p><span class="math notranslate nohighlight">\( v_{s_i} \)</span> is the i’th Nose Hoover velocity</p></li>
+<li><p><span class="math notranslate nohighlight">\( Q{i} \)</span> is the i’th Nose Hoover mass</p></li>
+<li><p><span class="math notranslate nohighlight">\( T \)</span> is the target temperature</p></li>
+</ul>
+</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>noseHooverVelocities</strong> – <span class="math notranslate nohighlight">\( v_{s_{i-1}} \)</span>, Vector of the Nose Hoover velocities. This is either the odd or even velocities depending on the flag evenOutput. </p></li>
+<li><p><strong>evenOutput</strong> – flag to indicate if even or odd acclerations are being calculated. </p></li>
+<li><p><strong>result</strong> – [out] resulting accelerations. They are populated in the correct locations in the array. I.e. for odd output, the positions populated are <span class="math notranslate nohighlight">\( i = 3, 5, 7, ... \)</span>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization26calculatePositionIncrementE3Vec3Vec11PetscScalarP3Vec">
+<span id="_CPPv3N17Hyperoptimization26calculatePositionIncrementE3Vec3Vec11PetscScalarP3Vec"></span><span id="_CPPv2N17Hyperoptimization26calculatePositionIncrementE3Vec3Vec11PetscScalarP3Vec"></span><span id="Hyperoptimization::calculatePositionIncrement__Vec.Vec.PetscScalar.VecP"></span><span class="target" id="d3/dd0/classHyperoptimization_1a1b21bce92c3932d0b0e569e61c147f40"></span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">calculatePositionIncrement</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">previousPosition</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">previousVelocity</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">timeStep</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">result</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization26calculatePositionIncrementE3Vec3Vec11PetscScalarP3Vec" title="Link to this definition"></a><br /></dt>
+<dd><p>Calculates particle positions for the provided timestep. Computes the equation:</p>
+<p><div class="math notranslate nohighlight">
+\[ x(t + \Delta t) = x(t_a) + \Delta t v(t_b), \]</div>
+</p>
+<p>where:<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\( x(t + \Delta t) \)</span> is the incremented position,</p></li>
+<li><p><span class="math notranslate nohighlight">\( x(t_a) \)</span> is the position at a previous time <span class="math notranslate nohighlight">\( t_a \)</span>,</p></li>
+<li><p><span class="math notranslate nohighlight">\( \Delta t \)</span> is the timestep,</p></li>
+<li><p><span class="math notranslate nohighlight">\( v(t_b) \)</span> is the velocity at a previous time <span class="math notranslate nohighlight">\( t_b \)</span>.</p></li>
+</ul>
+</p>
+<p>where the positions and velocities can be for either design particles or Nose Hoover particles. Note that <span class="math notranslate nohighlight">\( t_a \)</span> and <span class="math notranslate nohighlight">\( t_b \)</span> are typically either the same or off by a half timestep.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>previousPosition</strong> – <span class="math notranslate nohighlight">\( x(t_a) \)</span></p></li>
+<li><p><strong>previousVelocity</strong> – <span class="math notranslate nohighlight">\( v(t_b) \)</span></p></li>
+<li><p><strong>timeStep</strong> – <span class="math notranslate nohighlight">\( \Delta t \)</span></p></li>
+<li><p><strong>result</strong> – [out] array in which to add the return resulting position vector. Must match shape of input vectors.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization26calculateVelocityIncrementE3Vec3Vec3Vec11PetscScalarP3Vec">
+<span id="_CPPv3N17Hyperoptimization26calculateVelocityIncrementE3Vec3Vec3Vec11PetscScalarP3Vec"></span><span id="_CPPv2N17Hyperoptimization26calculateVelocityIncrementE3Vec3Vec3Vec11PetscScalarP3Vec"></span><span id="Hyperoptimization::calculateVelocityIncrement__Vec.Vec.Vec.PetscScalar.VecP"></span><span class="target" id="d3/dd0/classHyperoptimization_1a1a0a547ec55cb5d3230f418d78e053f8"></span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">calculateVelocityIncrement</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">velocityOne</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">velocityTwo</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">acceleration</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">timeStep</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">result</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization26calculateVelocityIncrementE3Vec3Vec3Vec11PetscScalarP3Vec" title="Link to this definition"></a><br /></dt>
+<dd><p>Calculates the next velocity at the given time step. Completes the equation:</p>
+<p><div class="math notranslate nohighlight">
+\[ v_1(t + \Delta t) = v_1(t) e^{-\Delta t v_2(t_a)} + \Delta t a(t_a) e^{-\frac{\Delta t}{2} v_2(t_a)}, \]</div>
+</p>
+<p>where:<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\( v_1(t + \Delta t) \)</span> is the incremented primary velocity,</p></li>
+<li><p><span class="math notranslate nohighlight">\( v_1(t) \)</span> is the previous primary velocity,</p></li>
+<li><p><span class="math notranslate nohighlight">\( \Delta t \)</span> is the timestep</p></li>
+<li><p><span class="math notranslate nohighlight">\( v_2(t_a) \)</span> is a secondary velocity term (odd Nose Hoover if the primary is even, and vice versa) at a time <span class="math notranslate nohighlight">\( t_a \)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\( a(t_a) \)</span> is the primary velcities’ first derivative at the time <span class="math notranslate nohighlight">\( t_a \)</span>.</p></li>
+</ul>
+</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>velocityOne</strong> – <span class="math notranslate nohighlight">\( v_1(t) \)</span>, vector of the velocity to be incremented. </p></li>
+<li><p><strong>velocityTwo</strong> – <span class="math notranslate nohighlight">\( v_2(t_a) \)</span>, vector of the second velocities. Typically even velocities if the incremented are odd, and vice-versa. </p></li>
+<li><p><strong>acceleration</strong> – <span class="math notranslate nohighlight">\( a(t_a) \)</span>, vector of the acceleration of the velocity to be incremented. </p></li>
+<li><p><strong>timeStep</strong> – <span class="math notranslate nohighlight">\( \Delta t \)</span>, the timestep at which to calculate the new velocity. </p></li>
+<li><p><strong>result</strong> – [out] array in which to add the return result. Must match shape of input vectors.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization26calculateVelocityIncrementE3Vec11PetscScalar3Vec11PetscScalarP3Vec">
+<span id="_CPPv3N17Hyperoptimization26calculateVelocityIncrementE3Vec11PetscScalar3Vec11PetscScalarP3Vec"></span><span id="_CPPv2N17Hyperoptimization26calculateVelocityIncrementE3Vec11PetscScalar3Vec11PetscScalarP3Vec"></span><span id="Hyperoptimization::calculateVelocityIncrement__Vec.PetscScalar.Vec.PetscScalar.VecP"></span><span class="target" id="d3/dd0/classHyperoptimization_1a61223e3e61840694177e028c5a9842ef"></span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">calculateVelocityIncrement</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">velocityOne</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">velocityTwo</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">acceleration</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">timeStep</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">result</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization26calculateVelocityIncrementE3Vec11PetscScalar3Vec11PetscScalarP3Vec" title="Link to this definition"></a><br /></dt>
+<dd><p>Overloaded function to calculates the next velocity at the given time step.</p>
+<p>The only difference from the base function is that <span class="math notranslate nohighlight">\( v_2(t_a) \)</span> is allowed to be a scalar value. This is necessary as one step requires using the first Nose Hoover velocity for this term for every element in the resulting vector.</p>
+<p><div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#d3/dd0/classHyperoptimization_1a1a0a547ec55cb5d3230f418d78e053f8"><span class="std std-ref">Hyperoptimization::calculateVelocityIncrement(Vec velocityOne, Vec velocityTwo, Vec acceleration, PetscScalar timeStep, Vec *result)</span></a></p>
+</div>
+</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>velocityOne</strong> – <span class="math notranslate nohighlight">\( v_1(t) \)</span>, vector of the velocity to be incremented. </p></li>
+<li><p><strong>velocityTwo</strong> – <span class="math notranslate nohighlight">\( v_2(t_a) \)</span>, scalar second velocity. </p></li>
+<li><p><strong>acceleration</strong> – <span class="math notranslate nohighlight">\( a(t_a) \)</span>, vector of the acceleration of the velocity to be incremented. </p></li>
+<li><p><strong>timeStep</strong> – <span class="math notranslate nohighlight">\( \Delta t \)</span>, the timestep at which to calculate the new velocity. </p></li>
+<li><p><strong>result</strong> – [out] array in which to add the return result. Must match shape of input vectors.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization20assembleNewPositionsE11PetscScalarP11PetscScalar">
+<span id="_CPPv3N17Hyperoptimization20assembleNewPositionsE11PetscScalarP11PetscScalar"></span><span id="_CPPv2N17Hyperoptimization20assembleNewPositionsE11PetscScalarP11PetscScalar"></span><span id="Hyperoptimization::assembleNewPositions__PetscScalar.PetscScalarP"></span><span class="target" id="d3/dd0/classHyperoptimization_1aac28d0388ec5787d8e3f1d25c7a766dc"></span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">assembleNewPositions</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">firstNoseHooverVelocity</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">LagrangeMultiplier</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization20assembleNewPositionsE11PetscScalarP11PetscScalar" title="Link to this definition"></a><br /></dt>
+<dd><p>Calcualtes the final incremented position vector. This step is somewhat complicated, but can be broken down as follows:</p>
+<p><ol class="lowerroman simple">
+<li><p>Truncate the positions at <span class="math notranslate nohighlight">\( t + \frac{\Delta t}{2} \)</span> to be within the range <span class="math notranslate nohighlight">\( [0,1] \)</span>.</p></li>
+<li><p>Scale the constraint sensitivities by a calculated amount.</p></li>
+<li><p>Calculate Lagrangian multiplier.</p></li>
+<li><p>Scale the step 2 result by the Lagrangian multiplier</p></li>
+<li><p>Pointwise add the new position to the result of step 4</p></li>
+<li><p>Truncate the result of step 5 to get a meaningful value to the new positions.</p></li>
+</ol>
+</p>
+<p>The final value for the new positions is saved in the parameter Hyperoptimization::newPosition.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The full derivation of this step is more complicated, and the hyperoptimization paper should be consulted for more details.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>firstNoseHooverVelocity</strong> – the first Nose Hoover velocity at time <span class="math notranslate nohighlight">\( t + \frac{\Delta t}{2} \)</span></p></li>
+<li><p><strong>LagrangeMultiplier</strong> – [out] the Lagrangian multiplier is calculated as a byproduct of this function, and is returned here. Can be NULL if not desired.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization20calculateTemperatureE3VecP11PetscScalar">
+<span id="_CPPv3N17Hyperoptimization20calculateTemperatureE3VecP11PetscScalar"></span><span id="_CPPv2N17Hyperoptimization20calculateTemperatureE3VecP11PetscScalar"></span><span id="Hyperoptimization::calculateTemperature__Vec.PetscScalarP"></span><span class="target" id="d3/dd0/classHyperoptimization_1a6b346f252dd0c3ef9faa0efaf9552f2e"></span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">calculateTemperature</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">velocities</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">temperature</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization20calculateTemperatureE3VecP11PetscScalar" title="Link to this definition"></a><br /></dt>
+<dd><p>Calcualtes the system temperature given the vector of design particle velocities.</p>
+<p>The temperature is calculated as:</p>
+<p><div class="math notranslate nohighlight">
+\[ T = \frac{\sum_{i=0}^{N}{v_i^2}}{N} \]</div>
+</p>
+<p>where:<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\( T \)</span> is the system temperature.</p></li>
+<li><p><span class="math notranslate nohighlight">\( N \)</span> is the number of design particles.</p></li>
+<li><p><span class="math notranslate nohighlight">\( v_i \)</span> is the i’th design particle velocity.</p></li>
+</ul>
+</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>velocities</strong> – the design particle velocities from which to calculate temperature. </p></li>
+<li><p><strong>temperature</strong> – [out] resulting temperature to populate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization20calculateHamiltonianE3Vec3VecP11PetscScalar">
+<span id="_CPPv3N17Hyperoptimization20calculateHamiltonianE3Vec3VecP11PetscScalar"></span><span id="_CPPv2N17Hyperoptimization20calculateHamiltonianE3Vec3VecP11PetscScalar"></span><span id="Hyperoptimization::calculateHamiltonian__Vec.Vec.PetscScalarP"></span><span class="target" id="d3/dd0/classHyperoptimization_1a0fb24e552ecb597a66b13baea748968a"></span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">calculateHamiltonian</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">velocities</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">positions</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">hamiltonian</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization20calculateHamiltonianE3Vec3VecP11PetscScalar" title="Link to this definition"></a><br /></dt>
+<dd><p>Calculates the Hamiltonian and objective function of the system.</p>
+<p>The Hamiltonian is calculated as:</p>
+<p><div class="math notranslate nohighlight">
+\[ H = O + \frac{v^2}{2}, \]</div>
+</p>
+<p>where:<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\( H \)</span> is the Hamiltonian,</p></li>
+<li><p><span class="math notranslate nohighlight">\( O \)</span> is the objective function, which is abstracted and calculated by the problem-specific <a class="reference internal" href="SensitivitiesWrapper.html#d6/dbe/classSensitivitiesWrapper"><span class="std std-ref">SensitivitiesWrapper</span></a>,</p></li>
+<li><p><span class="math notranslate nohighlight">\( v \)</span> is the vector of disgn particle velocities.</p></li>
+</ul>
+</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>velocities</strong> – vector of disgn particle velocities. </p></li>
+<li><p><strong>positions</strong> – vector of disgn particle positions (used for calculating the objective function). </p></li>
+<li><p><strong>hamiltonian</strong> – [out] resulting Hamiltonian to populate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization21calculateSensitvitiesE3Vec">
+<span id="_CPPv3N17Hyperoptimization21calculateSensitvitiesE3Vec"></span><span id="_CPPv2N17Hyperoptimization21calculateSensitvitiesE3Vec"></span><span id="Hyperoptimization::calculateSensitvities__Vec"></span><span class="target" id="d3/dd0/classHyperoptimization_1aed9a8d0dee6ea7b5cd5ff355e13fa79f"></span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">calculateSensitvities</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">positions</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization21calculateSensitvitiesE3Vec" title="Link to this definition"></a><br /></dt>
+<dd><p>Calculates both constraint and objective sensitivities.</p>
+<p>The provided design particle positions are first filtered, before calculating the sensitivities using the abstracted-sensitivity wrapper. Finally, the sensitivities are filtered. The results are stored in Hyperoptimization::sensitivities and Hyperoptimization::constraintSensitivities respectively.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>positions</strong> – vector of disgn particle positions.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization17truncatePositionsEP3Vec">
+<span id="_CPPv3N17Hyperoptimization17truncatePositionsEP3Vec"></span><span id="_CPPv2N17Hyperoptimization17truncatePositionsEP3Vec"></span><span id="Hyperoptimization::truncatePositions__VecP"></span><span class="target" id="d3/dd0/classHyperoptimization_1a7694e7ab50a7916c46b5f594ddee4545"></span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">truncatePositions</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">positions</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization17truncatePositionsEP3Vec" title="Link to this definition"></a><br /></dt>
+<dd><p>Truncates the design particle positions to be real-valued, within the range [0,1].</p>
+<p>All values greater than 1 are truncated to exactly 1, and all values less than 0 are truncated to exactly 0. While this does add some small error to the resulting volume fraction and velocity distributions, it is sufficiently small as to not affect the design iteration process. It is interesting to note that low temperature systems will tend to have many particles close to zero, meaning that more particles are truncated from negative values to 0 than from high values to 1. This gives a high tendancy to slightly err high on the objective function. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization21calculateNextTimeStepEv">
+<span id="_CPPv3N17Hyperoptimization21calculateNextTimeStepEv"></span><span id="_CPPv2N17Hyperoptimization21calculateNextTimeStepEv"></span><span id="Hyperoptimization::calculateNextTimeStep"></span><span class="target" id="d3/dd0/classHyperoptimization_1aee6f77904e805121a916524c1722750d"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">calculateNextTimeStep</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N17Hyperoptimization21calculateNextTimeStepEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Calculates the next timestep for the variable timestep algorithm.</p>
+<p>Uses the following equation:</p>
+<p><div class="math notranslate nohighlight">
+\[ \Delta t_i = \alpha \beta^k \Delta t_{i=i} \]</div>
+</p>
+<p>where:<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\( \Delta t_i \)</span> is the timestep at step <span class="math notranslate nohighlight">\( i \)</span></p></li>
+</ul>
+</p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization11fileManagerE">
+<span id="_CPPv3N17Hyperoptimization11fileManagerE"></span><span id="_CPPv2N17Hyperoptimization11fileManagerE"></span><span id="Hyperoptimization::fileManager__FileManagerP"></span><span class="target" id="d3/dd0/classHyperoptimization_1abfc0b23f47f82997cd41d6ebd9ff8976"></span><a class="reference internal" href="FileManager.html#_CPPv411FileManager" title="FileManager"><span class="n"><span class="pre">FileManager</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">fileManager</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization11fileManagerE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization20sensitivitiesWrapperE">
+<span id="_CPPv3N17Hyperoptimization20sensitivitiesWrapperE"></span><span id="_CPPv2N17Hyperoptimization20sensitivitiesWrapperE"></span><span id="Hyperoptimization::sensitivitiesWrapper__SensitivitiesWrapper"></span><span class="target" id="d3/dd0/classHyperoptimization_1af0f6e841376b83ee960ed2a537dfb9af"></span><a class="reference internal" href="SensitivitiesWrapper.html#_CPPv420SensitivitiesWrapper" title="SensitivitiesWrapper"><span class="n"><span class="pre">SensitivitiesWrapper</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sensitivitiesWrapper</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization20sensitivitiesWrapperE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization6filterE">
+<span id="_CPPv3N17Hyperoptimization6filterE"></span><span id="_CPPv2N17Hyperoptimization6filterE"></span><span id="Hyperoptimization::filter__FilterWrapper"></span><span class="target" id="d3/dd0/classHyperoptimization_1ab24524d682bc1df19899baf2a5cd5eb0"></span><a class="reference internal" href="FilterWrapper.html#_CPPv413FilterWrapper" title="FilterWrapper"><span class="n"><span class="pre">FilterWrapper</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">filter</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization6filterE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization7lagMultE">
+<span id="_CPPv3N17Hyperoptimization7lagMultE"></span><span id="_CPPv2N17Hyperoptimization7lagMultE"></span><span id="Hyperoptimization::lagMult__LagrangeMultiplier"></span><span class="target" id="d3/dd0/classHyperoptimization_1af936d6b9c11b23c2aef2bc37621fa1e0"></span><a class="reference internal" href="LagrangeMultiplier.html#_CPPv418LagrangeMultiplier" title="LagrangeMultiplier"><span class="n"><span class="pre">LagrangeMultiplier</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lagMult</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization7lagMultE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization11temperatureE">
+<span id="_CPPv3N17Hyperoptimization11temperatureE"></span><span id="_CPPv2N17Hyperoptimization11temperatureE"></span><span id="Hyperoptimization::temperature__PetscScalar"></span><span class="target" id="d3/dd0/classHyperoptimization_1aa54e8717ea5afb186635923e743ec893"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">temperature</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization11temperatureE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization12NHChainOrderE">
+<span id="_CPPv3N17Hyperoptimization12NHChainOrderE"></span><span id="_CPPv2N17Hyperoptimization12NHChainOrderE"></span><span id="Hyperoptimization::NHChainOrder__PetscInt"></span><span class="target" id="d3/dd0/classHyperoptimization_1a305330f970e5063c1ae88a73f4f2f0a9"></span><span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">NHChainOrder</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization12NHChainOrderE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization12numParticlesE">
+<span id="_CPPv3N17Hyperoptimization12numParticlesE"></span><span id="_CPPv2N17Hyperoptimization12numParticlesE"></span><span id="Hyperoptimization::numParticles__PetscInt"></span><span class="target" id="d3/dd0/classHyperoptimization_1a1b8feb796d14c8c8d7fe4d857ff127db"></span><span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">numParticles</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization12numParticlesE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization13numIterationsE">
+<span id="_CPPv3N17Hyperoptimization13numIterationsE"></span><span id="_CPPv2N17Hyperoptimization13numIterationsE"></span><span id="Hyperoptimization::numIterations__PetscInt"></span><span class="target" id="d3/dd0/classHyperoptimization_1ae3faface3ada203ff3bde7f89c0f4268"></span><span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">numIterations</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization13numIterationsE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization14numConstraintsE">
+<span id="_CPPv3N17Hyperoptimization14numConstraintsE"></span><span id="_CPPv2N17Hyperoptimization14numConstraintsE"></span><span id="Hyperoptimization::numConstraints__PetscInt"></span><span class="target" id="d3/dd0/classHyperoptimization_1a627702965a6b1d1e2fcec33a2f1726e8"></span><span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">numConstraints</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization14numConstraintsE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization8timestepE">
+<span id="_CPPv3N17Hyperoptimization8timestepE"></span><span id="_CPPv2N17Hyperoptimization8timestepE"></span><span id="Hyperoptimization::timestep__PetscScalar"></span><span class="target" id="d3/dd0/classHyperoptimization_1a25de68b40f14fd1c4617cf57da55c08f"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timestep</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization8timestepE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization12halfTimestepE">
+<span id="_CPPv3N17Hyperoptimization12halfTimestepE"></span><span id="_CPPv2N17Hyperoptimization12halfTimestepE"></span><span id="Hyperoptimization::halfTimestep__PetscScalar"></span><span class="target" id="d3/dd0/classHyperoptimization_1acc4c4fd2b32616a6b6d2dc0626f3f605"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">halfTimestep</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization12halfTimestepE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization18evenNoseHooverMassE">
+<span id="_CPPv3N17Hyperoptimization18evenNoseHooverMassE"></span><span id="_CPPv2N17Hyperoptimization18evenNoseHooverMassE"></span><span id="Hyperoptimization::evenNoseHooverMass__Vec"></span><span class="target" id="d3/dd0/classHyperoptimization_1aa065505b7983be32cc9520155263b55e"></span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">evenNoseHooverMass</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization18evenNoseHooverMassE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization17oddNoseHooverMassE">
+<span id="_CPPv3N17Hyperoptimization17oddNoseHooverMassE"></span><span id="_CPPv2N17Hyperoptimization17oddNoseHooverMassE"></span><span id="Hyperoptimization::oddNoseHooverMass__Vec"></span><span class="target" id="d3/dd0/classHyperoptimization_1a1c10f8092e14b4d72954b1c0f91e946b"></span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">oddNoseHooverMass</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization17oddNoseHooverMassE" title="Link to this definition"></a><br /></dt>
+<dd><p>Mass of Nose Hoover particles. </p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is initialized automatically to 1 for now, can be exposed to python if necessary. </p>
+</div>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization14volumeFractionE">
+<span id="_CPPv3N17Hyperoptimization14volumeFractionE"></span><span id="_CPPv2N17Hyperoptimization14volumeFractionE"></span><span id="Hyperoptimization::volumeFraction__PetscScalar"></span><span class="target" id="d3/dd0/classHyperoptimization_1a5da5b020e73a9276340f074661dde8e8"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">volumeFraction</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization14volumeFractionE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization9prevStateE">
+<span id="_CPPv3N17Hyperoptimization9prevStateE"></span><span id="_CPPv2N17Hyperoptimization9prevStateE"></span><span id="Hyperoptimization::prevState__HypOptParameters"></span><span class="target" id="d3/dd0/classHyperoptimization_1a5886988cef1cc6dba1934c6c2d5ea1fe"></span><a class="reference internal" href="HypOptParameters.html#_CPPv416HypOptParameters" title="HypOptParameters"><span class="n"><span class="pre">HypOptParameters</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">prevState</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization9prevStateE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization11newPositionE">
+<span id="_CPPv3N17Hyperoptimization11newPositionE"></span><span id="_CPPv2N17Hyperoptimization11newPositionE"></span><span id="Hyperoptimization::newPosition__Vec"></span><span class="target" id="d3/dd0/classHyperoptimization_1aba929ba40596ff81b17ca5000ff44650"></span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">newPosition</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization11newPositionE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization13sensitivitiesE">
+<span id="_CPPv3N17Hyperoptimization13sensitivitiesE"></span><span id="_CPPv2N17Hyperoptimization13sensitivitiesE"></span><span id="Hyperoptimization::sensitivities__Vec"></span><span class="target" id="d3/dd0/classHyperoptimization_1a492e08ab3b64a5c9dc3bd6e4782c8b1b"></span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sensitivities</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization13sensitivitiesE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization23constraintSensitivitiesE">
+<span id="_CPPv3N17Hyperoptimization23constraintSensitivitiesE"></span><span id="_CPPv2N17Hyperoptimization23constraintSensitivitiesE"></span><span id="Hyperoptimization::constraintSensitivities__Vec"></span><span class="target" id="d3/dd0/classHyperoptimization_1a4cfd0e093b03ed6cad46800e782cafd5"></span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">constraintSensitivities</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization23constraintSensitivitiesE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization19LagrangeMultipliersE">
+<span id="_CPPv3N17Hyperoptimization19LagrangeMultipliersE"></span><span id="_CPPv2N17Hyperoptimization19LagrangeMultipliersE"></span><span id="Hyperoptimization::LagrangeMultipliers__std::vector:PetscScalar:"></span><span class="target" id="d3/dd0/classHyperoptimization_1a8b00eea182b21eaa9d714cf7335e7317"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">LagrangeMultipliers</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization19LagrangeMultipliersE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization12hamiltoniansE">
+<span id="_CPPv3N17Hyperoptimization12hamiltoniansE"></span><span id="_CPPv2N17Hyperoptimization12hamiltoniansE"></span><span id="Hyperoptimization::hamiltonians__std::vector:PetscScalar:"></span><span class="target" id="d3/dd0/classHyperoptimization_1a44e68c7245c03088deaf730efbc067d6"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">hamiltonians</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization12hamiltoniansE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization10complianceE">
+<span id="_CPPv3N17Hyperoptimization10complianceE"></span><span id="_CPPv2N17Hyperoptimization10complianceE"></span><span id="Hyperoptimization::compliance__std::vector:PetscScalar:"></span><span class="target" id="d3/dd0/classHyperoptimization_1aff27213c67f74dd71afc191ea3435e72"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">compliance</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization10complianceE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization12temperaturesE">
+<span id="_CPPv3N17Hyperoptimization12temperaturesE"></span><span id="_CPPv2N17Hyperoptimization12temperaturesE"></span><span id="Hyperoptimization::temperatures__std::vector:PetscScalar:"></span><span class="target" id="d3/dd0/classHyperoptimization_1a0f5926589ac55c03ef1a5fb2e6a51b88"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">temperatures</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization12temperaturesE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization14iterationTimesE">
+<span id="_CPPv3N17Hyperoptimization14iterationTimesE"></span><span id="_CPPv2N17Hyperoptimization14iterationTimesE"></span><span id="Hyperoptimization::iterationTimes__std::vector:PetscScalar:"></span><span class="target" id="d3/dd0/classHyperoptimization_1a5c0d49e5694bd4290979078d99830f77"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">iterationTimes</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization14iterationTimesE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization27sensitivitySolverIterationsE">
+<span id="_CPPv3N17Hyperoptimization27sensitivitySolverIterationsE"></span><span id="_CPPv2N17Hyperoptimization27sensitivitySolverIterationsE"></span><span id="Hyperoptimization::sensitivitySolverIterations__std::vector:PetscInt:"></span><span class="target" id="d3/dd0/classHyperoptimization_1a6cefb228ad82548840a3b6be029a6a50"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscInt</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sensitivitySolverIterations</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization27sensitivitySolverIterationsE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization27hamiltonianSolverIterationsE">
+<span id="_CPPv3N17Hyperoptimization27hamiltonianSolverIterationsE"></span><span id="_CPPv2N17Hyperoptimization27hamiltonianSolverIterationsE"></span><span id="Hyperoptimization::hamiltonianSolverIterations__std::vector:PetscInt:"></span><span class="target" id="d3/dd0/classHyperoptimization_1a24b4691ef346925b3c4ab0317a185a3d"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscInt</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">hamiltonianSolverIterations</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization27hamiltonianSolverIterationsE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization9timestepsE">
+<span id="_CPPv3N17Hyperoptimization9timestepsE"></span><span id="_CPPv2N17Hyperoptimization9timestepsE"></span><span id="Hyperoptimization::timesteps__std::vector:PetscScalar:"></span><span class="target" id="d3/dd0/classHyperoptimization_1a38b9db686db5d5106f671f71979b38a9"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timesteps</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization9timestepsE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization12energyErrorsE">
+<span id="_CPPv3N17Hyperoptimization12energyErrorsE"></span><span id="_CPPv2N17Hyperoptimization12energyErrorsE"></span><span id="Hyperoptimization::energyErrors__std::vector:PetscScalar:"></span><span class="target" id="d3/dd0/classHyperoptimization_1a853dc0a336b8f51c9c017da58404f222"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">energyErrors</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization12energyErrorsE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization8volfracsE">
+<span id="_CPPv3N17Hyperoptimization8volfracsE"></span><span id="_CPPv2N17Hyperoptimization8volfracsE"></span><span id="Hyperoptimization::volfracs__std::vector:PetscScalar:"></span><span class="target" id="d3/dd0/classHyperoptimization_1a4e71661e02df54bebb2197df8d6f5833"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">volfracs</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization8volfracsE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization9printInfoE">
+<span id="_CPPv3N17Hyperoptimization9printInfoE"></span><span id="_CPPv2N17Hyperoptimization9printInfoE"></span><span id="Hyperoptimization::printInfo__verbosity"></span><span class="target" id="d3/dd0/classHyperoptimization_1a5a26fc6f24a87301426f1dd5f2e22bcc"></span><a class="reference internal" href="pybind11.html#_CPPv49verbosity" title="verbosity"><span class="n"><span class="pre">verbosity</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">printInfo</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference internal" href="pybind11.html#_CPPv4N9verbosity4INFOE" title="INFO"><span class="n"><span class="pre">INFO</span></span></a><a class="headerlink" href="#_CPPv4N17Hyperoptimization9printInfoE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization12inSimulationE">
+<span id="_CPPv3N17Hyperoptimization12inSimulationE"></span><span id="_CPPv2N17Hyperoptimization12inSimulationE"></span><span id="Hyperoptimization::inSimulation__b"></span><span class="target" id="d3/dd0/classHyperoptimization_1a29e66685fcf9046b32e3706847265104"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">inSimulation</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">false</span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization12inSimulationE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization15saveHamiltonianE">
+<span id="_CPPv3N17Hyperoptimization15saveHamiltonianE"></span><span id="_CPPv2N17Hyperoptimization15saveHamiltonianE"></span><span id="Hyperoptimization::saveHamiltonian__b"></span><span class="target" id="d3/dd0/classHyperoptimization_1a953cb7f921017d8ef91e23c6c6f2f550"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">saveHamiltonian</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">false</span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization15saveHamiltonianE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization16variableTimestepE">
+<span id="_CPPv3N17Hyperoptimization16variableTimestepE"></span><span id="_CPPv2N17Hyperoptimization16variableTimestepE"></span><span id="Hyperoptimization::variableTimestep__b"></span><span class="target" id="d3/dd0/classHyperoptimization_1aabbd0a5e1aa199014e6733392bc09dbe"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">variableTimestep</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">false</span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization16variableTimestepE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization10maxSimTimeE">
+<span id="_CPPv3N17Hyperoptimization10maxSimTimeE"></span><span id="_CPPv2N17Hyperoptimization10maxSimTimeE"></span><span id="Hyperoptimization::maxSimTime__double"></span><span class="target" id="d3/dd0/classHyperoptimization_1aac8bd34e8303f4e50618ae3565ef986f"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">maxSimTime</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization10maxSimTimeE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization13saveFrequencyE">
+<span id="_CPPv3N17Hyperoptimization13saveFrequencyE"></span><span id="_CPPv2N17Hyperoptimization13saveFrequencyE"></span><span id="Hyperoptimization::saveFrequency__uint32_t"></span><span class="target" id="d3/dd0/classHyperoptimization_1aee5453e169c14899ea588fbb2d2cd5b1"></span><span class="n"><span class="pre">uint32_t</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">saveFrequency</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization13saveFrequencyE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization18iterationSaveRangeE">
+<span id="_CPPv3N17Hyperoptimization18iterationSaveRangeE"></span><span id="_CPPv2N17Hyperoptimization18iterationSaveRangeE"></span><span id="Hyperoptimization::iterationSaveRange__std::vector:uint32_t:"></span><span class="target" id="d3/dd0/classHyperoptimization_1a7576b6d2bf09d2640fdf0b3a23c8c87c"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uint32_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">iterationSaveRange</span></span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization18iterationSaveRangeE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization16previousTimestepE">
+<span id="_CPPv3N17Hyperoptimization16previousTimestepE"></span><span id="_CPPv2N17Hyperoptimization16previousTimestepE"></span><span id="Hyperoptimization::previousTimestep__PetscScalar"></span><span class="target" id="d3/dd0/classHyperoptimization_1ad7d7042e63d2fda80601887387b9a47e"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">previousTimestep</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization16previousTimestepE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization21timestepConstantAlphaE">
+<span id="_CPPv3N17Hyperoptimization21timestepConstantAlphaE"></span><span id="_CPPv2N17Hyperoptimization21timestepConstantAlphaE"></span><span id="Hyperoptimization::timestepConstantAlpha__PetscScalar"></span><span class="target" id="d3/dd0/classHyperoptimization_1a9b5fd0a8a6fb75dbe149997d3d67b315"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timestepConstantAlpha</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">1.1</span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization21timestepConstantAlphaE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization20timestepConstantBetaE">
+<span id="_CPPv3N17Hyperoptimization20timestepConstantBetaE"></span><span id="_CPPv2N17Hyperoptimization20timestepConstantBetaE"></span><span id="Hyperoptimization::timestepConstantBeta__PetscScalar"></span><span class="target" id="d3/dd0/classHyperoptimization_1aa081dfcf4f1c43d29effe5cf10a932a4"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timestepConstantBeta</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0.99</span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization20timestepConstantBetaE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization17timestepConstantKE">
+<span id="_CPPv3N17Hyperoptimization17timestepConstantKE"></span><span id="_CPPv2N17Hyperoptimization17timestepConstantKE"></span><span id="Hyperoptimization::timestepConstantK__PetscScalar"></span><span class="target" id="d3/dd0/classHyperoptimization_1a7d7afac5c9d28215f16c62ce7e377302"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timestepConstantK</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization17timestepConstantKE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization17diffusionConstantE">
+<span id="_CPPv3N17Hyperoptimization17diffusionConstantE"></span><span id="_CPPv2N17Hyperoptimization17diffusionConstantE"></span><span id="Hyperoptimization::diffusionConstant__PetscScalar"></span><span class="target" id="d3/dd0/classHyperoptimization_1a0a964e31741d272cd9d0211019c029aa"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">diffusionConstant</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0.00000001</span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization17diffusionConstantE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N17Hyperoptimization19previousTemperatureE">
+<span id="_CPPv3N17Hyperoptimization19previousTemperatureE"></span><span id="_CPPv2N17Hyperoptimization19previousTemperatureE"></span><span id="Hyperoptimization::previousTemperature__PetscScalar"></span><span class="target" id="d3/dd0/classHyperoptimization_1acb676923f71a8f7372701293b9163405"></span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">previousTemperature</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N17Hyperoptimization19previousTemperatureE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="FilterWrapper.html" class="btn btn-neutral float-left" title="Filter Wrapper" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="HypOptException.html" class="btn btn-neutral float-right" title="HypOptException" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Aidan Sheedy.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

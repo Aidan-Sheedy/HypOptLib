@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FileManager &mdash; HypOptLib 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=2709fde1"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Filter Wrapper" href="FilterWrapper.html" />
+    <link rel="prev" title="Macros" href="macros.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            HypOptLib
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../background.html">Background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../library.html">Library Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../additions.html">Additional Information</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../fullapi.html">Full API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../fullapi.html#basic-functionality">Basic Functionality</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../fullapi.html#c-classes-and-structs">C++ Classes and Structs</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">FileManager</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv411FileManager"><code class="docutils literal notranslate"><span class="pre">FileManager</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="FilterWrapper.html">Filter Wrapper</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Hyperoptimization.html">Hyperoptimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="HypOptException.html">HypOptException</a></li>
+<li class="toctree-l3"><a class="reference internal" href="HypOptParameters.html">HypOptParameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="LagrangeMultiplier.html">LagrangeMultiplier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="PetscExtensions.html">PetscExtensions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SensitivitiesWrapper.html">SensitivitiesWrapper</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">HypOptLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../fullapi.html">Full API</a></li>
+      <li class="breadcrumb-item active">FileManager</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/apidocs/FileManager.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="filemanager">
+<h1>FileManager<a class="headerlink" href="#filemanager" title="Link to this heading"></a></h1>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv411FileManager">
+<span id="_CPPv311FileManager"></span><span id="_CPPv211FileManager"></span><span id="FileManager"></span><span class="target" id="db/dd5/classFileManager"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FileManager</span></span></span><a class="headerlink" href="#_CPPv411FileManager" title="Link to this definition"></a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager11FileManagerEP16LinearElasticity">
+<span id="_CPPv3N11FileManager11FileManagerEP16LinearElasticity"></span><span id="_CPPv2N11FileManager11FileManagerEP16LinearElasticity"></span><span id="FileManager::FileManager__LinearElasticityP"></span><span class="target" id="db/dd5/classFileManager_1ae7e711aed24f1ed71b19ce1dddb5b180"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FileManager</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">LinearElasticity</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">physics</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager11FileManagerEP16LinearElasticity" title="Link to this definition"></a><br /></dt>
+<dd><p>Constructor. Saves pointer to provided LinearElasticity object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>physics</strong> – pointer to the LinearElasticity object that will be used by the hyperoptimization algorithm. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager14initializeHDF5E11PetscScalar11PetscScalar11PetscScalar8PetscInt8PetscInt8PetscInt11PetscScalar11PetscScalar8PetscInt8PetscInt8PetscIntNSt6stringEbNSt6stringE17DomainCoordinatesNSt6vectorI17BoundaryConditionEE">
+<span id="_CPPv3N11FileManager14initializeHDF5E11PetscScalar11PetscScalar11PetscScalar8PetscInt8PetscInt8PetscInt11PetscScalar11PetscScalar8PetscInt8PetscInt8PetscIntNSt6stringEbNSt6stringE17DomainCoordinatesNSt6vectorI17BoundaryConditionEE"></span><span id="_CPPv2N11FileManager14initializeHDF5E11PetscScalar11PetscScalar11PetscScalar8PetscInt8PetscInt8PetscInt11PetscScalar11PetscScalar8PetscInt8PetscInt8PetscIntNSt6stringEbNSt6stringE17DomainCoordinatesNSt6vectorI17BoundaryConditionEE"></span><span id="FileManager::initializeHDF5__PetscScalar.PetscScalar.PetscScalar.PetscInt.PetscInt.PetscInt.PetscScalar.PetscScalar.PetscInt.PetscInt.PetscInt.ss.b.ss.DomainCoordinates.std::vector:BoundaryCondition:"></span><span class="target" id="db/dd5/classFileManager_1a71bc9f0e6d0a5be6296013b1fc8345c5"></span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">initializeHDF5</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">volfrac</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">timestep</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">temperature</span></span>, <span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">numberElementsX</span></span>, <span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">numberElementsY</span></span>, <span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">numberElementsZ</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">penalty</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">filterRadius</span></span>, <span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">numberSteps</span></span>, <span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">saveFrequency</span></span>, <span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">NoseHooverChainOrder</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">filePath</span></span>, <span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">randomStartingValues</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">initialConditionsFile</span></span>, <a class="reference internal" href="pybind11.html#_CPPv417DomainCoordinates" title="DomainCoordinates"><span class="n"><span class="pre">DomainCoordinates</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">domain</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="pybind11.html#_CPPv417BoundaryCondition" title="BoundaryCondition"><span class="n"><span class="pre">BoundaryCondition</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">boundaryConditions</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager14initializeHDF5E11PetscScalar11PetscScalar11PetscScalar8PetscInt8PetscInt8PetscInt11PetscScalar11PetscScalar8PetscInt8PetscInt8PetscIntNSt6stringEbNSt6stringE17DomainCoordinatesNSt6vectorI17BoundaryConditionEE" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates an HDF5 file for iteration with the provided parameters. This must be called before starting the iteration loop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>volfrac</strong> – volume fraction setting </p></li>
+<li><p><strong>timestep</strong> – timestep setting </p></li>
+<li><p><strong>temperature</strong> – system temperature setting </p></li>
+<li><p><strong>numberElementsX</strong> – cells in the x direction </p></li>
+<li><p><strong>numberElementsY</strong> – cells in the y direction </p></li>
+<li><p><strong>numberElementsZ</strong> – cells in the z direction </p></li>
+<li><p><strong>penalty</strong> – optimization penalty power setting </p></li>
+<li><p><strong>filterRadius</strong> – minimum filter radius setting </p></li>
+<li><p><strong>numberSteps</strong> – number of iterations to save </p></li>
+<li><p><strong>saveFrequency</strong> – number of iterations for each sample </p></li>
+<li><p><strong>NoseHooverChainOrder</strong> – number of particles in the Nose Hoover chain </p></li>
+<li><p><strong>filePath</strong> – path to save the HDF5 output file to </p></li>
+<li><p><strong>randomStartingValues</strong> – indicates if the positions were set uniformly or not </p></li>
+<li><p><strong>initialConditionsFile</strong> – path to pre-set initial conditions if provided </p></li>
+<li><p><strong>domain</strong> – domain coordinates of the problem </p></li>
+<li><p><strong>boundaryConditions</strong> – groups of boundary conditions for the problem</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 or PetscError. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager13saveIterationE8PetscInt3Vec">
+<span id="_CPPv3N11FileManager13saveIterationE8PetscInt3Vec"></span><span id="_CPPv2N11FileManager13saveIterationE8PetscInt3Vec"></span><span id="FileManager::saveIteration__PetscInt.Vec"></span><span class="target" id="db/dd5/classFileManager_1a5b4b488908f80c9cd45bcdd8faa380c0"></span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">saveIteration</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">iteration</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">positions</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager13saveIterationE8PetscInt3Vec" title="Link to this definition"></a><br /></dt>
+<dd><p>Saves an iteration of the optimized positions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>iteration</strong> – step to save </p></li>
+<li><p><strong>positions</strong> – grid of scalar position values at the given iteration</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 or PetscError. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager14saveFinalStateEb16HypOptParametersNSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI8PetscIntEENSt6vectorI8PetscIntEE">
+<span id="_CPPv3N11FileManager14saveFinalStateEb16HypOptParametersNSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI8PetscIntEENSt6vectorI8PetscIntEE"></span><span id="_CPPv2N11FileManager14saveFinalStateEb16HypOptParametersNSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI8PetscIntEENSt6vectorI8PetscIntEE"></span><span id="FileManager::saveFinalState__b.HypOptParameters.std::vector:PetscScalar:.std::vector:PetscScalar:.std::vector:PetscScalar:.std::vector:PetscScalar:.std::vector:PetscScalar:.std::vector:PetscScalar:.std::vector:PetscScalar:.std::vector:PetscScalar:.std::vector:PetscInt:.std::vector:PetscInt:"></span><span class="target" id="db/dd5/classFileManager_1a85be49de806c27533042f89f236ec0f5"></span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">saveFinalState</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">saveHamiltionan</span></span>, <a class="reference internal" href="HypOptParameters.html#_CPPv416HypOptParameters" title="HypOptParameters"><span class="n"><span class="pre">HypOptParameters</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">finalState</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">hamiltonians</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">compliance</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">temperatures</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">LagrangeMultipliers</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">iterationTimes</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">timesteps</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">energyErrors</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscScalar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">volFracs</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscInt</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">solverIterationsSensitivity</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">PetscInt</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">solverIterationsHamiltonian</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager14saveFinalStateEb16HypOptParametersNSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI11PetscScalarEENSt6vectorI8PetscIntEENSt6vectorI8PetscIntEE" title="Link to this definition"></a><br /></dt>
+<dd><p>Saves the final state of the system for restarting functionality. Additionally saves metadata from each iteration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>saveHamiltionan</strong> – option to save the Hamiltonian and Compliance metadata. </p></li>
+<li><p><strong>finalState</strong> – final state of the system, including all particle and NH particle positions and velocities. </p></li>
+<li><p><strong>hamiltonians</strong> – Hamiltonian at each iteration (if saveHamiltionan option is false this can be NULL). </p></li>
+<li><p><strong>compliance</strong> – compliance at each iteration (if saveHamiltionan option is false this can be NULL). </p></li>
+<li><p><strong>temperatures</strong> – system temperature at each iteration. </p></li>
+<li><p><strong>LagrangeMultipliers</strong> – Lagrangian Multipliers at each iteration. </p></li>
+<li><p><strong>iterationTimes</strong> – time to solve each iteration. </p></li>
+<li><p><strong>timesteps</strong> – timestep at each iteration. Useful for variable timestep runs. </p></li>
+<li><p><strong>energyErrors</strong> – energy error at each iteration. </p></li>
+<li><p><strong>volFracs</strong> – volume fraction at each iteration. </p></li>
+<li><p><strong>solverIterationsSensitivity</strong> – number of iterations the FEA solver for the sensitivity calculation. </p></li>
+<li><p><strong>solverIterationsHamiltonian</strong> – number of iterations the FEA solver for the Hamiltonian calculation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 or PetscError. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager15getSaveFilePathEv">
+<span id="_CPPv3N11FileManager15getSaveFilePathEv"></span><span id="_CPPv2N11FileManager15getSaveFilePathEv"></span><span id="FileManager::getSaveFilePath"></span><span class="target" id="db/dd5/classFileManager_1ab5d59c7073a57d04b9d12d4fab0e9d82"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getSaveFilePath</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager15getSaveFilePathEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Save file path accessor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the path to the HDF5 save file. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager12getDataGroupEv">
+<span id="_CPPv3N11FileManager12getDataGroupEv"></span><span id="_CPPv2N11FileManager12getDataGroupEv"></span><span id="FileManager::getDataGroup"></span><span class="target" id="db/dd5/classFileManager_1a33f8f42f5a00713afddf587e9233ab76"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getDataGroup</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager12getDataGroupEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Data group accessor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the the name of the data group. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-functions">Public Static Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager13doesFileExistENSt6stringE">
+<span id="_CPPv3N11FileManager13doesFileExistENSt6stringE"></span><span id="_CPPv2N11FileManager13doesFileExistENSt6stringE"></span><span id="FileManager::doesFileExist__ss"></span><span class="target" id="db/dd5/classFileManager_1ae56750787380264eafe90f708ab03ae0"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">doesFileExist</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">filePath</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager13doesFileExistENSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to determine if a file exists.</p>
+<p>Uses the std::ifstream::open function and checks if the fail opened succesfully. This method is imperfect if the file fails to open for another reason, but should work for most cases without getting too complicated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filePath</strong> – the path to check.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>true if the file exists, false otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager20getFinalStateVectorsENSt6stringE16HypOptParameters3Vec">
+<span id="_CPPv3N11FileManager20getFinalStateVectorsENSt6stringE16HypOptParameters3Vec"></span><span id="_CPPv2N11FileManager20getFinalStateVectorsENSt6stringE16HypOptParameters3Vec"></span><span id="FileManager::getFinalStateVectors__ss.HypOptParameters.Vec"></span><span class="target" id="db/dd5/classFileManager_1a0e4f523161e5faf233eae99f63ad70f8"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getFinalStateVectors</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">filePath</span></span>, <a class="reference internal" href="HypOptParameters.html#_CPPv416HypOptParameters" title="HypOptParameters"><span class="n"><span class="pre">HypOptParameters</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">finalState</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">finalStateField</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager20getFinalStateVectorsENSt6stringE16HypOptParameters3Vec" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to get the final state from a given restart file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filePath</strong> – the restart file to parse. </p></li>
+<li><p><strong>finalState</strong> – [out] structure to fill with with the state parameters (particle positions and velocities) </p></li>
+<li><p><strong>finalStateField</strong> – [out] final state field vector to pass to the Linear Elasticity class.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 for success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN11FileManager17HDF5SaveStdVectorE14PetscErrorCode11PetscViewerNSt6vectorI1TEEPKc">
+<span id="_CPPv3I0EN11FileManager17HDF5SaveStdVectorE11PetscViewerNSt6vectorI1TEEPKc"></span><span id="_CPPv2I0EN11FileManager17HDF5SaveStdVectorE11PetscViewerNSt6vectorI1TEEPKc"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="db/dd5/classFileManager_1ad347d8166f615ccbafb6344584943f84"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">HDF5SaveStdVector</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PetscViewer</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">HDF5saveFile</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4I0EN11FileManager17HDF5SaveStdVectorE14PetscErrorCode11PetscViewerNSt6vectorI1TEEPKc" title="FileManager::HDF5SaveStdVector::T"><span class="n"><span class="pre">T</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">vector</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">vectorName</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN11FileManager17HDF5SaveStdVectorE14PetscErrorCode11PetscViewerNSt6vectorI1TEEPKc" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function which converts a std::vector object into a Petsc vector before saving it to the provided HDF5 viewer.</p>
+<p>Currently only needed for PetscScalar objects, though this could easily be overloaded or templated for more support if needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>HDF5saveFile</strong> – Petsc Viewer set up to the desired file and data group. </p></li>
+<li><p><strong>vector</strong> – scalar std::vector object to save. </p></li>
+<li><p><strong>vectorName</strong> – name under which to save the vector in the HDF5 file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager15HDF5GetSavedVecENSt6stringENSt6stringE3Vec">
+<span id="_CPPv3N11FileManager15HDF5GetSavedVecENSt6stringENSt6stringE3Vec"></span><span id="_CPPv2N11FileManager15HDF5GetSavedVecENSt6stringENSt6stringE3Vec"></span><span id="FileManager::HDF5GetSavedVec__ss.ss.Vec"></span><span class="target" id="db/dd5/classFileManager_1ac7fc70a0fb01f4f75f049dfcf0221ed9"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">HDF5GetSavedVec</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">filePath</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">location</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">vector</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager15HDF5GetSavedVecENSt6stringENSt6stringE3Vec" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to retrieve a vector from a given HDF5 file.</p>
+<p><dl>
+<dt class="sig sig-object cpp">
+<em><span class="pre">Todo:</span></em></dt>
+<dd><p>this function should probably be overloaded to pass a pre-preppared PetscViewer for efficiency (although this is far from the slowest part of the code).</p>
+</dd></dl>
+
+</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filePath</strong> – the file from which to acquire the desired vector. </p></li>
+<li><p><strong>location</strong> – HDF5 group where the vector is saved </p></li>
+<li><p><strong>vector</strong> – [out] the vector to populate</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager15getHDF5SettingsENSt6stringEP8PetscIntP11PetscScalarP11PetscScalarP11PetscScalarP11PetscScalarP11PetscScalarPNSt6vectorI8uint32_tEEP17DomainCoordinatesPNSt6vectorI17BoundaryConditionEE">
+<span id="_CPPv3N11FileManager15getHDF5SettingsENSt6stringEP8PetscIntP11PetscScalarP11PetscScalarP11PetscScalarP11PetscScalarP11PetscScalarPNSt6vectorI8uint32_tEEP17DomainCoordinatesPNSt6vectorI17BoundaryConditionEE"></span><span id="_CPPv2N11FileManager15getHDF5SettingsENSt6stringEP8PetscIntP11PetscScalarP11PetscScalarP11PetscScalarP11PetscScalarP11PetscScalarPNSt6vectorI8uint32_tEEP17DomainCoordinatesPNSt6vectorI17BoundaryConditionEE"></span><span id="FileManager::getHDF5Settings__ss.PetscIntP.PetscScalarP.PetscScalarP.PetscScalarP.PetscScalarP.PetscScalarP.std::vector:uint32_t:P.DomainCoordinatesP.std::vector:BoundaryCondition:P"></span><span class="target" id="db/dd5/classFileManager_1ac44e1ba084e65a54e33f1a9754c5370a"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getHDF5Settings</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">filePath</span></span>, <span class="n"><span class="pre">PetscInt</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">noseHooverChainOrder</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">volumeFraction</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">timestep</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">targetTemperature</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">penalty</span></span>, <span class="n"><span class="pre">PetscScalar</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">minimumFilterRadius</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uint32_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">gridDimensions</span></span>, <a class="reference internal" href="pybind11.html#_CPPv417DomainCoordinates" title="DomainCoordinates"><span class="n"><span class="pre">DomainCoordinates</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">domain</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="pybind11.html#_CPPv417BoundaryCondition" title="BoundaryCondition"><span class="n"><span class="pre">BoundaryCondition</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">boundaryConditions</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager15getHDF5SettingsENSt6stringEP8PetscIntP11PetscScalarP11PetscScalarP11PetscScalarP11PetscScalarP11PetscScalarPNSt6vectorI8uint32_tEEP17DomainCoordinatesPNSt6vectorI17BoundaryConditionEE" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to retrieve the simulation settings froma given restart file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filePath</strong> – the restart file to parse. </p></li>
+<li><p><strong>noseHooverChainOrder</strong> – [out] setting to populate </p></li>
+<li><p><strong>volumeFraction</strong> – [out] setting to populate </p></li>
+<li><p><strong>timestep</strong> – [out] setting to populate </p></li>
+<li><p><strong>targetTemperature</strong> – [out] setting to populate </p></li>
+<li><p><strong>penalty</strong> – [out] setting to populate </p></li>
+<li><p><strong>minimumFilterRadius</strong> – [out] setting to populate </p></li>
+<li><p><strong>gridDimensions</strong> – [out] setting to populate </p></li>
+<li><p><strong>domain</strong> – [out] setting to populate </p></li>
+<li><p><strong>boundaryConditions</strong> – [out] setting to populate</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager21saveInitialConditionsE3Vec3VecNSt6stringE">
+<span id="_CPPv3N11FileManager21saveInitialConditionsE3Vec3VecNSt6stringE"></span><span id="_CPPv2N11FileManager21saveInitialConditionsE3Vec3VecNSt6stringE"></span><span id="FileManager::saveInitialConditions__Vec.Vec.ss"></span><span class="target" id="db/dd5/classFileManager_1a6fb0fcb03040584a110f80a6ce47db20"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">saveInitialConditions</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">positions</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">velocities</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">filePath</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager21saveInitialConditionsE3Vec3VecNSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd><p>Saves provided initial conditions to an hdf5 file at the path provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>positions</strong> – initial positions </p></li>
+<li><p><strong>velocities</strong> – initial velocities </p></li>
+<li><p><strong>filePath</strong> – path to hdf5 file to create/append</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager21loadInitialConditionsE3Vec3VecNSt6stringE">
+<span id="_CPPv3N11FileManager21loadInitialConditionsE3Vec3VecNSt6stringE"></span><span id="_CPPv2N11FileManager21loadInitialConditionsE3Vec3VecNSt6stringE"></span><span id="FileManager::loadInitialConditions__Vec.Vec.ss"></span><span class="target" id="db/dd5/classFileManager_1a3e5afd9359b6c9efb06cf78d8485f623"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">loadInitialConditions</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">positions</span></span>, <span class="n"><span class="pre">Vec</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">velocities</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">filePath</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager21loadInitialConditionsE3Vec3VecNSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd><p>Loads initial conditions from an hdf5 file at the path provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>positions</strong> – [out] initial positions </p></li>
+<li><p><strong>velocities</strong> – [out] initial velocities </p></li>
+<li><p><strong>filePath</strong> – [out] path to hdf5 file to create/append</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager22saveBoundaryConditionsE11PetscViewerNSt6vectorI17BoundaryConditionEE">
+<span id="_CPPv3N11FileManager22saveBoundaryConditionsE11PetscViewerNSt6vectorI17BoundaryConditionEE"></span><span id="_CPPv2N11FileManager22saveBoundaryConditionsE11PetscViewerNSt6vectorI17BoundaryConditionEE"></span><span id="FileManager::saveBoundaryConditions__PetscViewer.std::vector:BoundaryCondition:"></span><span class="target" id="db/dd5/classFileManager_1ae1bc032adbda4cb9a0ee155d32d31a46"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">saveBoundaryConditions</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PetscViewer</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">saveFileHDF5</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="pybind11.html#_CPPv417BoundaryCondition" title="BoundaryCondition"><span class="n"><span class="pre">BoundaryCondition</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">boundaryConditions</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager22saveBoundaryConditionsE11PetscViewerNSt6vectorI17BoundaryConditionEE" title="Link to this definition"></a><br /></dt>
+<dd><p>Saves provided boundary conditions to an hdf5 file at the path provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>saveFileHDF5</strong> – viewer already initialized to hdf5 file to save </p></li>
+<li><p><strong>boundaryConditions</strong> – settings to save</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager21getBoundaryConditionsE11PetscViewerPNSt6vectorI17BoundaryConditionEE">
+<span id="_CPPv3N11FileManager21getBoundaryConditionsE11PetscViewerPNSt6vectorI17BoundaryConditionEE"></span><span id="_CPPv2N11FileManager21getBoundaryConditionsE11PetscViewerPNSt6vectorI17BoundaryConditionEE"></span><span id="FileManager::getBoundaryConditions__PetscViewer.std::vector:BoundaryCondition:P"></span><span class="target" id="db/dd5/classFileManager_1a6d6a6a0c81914d86c8ac0c95bd4477e4"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getBoundaryConditions</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PetscViewer</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">saveFileHDF5</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="pybind11.html#_CPPv417BoundaryCondition" title="BoundaryCondition"><span class="n"><span class="pre">BoundaryCondition</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">boundaryConditions</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager21getBoundaryConditionsE11PetscViewerPNSt6vectorI17BoundaryConditionEE" title="Link to this definition"></a><br /></dt>
+<dd><p>Gets boundary conditions from the provided viewer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>saveFileHDF5</strong> – viewer already initialized to hdf5 file to save </p></li>
+<li><p><strong>boundaryConditions</strong> – [out] settings to populate</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager21saveDomainInformationE11PetscViewer17DomainCoordinates">
+<span id="_CPPv3N11FileManager21saveDomainInformationE11PetscViewer17DomainCoordinates"></span><span id="_CPPv2N11FileManager21saveDomainInformationE11PetscViewer17DomainCoordinates"></span><span id="FileManager::saveDomainInformation__PetscViewer.DomainCoordinates"></span><span class="target" id="db/dd5/classFileManager_1afbeaccc98468ad1c37795612d0c31b7e"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">saveDomainInformation</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PetscViewer</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">saveFileHDF5</span></span>, <a class="reference internal" href="pybind11.html#_CPPv417DomainCoordinates" title="DomainCoordinates"><span class="n"><span class="pre">DomainCoordinates</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">domain</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager21saveDomainInformationE11PetscViewer17DomainCoordinates" title="Link to this definition"></a><br /></dt>
+<dd><p>Saves provided domain coordinates to an hdf5 file at the path provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>saveFileHDF5</strong> – viewer already initialized to hdf5 file to save </p></li>
+<li><p><strong>domain</strong> – settings to save</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager20getDomainInformationE11PetscViewerP17DomainCoordinates">
+<span id="_CPPv3N11FileManager20getDomainInformationE11PetscViewerP17DomainCoordinates"></span><span id="_CPPv2N11FileManager20getDomainInformationE11PetscViewerP17DomainCoordinates"></span><span id="FileManager::getDomainInformation__PetscViewer.DomainCoordinatesP"></span><span class="target" id="db/dd5/classFileManager_1a98c0e10e848b75adcaf3b4c6a5fb6df0"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">PetscErrorCode</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">getDomainInformation</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">PetscViewer</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">saveFileHDF5</span></span>, <a class="reference internal" href="pybind11.html#_CPPv417DomainCoordinates" title="DomainCoordinates"><span class="n"><span class="pre">DomainCoordinates</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">domain</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager20getDomainInformationE11PetscViewerP17DomainCoordinates" title="Link to this definition"></a><br /></dt>
+<dd><p>Gets domain coordinates from the provided viewer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>saveFileHDF5</strong> – viewer already initialized to hdf5 file to save </p></li>
+<li><p><strong>domain</strong> – [out] settings to populate</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>0 on success, PetscError otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-functions">Private Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager18autoAppendFilePathENSt6stringENSt6stringE">
+<span id="_CPPv3N11FileManager18autoAppendFilePathENSt6stringENSt6stringE"></span><span id="_CPPv2N11FileManager18autoAppendFilePathENSt6stringENSt6stringE"></span><span id="FileManager::autoAppendFilePath__ss.ss"></span><span class="target" id="db/dd5/classFileManager_1a6db9c0bb08d4228dc588558373938669"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">autoAppendFilePath</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">fileName</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">fileExtension</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N11FileManager18autoAppendFilePathENSt6stringENSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd><p>Private helper function which finds a unique file name in the given path.</p>
+<p>If the given file alreaqdy exists, “ (1)” is appended to the name. If it still does exists, “ (1)” is incremented until a file name is found which does not exist.</p>
+<p><dl>
+<dt class="sig sig-object cpp">
+<em><span class="pre">Todo:</span></em></dt>
+<dd><p>this could probably be simplified to not require sepparating file path and extension.</p>
+</dd></dl>
+
+</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fileName</strong> – the file name to append (with no file extension). </p></li>
+<li><p><strong>fileExtension</strong> – the file extension to be used. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-members">Private Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager12saveFilePathE">
+<span id="_CPPv3N11FileManager12saveFilePathE"></span><span id="_CPPv2N11FileManager12saveFilePathE"></span><span id="FileManager::saveFilePath__ss"></span><span class="target" id="db/dd5/classFileManager_1ae0061209cae746ae6be5eefce51d5f25"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">saveFilePath</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager12saveFilePathE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager7physicsE">
+<span id="_CPPv3N11FileManager7physicsE"></span><span id="_CPPv2N11FileManager7physicsE"></span><span id="FileManager::physics__LinearElasticityP"></span><span class="target" id="db/dd5/classFileManager_1aedc5f89d7d31afc0817efec2994cb4d3"></span><span class="n"><span class="pre">LinearElasticity</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">physics</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager7physicsE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-static-attributes">Private Static Attributes</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager10stateGroupE">
+<span id="_CPPv3N11FileManager10stateGroupE"></span><span id="_CPPv2N11FileManager10stateGroupE"></span><span id="FileManager::stateGroup__ssC"></span><span class="target" id="db/dd5/classFileManager_1a83521ee4e7ebcee274462db5f56e667d"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">stateGroup</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager10stateGroupE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager9dataGroupE">
+<span id="_CPPv3N11FileManager9dataGroupE"></span><span id="_CPPv2N11FileManager9dataGroupE"></span><span id="FileManager::dataGroup__ssC"></span><span class="target" id="db/dd5/classFileManager_1ae2373ec5a3ee284a71548d201b300fa0"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">dataGroup</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager9dataGroupE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager13settingsGroupE">
+<span id="_CPPv3N11FileManager13settingsGroupE"></span><span id="_CPPv2N11FileManager13settingsGroupE"></span><span id="FileManager::settingsGroup__ssC"></span><span class="target" id="db/dd5/classFileManager_1a6136adda8b63a27c9d9eb28e05e295c7"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">settingsGroup</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager13settingsGroupE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager11volfracNameE">
+<span id="_CPPv3N11FileManager11volfracNameE"></span><span id="_CPPv2N11FileManager11volfracNameE"></span><span id="FileManager::volfracName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a8d99cf96d7cda0242822f961cae4007f"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">volfracName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager11volfracNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager12timestepNameE">
+<span id="_CPPv3N11FileManager12timestepNameE"></span><span id="_CPPv2N11FileManager12timestepNameE"></span><span id="FileManager::timestepName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a795a9d22625ec656f2ea1383e9a0f295"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timestepName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager12timestepNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager8tempNameE">
+<span id="_CPPv3N11FileManager8tempNameE"></span><span id="_CPPv2N11FileManager8tempNameE"></span><span id="FileManager::tempName__ssC"></span><span class="target" id="db/dd5/classFileManager_1acc75acf9a96bb2fb4cbd68c28cc97394"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">tempName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager8tempNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager8xDimNameE">
+<span id="_CPPv3N11FileManager8xDimNameE"></span><span id="_CPPv2N11FileManager8xDimNameE"></span><span id="FileManager::xDimName__ssC"></span><span class="target" id="db/dd5/classFileManager_1aaf580af4f12075b57366ff9d424b3ad5"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">xDimName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager8xDimNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager8yDimNameE">
+<span id="_CPPv3N11FileManager8yDimNameE"></span><span id="_CPPv2N11FileManager8yDimNameE"></span><span id="FileManager::yDimName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a4d484aa4c18cd33acb5e3431f3411973"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">yDimName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager8yDimNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager8zDimNameE">
+<span id="_CPPv3N11FileManager8zDimNameE"></span><span id="_CPPv2N11FileManager8zDimNameE"></span><span id="FileManager::zDimName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a927fe1eb7d31d75b5e73c8792d6c8d87"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">zDimName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager8zDimNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager11penaltyNameE">
+<span id="_CPPv3N11FileManager11penaltyNameE"></span><span id="_CPPv2N11FileManager11penaltyNameE"></span><span id="FileManager::penaltyName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a84a4fc72e5537dcaca49338f43631a73"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">penaltyName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager11penaltyNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager13minRadiusNameE">
+<span id="_CPPv3N11FileManager13minRadiusNameE"></span><span id="_CPPv2N11FileManager13minRadiusNameE"></span><span id="FileManager::minRadiusName__ssC"></span><span class="target" id="db/dd5/classFileManager_1ad1038afe300623c484a12da4b8fd76d2"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">minRadiusName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager13minRadiusNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager11numStepNameE">
+<span id="_CPPv3N11FileManager11numStepNameE"></span><span id="_CPPv2N11FileManager11numStepNameE"></span><span id="FileManager::numStepName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a5c51bf322980282d5a457f7ca8543021"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">numStepName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager11numStepNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager12saveFreqNameE">
+<span id="_CPPv3N11FileManager12saveFreqNameE"></span><span id="_CPPv2N11FileManager12saveFreqNameE"></span><span id="FileManager::saveFreqName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a3288a50e3d2adef302bde3b82821b225"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">saveFreqName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager12saveFreqNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager12chainOrdNameE">
+<span id="_CPPv3N11FileManager12chainOrdNameE"></span><span id="_CPPv2N11FileManager12chainOrdNameE"></span><span id="FileManager::chainOrdName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a60e4c99c2e76bf98d7d3d6aa0a69ad4e"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">chainOrdName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager12chainOrdNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager15hamiltonianNameE">
+<span id="_CPPv3N11FileManager15hamiltonianNameE"></span><span id="_CPPv2N11FileManager15hamiltonianNameE"></span><span id="FileManager::hamiltonianName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a317283a73ac8b811687785bc4b8a73ae"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">hamiltonianName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager15hamiltonianNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager14complainceNameE">
+<span id="_CPPv3N11FileManager14complainceNameE"></span><span id="_CPPv2N11FileManager14complainceNameE"></span><span id="FileManager::complainceName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a1120f312d3c012304b62fd7627e1bc78"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">complainceName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager14complainceNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager15temperatureNameE">
+<span id="_CPPv3N11FileManager15temperatureNameE"></span><span id="_CPPv2N11FileManager15temperatureNameE"></span><span id="FileManager::temperatureName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a732779dbb455bf1921b85e596ed15e50"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">temperatureName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager15temperatureNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager24lagrangianMultipliarNameE">
+<span id="_CPPv3N11FileManager24lagrangianMultipliarNameE"></span><span id="_CPPv2N11FileManager24lagrangianMultipliarNameE"></span><span id="FileManager::lagrangianMultipliarName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a5d602594879353f6540776f629b6e664"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">lagrangianMultipliarName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager24lagrangianMultipliarNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager24iterationComputeTimeNameE">
+<span id="_CPPv3N11FileManager24iterationComputeTimeNameE"></span><span id="_CPPv2N11FileManager24iterationComputeTimeNameE"></span><span id="FileManager::iterationComputeTimeName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a26e2a0db96eb50e3036025de94421463"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">iterationComputeTimeName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager24iterationComputeTimeNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager13timestepsNameE">
+<span id="_CPPv3N11FileManager13timestepsNameE"></span><span id="_CPPv2N11FileManager13timestepsNameE"></span><span id="FileManager::timestepsName__ssC"></span><span class="target" id="db/dd5/classFileManager_1aed49539e6914eca9951fce077d084cae"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">timestepsName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager13timestepsNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager16energyErrorsNameE">
+<span id="_CPPv3N11FileManager16energyErrorsNameE"></span><span id="_CPPv2N11FileManager16energyErrorsNameE"></span><span id="FileManager::energyErrorsName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a9ec275f2b5c3bd903bbb0ee1d72c25cf"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">energyErrorsName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager16energyErrorsNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager17finalPositionNameE">
+<span id="_CPPv3N11FileManager17finalPositionNameE"></span><span id="_CPPv2N11FileManager17finalPositionNameE"></span><span id="FileManager::finalPositionName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a23ba77687caed45527436d0e40ef89ce"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">finalPositionName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager17finalPositionNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager17finalVelocityNameE">
+<span id="_CPPv3N11FileManager17finalVelocityNameE"></span><span id="_CPPv2N11FileManager17finalVelocityNameE"></span><span id="FileManager::finalVelocityName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a4374726eeb05ba57ec681e1c8b517762"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">finalVelocityName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager17finalVelocityNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager23finalEvenNHPositionNameE">
+<span id="_CPPv3N11FileManager23finalEvenNHPositionNameE"></span><span id="_CPPv2N11FileManager23finalEvenNHPositionNameE"></span><span id="FileManager::finalEvenNHPositionName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a9829df8b9c38988044bbf3ea2cbf624f"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">finalEvenNHPositionName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager23finalEvenNHPositionNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager23finalEvenNHVelocityNameE">
+<span id="_CPPv3N11FileManager23finalEvenNHVelocityNameE"></span><span id="_CPPv2N11FileManager23finalEvenNHVelocityNameE"></span><span id="FileManager::finalEvenNHVelocityName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a2911a7cf787d5114abdb42752ec85ff6"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">finalEvenNHVelocityName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager23finalEvenNHVelocityNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager22finalOddNHPositionNameE">
+<span id="_CPPv3N11FileManager22finalOddNHPositionNameE"></span><span id="_CPPv2N11FileManager22finalOddNHPositionNameE"></span><span id="FileManager::finalOddNHPositionName__ssC"></span><span class="target" id="db/dd5/classFileManager_1ab22f9379e32f58d42c78c3979203cb1c"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">finalOddNHPositionName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager22finalOddNHPositionNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager22finalOddNHVelocityNameE">
+<span id="_CPPv3N11FileManager22finalOddNHVelocityNameE"></span><span id="_CPPv2N11FileManager22finalOddNHVelocityNameE"></span><span id="FileManager::finalOddNHVelocityName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a633c7773c64a7923424e2c54306024f4"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">finalOddNHVelocityName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager22finalOddNHVelocityNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager19finalStateFieldNameE">
+<span id="_CPPv3N11FileManager19finalStateFieldNameE"></span><span id="_CPPv2N11FileManager19finalStateFieldNameE"></span><span id="FileManager::finalStateFieldName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a09046e5000403d5afc5068256fba48c1"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">finalStateFieldName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager19finalStateFieldNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager19initialPositionNameE">
+<span id="_CPPv3N11FileManager19initialPositionNameE"></span><span id="_CPPv2N11FileManager19initialPositionNameE"></span><span id="FileManager::initialPositionName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a4016a10e71f835f3834c7a1f4976f658"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">initialPositionName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager19initialPositionNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N11FileManager19initialVelocityNameE">
+<span id="_CPPv3N11FileManager19initialVelocityNameE"></span><span id="_CPPv2N11FileManager19initialVelocityNameE"></span><span id="FileManager::initialVelocityName__ssC"></span><span class="target" id="db/dd5/classFileManager_1a5d776f93e4b7fba9024d789b53fb6430"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">initialVelocityName</span></span></span><a class="headerlink" href="#_CPPv4N11FileManager19initialVelocityNameE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="macros.html" class="btn btn-neutral float-left" title="Macros" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="FilterWrapper.html" class="btn btn-neutral float-right" title="Filter Wrapper" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Aidan Sheedy.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

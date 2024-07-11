@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Background &mdash; HypOptLib 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=2709fde1"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Getting Started" href="installation.html" />
+    <link rel="prev" title="HypOptLib documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            HypOptLib
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Background</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#methodology-overview">Methodology Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#numerical-implementation-and-molecular-dynamics">Numerical Implementation and Molecular Dynamics</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="library.html">Library Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="additions.html">Additional Information</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fullapi.html">Full API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HypOptLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Background</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/background.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="background">
+<h1>Background<a class="headerlink" href="#background" title="Link to this heading"></a></h1>
+<p>Systematically understanding the solution space of large-scale design problems
+is crucial for answering a range of design questions, including sensitivity,
+performance, etc. These questions are particularly pressing for design problems
+where the answer depends on a large number of design variables, e.g.,
+high-resolution problems in topology optimization. HypOptLib is a C++/Python code
+that implements novel filtration approaches to explore the solution space of
+large-scale design problems. Rather than merely seeking an optimized solution,
+HypOptLib yields detailed insight into the structure of the solution space, a
+capability often overlooked in conventional optimization libraries. HypOptLib
+exploits a mapping of design variables in conventional problems in topology
+optimization to the dynamics of pseudothermal systems of “particles.” We
+implement design variable dynamics by adapting techniques from molecular
+dynamics. Using compliance minimization as a demonstration problem, we
+demonstrate that HypOptLib supplements problems typically studied via topology
+optimization with critical insights into the reliability and sensitivity of
+design solutions. The problem-independent algorithm makes HypOptLib adaptable to
+a wide range of large-scale design problems in topology optimization and beyond
+where understanding.</p>
+<section id="methodology-overview">
+<h2>Methodology Overview<a class="headerlink" href="#methodology-overview" title="Link to this heading"></a></h2>
+<p>Topology optimization concerns optimizing material layout within a given space,
+aimed at meeting specific performance criteria under constraints such as material
+volume. Central to our approach is the conceptualization of the design field
+<span class="math notranslate nohighlight">\(x\)</span>, which allows for the expression of design configurations via the number
+of configurations <span class="math notranslate nohighlight">\(\Omega(C,V)\)</span>, facilitated through the application of the
+Pareto-Laplace filter [1]:</p>
+<div class="math notranslate nohighlight">
+\[Z(\beta) = \int_{C_\text{min}(V)}^{\infty}dC e^{-\beta C} \Omega(C,V),\]</div>
+<p>where <span class="math notranslate nohighlight">\(\beta\)</span> represents the Laplace variable and <span class="math notranslate nohighlight">\(C_\text{min}\)</span> denotes the
+minimal compliance for a given material volume <span class="math notranslate nohighlight">\(V\)</span>. <span class="math notranslate nohighlight">\(Z(\beta)\)</span> thus acts as a
+generating function, encoding the solution space’s geometry through a weighted
+summation over possible design realizations.</p>
+<p>Direct evaluation of <span class="math notranslate nohighlight">\(Z(\beta)\)</span> is impractical due to unknown variables such as
+<span class="math notranslate nohighlight">\(C_\text{min}(V)\)</span> and <span class="math notranslate nohighlight">\(\Omega(C,V)\)</span>. To navigate this, we adopt practices from
+statistical physics, leveraging underlying degrees of freedom within design
+fields to infer these quantities. This methodology enables a finite element
+approximation, simplifying <span class="math notranslate nohighlight">\(Z(\beta)\)</span> as follows:</p>
+<div class="math notranslate nohighlight">
+\[Z(\beta) = \sum_{\{x\}} e^{-\beta C} \delta\left(\sum_{e}x_e - V\right),\]</div>
+<p>where the sum encompasses all material distributions <span class="math notranslate nohighlight">\(\{x_e\}\)</span> constrained by
+material volume through the Dirac delta function.</p>
+<p>This redefined <span class="math notranslate nohighlight">\(Z(\beta)\)</span> serves to geometrize the compliance minimization
+solution space, with <span class="math notranslate nohighlight">\(\Omega(C,V)\)</span> representing the material distribution
+patterns meeting specific compliance and volume criteria. As <span class="math notranslate nohighlight">\(\beta\)</span> varies,
+we transition from emphasizing configurations near minimal compliance to treating
+all configurations equally, providing a comprehensive understanding of the
+solution space dynamics [2].</p>
+<section id="numerical-implementation-and-molecular-dynamics">
+<h3>Numerical Implementation and Molecular Dynamics<a class="headerlink" href="#numerical-implementation-and-molecular-dynamics" title="Link to this heading"></a></h3>
+<p>The numerical implementation relies on identifying <span class="math notranslate nohighlight">\(Z(\beta)\)</span> as a partition
+function, akin to those in molecular dynamics, treating compliance as potential
+energy and material cells as “particles” within the design domain. This analogy
+extends to computing <span class="math notranslate nohighlight">\(Z(\beta)\)</span> by introducing auxiliary variables representing
+particle momentum, integrating kinetic energy considerations to maintain dynamic
+configurations within the solution space [2].</p>
+<p>Implementing a Nosé-Hoover chain thermostat allows for simulating these dynamics
+under constant temperature, ensuring that the generated configurations
+appropriately reflect the integral transform of the compliance minimization
+problem. This approach, detailed further in our provided open-source
+implementations, leverages conventional molecular dynamics techniques proven
+effective in large-scale systems.</p>
+<p>The methodology concludes with the formulation of equations of motion, employing
+a symplectic integrator for stable numerical simulation. This framework ensures
+that generated configurations respect both compliance and material volume
+constraints, offering a robust and scalable solution to exploring the solution
+space in topology optimization.</p>
+</section>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
+<p>[1] Aliahmadi, H., Perez, R. and van Anders, G. (2024) Transforming Design Spaces
+Using Pareto-Laplace Filters [Preprint]. doi:arXiv:2403.00631.</p>
+<p>[2] Aliahmadi, H., Sheedy, A., Perez, R. and van Anders, G. (2024) Hyperoptimization insight
+for computational morphogenesis [Preprint]. [Unpublished]</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="HypOptLib documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="Getting Started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Aidan Sheedy.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
