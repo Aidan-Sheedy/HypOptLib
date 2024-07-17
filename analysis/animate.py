@@ -83,7 +83,7 @@ def generateTimestepXmf(files, saveFreq=0):
     file_directory = os.path.dirname(files[0])
     filename = os.path.splitext(os.path.basename(files[0]))[0]
     new_path = str(file_directory)
-    xdmfFileName  = new_path + "/" + filename + "_animated.xmf"
+    xdmfFileName  = new_path + "/" + filename + ".xmf"
 
     # Generate xmf file
     xdmfFile = xmf(xdmfFileName)
