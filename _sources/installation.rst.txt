@@ -22,11 +22,13 @@ provided :doc:`here </apidocs/macros>`.
 Automatic Install
 ========================
 
-This installation method can be useful for personal systems, but may not be ideal as it
-won't account for any idiosyncrasies. However, it can also be useful to look through the
-bash script to see which dependencies are being installed.
+The automatic install is only tested to work on Ubuntu. However it is not perfect
+and is mostly intended as a shortcut to get started, you may still need to put in
+some leg work! It is especially **not** recommended to run this if you do not own
+the system!! Always contact system administrators before installing any libraries,
+or at least follow the procedures for the particular system or cluster you are using.
 
-1. Clone the HypOptLib repository from https://github.com/Aidan-Sheedy/Hyperoptimization_using_Petsc.git.
+1. Clone the HypOptLib repository from https://github.com/Aidan-Sheedy/HypOptLib.
 
 2. Run the automatic install macro:
 
@@ -34,10 +36,10 @@ bash script to see which dependencies are being installed.
 
         ./macros.sh setup
 
-    .. note:: 
-        
+    .. note::
+
         You may need to change the executable permissions first:
-        
+
         .. code-block:: bash
 
             chmod +rwx ./macros.sh
@@ -105,7 +107,7 @@ In general, a few items may need to be set manually to ensure the build works:
 2. In the same file, the two lines setting the **PythonInterp** and **PythonLibs** versions
    may be needed to help CMake find the correct Python version.
 
-3. At the end of the file, you may need to uncomment the line 
+3. At the end of the file, you may need to uncomment the line
 
    .. code-block:: bash
 
