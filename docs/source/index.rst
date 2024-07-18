@@ -8,13 +8,15 @@ fork of the topology optimization framework
 `TopOpt <https://www.topopt.mek.dtu.dk/apps-and-software/large-scale-topology-optimization-code-using-petsc>`_ by Aage
 et. al., along with some borrowed elements from the derivative `TopOptLib <https://doi.org/10.1007/s00158-021-03018-7>`_ by Smit et. al.
 
+You can find the full source at https://github.com/Aidan-Sheedy/HypOptLib.
+
 .. figure:: ../figures/big_result_standin.png
     :align: center
 
 Credit
 ===========================
-| **Hyperoptimization Algorithm** Hazhir Aliahmadi
 | **Code** Aidan Sheedy
+| **Hyperoptimization Algorithm** Hazhir Aliahmadi
 | **Advisor** Greg van Anders
 
 Borrowed Material

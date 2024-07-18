@@ -132,6 +132,28 @@ class xmf:
             file.write("\t\t\t\t</DataItem>\n")
             file.write("\t\t\t</Attribute>\n")
 
+    def insertVector(self, hdf5FileName, attributeName, attributeLocation, dimensions):
+        '''
+        Inserts the desired attribute into the xmf file.
+
+        Parameters
+        ----------
+        hdf5FileName : the name of the hdf5 file in which the timestep is stored. 
+
+        attributeName : the name of the attribute
+
+        attributeLocation : the location of the attribute in the hdf5 file.
+
+        dimensions :  Number of dimensions per cell.
+        '''
+        with open(self.__filepath, 'a') as file:
+            file.write("\t\t\t<Attribute Name=\"" + attributeName + "\" AttributeType=\"Vector\" Center=\"Cell\">\n")
+            file.write("\t\t\t\t<DataItem Dimensions=\"" + str(self.__dimensions[2]-1) + " " + str(self.__dimensions[1]-1) + " " + str(self.__dimensions[0]-1) + " "
+                        + str(dimensions) + "\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n")
+            file.write("\t\t\t\t " + hdf5FileName + ":" + attributeLocation + "\n")
+            file.write("\t\t\t\t</DataItem>\n")
+            file.write("\t\t\t</Attribute>\n")
+
     def closeGenericFile(self):
         '''
         Writes the footer to a generic xmf file.
