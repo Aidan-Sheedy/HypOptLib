@@ -5,11 +5,13 @@ fork of the topology optimization framework
 [TopOpt](https://www.topopt.mek.dtu.dk/apps-and-software/large-scale-topology-optimization-code-using-petsc) by Aage
 et. al., along with some borrowed elements from the derivative [TopOptLib](https://doi.org/10.1007/s00158-021-03018-7) by Smit et. al.
 
+You can find the full documentation at https://aidan-sheedy.github.io/HypOptLib/.
+
 ## Credit
 
-**Hyperoptimization Algorithm** Hazhir Aliahmadi
-
 **Code** Aidan Sheedy
+
+**Hyperoptimization Algorithm** Hazhir Aliahmadi
 
 **Advisor** Greg van Anders
 
@@ -58,11 +60,12 @@ installation are also provided here.
 
 ### Automatic Install
 
-The automatic install is only tested to work on Ubuntu. It is **not** recommended to run this
-if you do not own the system!! Always contact system administrators before installing any libraries,
-and follow the manual build instructions.
+The automatic install is only tested to work on Ubuntu. However it is not perfect and is mostly intended
+as a shortcut to get started, you may still need to put in some leg work! It is especially **not**
+recommended to run this if you do not own the system!! Always contact system administrators before
+installing any libraries, and follow the procedures for the particular system or cluster you are using.
 
-1. Clone the HypOptLib repository from https://github.com/Aidan-Sheedy/Hyperoptimization_using_Petsc.git.
+1. Clone the HypOptLib repository from https://github.com/Aidan-Sheedy/HypOptLib.
 
 2. Run the automatic install macro.
 
@@ -102,4 +105,4 @@ When configuring PETSc, you must add the `--download-hdf5` tag:
 ```
 
 Some operating systems or environments may also need additional configure flags. If the compilation
-fails, check the `PETSc install reference <https://petsc.org/release/install/install/>`_ for help.
+fails, check the [PETSc install reference](https://petsc.org/release/install/install/) for help.
