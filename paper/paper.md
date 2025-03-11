@@ -33,13 +33,14 @@ physical objectives. The utility of topology optimization in applications to
 additive manufacturing [@TopOptAddMfg] or morphogenesis [@7829422] requires
 systematically understanding how deviations from optimality affect key design
 objectives [@hypopt]. `HypOptLib` provides a C++/Python implementation of
-hyperoptimization,[@hypopt] an information theory based framework
-[@ParetoLaplace] for systematically analyzing non-optimal matter distributions.
+topology optimization using a Pareto-Laplace transform for compliance
+minimization,[@hypopt] an information theory based framework [@ParetoLaplace]
+for systematically analyzing non-optimal matter distributions.
 `HypOptLib` can generate high-resolution "importance maps" of deposition
 patterns in topology optimization problems. We give example results for
-compliance minimization problems,[@alma991486910605151] via `PetSc` [@petsc-web-page], but the code can
-be adapted straightforwardly to problems that rely on different underlying
-physics.
+compliance minimization problems,[@alma991486910605151] via `PetSc` [@petsc-web-page],
+but the code can be adapted straightforwardly to problems that rely on different
+underlying physics.
 
 # Statement of need
 
@@ -51,47 +52,46 @@ A key challenge in the practical implementation of these methods, e.g., via tech
 such as topology optimization [@TopOptBook], is to ensure that generated patterns of
 spatial deposition can be produced reliably and robustly. However, ensuring reliable,
 robust realizations requires the ability to understand redundancy among deposition
-patterns.[@hypopt] Recent work has introduced "hyperoptimization" [@hypopt] as an
-information-theoretic approach to robust implementations of topology
-optimization. Hyperoptimization has been shown to generate so-called importance
-maps that indicate the relative (importance) of spatial elements to overall
-design performance. Capitalizing on the power of that proof-of-principle
-demonstration requires numerical simulation codes that are capable of
+patterns.[@hypopt] Recent work has introduced an information theory based approach
+to robust implementations of topology optimization. [@hypopt] This approach has been
+shown to generate so-called importance maps that indicate the relative (importance)
+of spatial elements to overall design performance. Capitalizing on the power of that
+proof-of-principle demonstration requires numerical simulation codes that are capable of
 implementing the approach at scale.
 
 While there are extensive software packages for topology optimization,
 leveraging PETSc,[@Topopt] [@TopOptLib] using GPUs, [@Schmidt] and more [@55Line]
-[@Hunter2007william] [99line3D], there are none available which can effectively analyze deviations from
-optimality. A scalable implementation of hyperoptimization enables a richer
+[@Hunter2007william] [99line3D], there are none available which can effectively analyze
+deviations from optimality. A scalable implementation of computational morph enables a richer
 understanding of topology optimization problems and solutions than the current offerings
 by quantifying the robustness of non-optimal solutions.
 
 # Functionality and Overview
 
-`HypOptLib` is a Python/C++ implementation of hyperoptimization [@hypopt] that
-adapts Nose-Hoover chain thermostats [@NHC] from particle-based, molecular
-dynamics algorithms [@frenkelsmit] to continuum problems in topology
-optimization.[@which] The present implementation relies on the relationship
+`HypOptLib` is a Python/C++ implementation of a Parato-Laplace filter applied to 
+computational morpholgy. [@hypopt] It adapts Nose-Hoover chain thermostats [@NHC]
+from particle-based, molecular dynamics algorithms [@frenkelsmit] to continuum problems
+in topology optimization.[@which] The present implementation relies on the relationship
 between information theory and statistical mechanics [@jaynes1] to cast
 recently introduced Pareto-Laplace filters [@ParetoLaplace] on the solution
 space of the optimization problem as mathematically equivalent to a
 thermodynamic ensemble of putative solutions. `HypOptLib` leverages `PetSc`
 [@petsc-web-page] as a back-end to allow execution for high-resolution topology
-optimization problems. The hyperoptimization framework is physics-agnostic and
-can be applied to a broad range of problem domains. `HypOptLib` gives example
+optimization problems. Since the theory is based on computational-morphology in general,
+it can be applied to a broad range of problem domains. `HypOptLib` gives example
 applications to problems related to mechanical stiffness, e.g. compliance
 minimization [@alma991486910605151], but the code is extensible to problems that rely on
 different forms of underlying physics.
 
 The code is built around the `TopOpt_in_PETSc` package, which implements a scalable,
 parallel code for topology optimization.[@TopOpt] By replacing the optimization
-class with the hyperoptimization algorithm, `HypOptLib` leverages the proven
+class with the Parato-Laplace-based optimization algorithm, `HypOptLib` leverages the proven
 finite element analysis code from `TopOpt_in_PETSc`. In addition, the algorithm is
 abstracted away from the filtering, sensitivity, and Lagrange multiplier code to allow
 for portability to any arbitrary optimization problem that can leverage PETSc. Finally,
 `HypOptLib` provides a Python wrapper easy and quick problem definition and use.
 
-While hyperoptimization itself has not been parallelized, `HypOptLib` has been
+While the optimziation algorithm itself has not been parallelized, `HypOptLib` has been
 implemented in a "semi-parallel" manner which allows for the parallel computation of
 all abstracted code, namely the sensitivity calculations. For topology optimization this
 usually involves finite element analysis which greatly benefits from parallel computing.
@@ -107,7 +107,8 @@ user defined parameters. The primary parameters used are:
 
  * Simulation settings, such as timestep, number of iterations, volume fraction etc.
 
-The full list of parameters can be found in the [online documentation](). Once the problem
+The full list of parameters can be found in the 
+[online documentation](https://aidan-sheedy.github.io/HypOptLib/). Once the problem
 geometry has been defined, the primary parameter that is varied across simulations is the
 temperature. This allows for investigation of solutions at decreasing optimality. Samples
 of results at temperatures 0 and 1.75E-06 are provided in \autoref{fig:zeroTempEx} and
