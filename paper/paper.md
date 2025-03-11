@@ -121,6 +121,10 @@ can be used to generate importance maps when combined with optimal solutions at 
 
 ![A solution generated with temperature 1.75E-06 and volume fraction of 0.5. \label{fig:lowTempEx}](example-solution-t1.75e-6.jpg "Example of a solution at temperature 1.75E-06.")
 
+# Relevant Projects
+
+The code presented here has been used to develop some results for [@hypopt].
+
 # Acknowledgements
 
 We acknowledge discussions with Ruben Perez. We acknowledge the support of the
